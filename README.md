@@ -9,19 +9,18 @@
 ```
 
 ----
-Developing Tools for Lighter game ([repo here](https://github.com/lukaszszymankiewicz/lighter))
+Developer Tools for Lighter game ([repo here](https://github.com/lukaszszymankiewicz/lighter))
 
-This toolschains will contain:
+This toolchain will contain:
  - [ ] level editor
- - [ ] sprite/animations/hitbox editor
+ - [ ] sprite/animation/hitbox editor
  - [ ] light effect sketcher
 
 ----
 
-The goal of this tools are to ease developing Lighter game, learn how to use Go programming
-language, and create and create such a program that will allow anybody to make their own creations
-(propably this means that this set of tools will entirely work on browser).
+The goal of this tools are to ease developing of Lighter, learn how to use Golang,
+and create such a program that will allow anybody to make their own creations for the game.
 
-Project is on its very beggining, so even a set of requirements for such, does not exist by now.
+All tools will work in the browser and will allow to test it out there as well.
 
 ----
