@@ -6,7 +6,7 @@ wasm:
 
 .PHONY: native
 native:
-	go build -o ./build/pong .
+	go build -o ./ltools .
 
 .PHONY: server
 server:
@@ -15,3 +15,4 @@ server:
 .PHONY: clean
 clean:
 	rm -f ./html/*.js ./html/*.wasm
+	rm -f ltools
