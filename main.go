@@ -22,7 +22,13 @@ const (
 	palleteRows  = 10
 )
 
-type Game struct{}
+type Game struct {
+	// static desktop coords
+	tilePalleteCoords image.Rectangle
+
+	// dynamic thingis
+	currentTileToDraw image.Rectangle
+}
 
 var img *ebiten.Image
 
@@ -39,22 +45,25 @@ func (g *Game) Update() error {
 	return nil
 }
 
-func cursorInRect(cursor_x, cursor_y, rect_x1, rect_y1, rect_x2, rect_y2 int) bool {
-	if (cursor_x >= rect_x1 && cursor_x <= rect_x2) && (cursor_y >= rect_y1 && cursor_y <= rect_y2) {
+func cursorInRect(x, y, rect image.Rectangle) bool {
+	if (x >= rect.Min.X && x <= rect.Max.X) && (y >= rect.Min.Y && y <= rect.Max.Y) {
 		return true
 	}
 	return false
 }
 
+func drawCursor(screen *ebiten.Image, x int, y int, size float64) {
+	leftCornerX := float64((int(((x-palleteX)/tileWidth)*tileWidth) + palleteX))
+	leftCornerY := float64((int(((y-palleteY)/tileHeight)*tileHeight) + palleteY))
+
+	ebitenutil.DrawLine(screen, leftCornerX, leftCornerY, leftCornerX+size, leftCornerY, color.White)
+	ebitenutil.DrawLine(screen, leftCornerX, leftCornerY, leftCornerX, leftCornerY+size+1, color.White)
+	ebitenutil.DrawLine(screen, leftCornerX, leftCornerY+size, leftCornerX+size, leftCornerY+size, color.White)
+	ebitenutil.DrawLine(screen, leftCornerX+size, leftCornerY, leftCornerX+size, leftCornerY+size, color.White)
+}
+
 func drawCursorOnPallete(screen *ebiten.Image, x int, y int) {
-	ebitenutil.DrawRect(
-		screen,
-		float64((int(((x-palleteX)/tileWidth)*tileWidth) + palleteX)),
-		float64((int(((y-palleteY)/tileHeight)*tileHeight) + palleteY)),
-		tileWidth,
-		tileHeight,
-		color.White,
-	)
+	drawCursor(screen, x, y, 32.0)
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -93,14 +102,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	msg := fmt.Sprintf("x=%d, y=%d \n", x, y)
 	ebitenutil.DebugPrint(screen, msg)
 
-	if cursorInRect(
-		x,
-		y,
-		palleteX,
-		palleteY,
-		(palleteX + (tileWidth * palleteCols)),
-		(palleteY + (tileHeight * palleteRows)),
-	) {
+	// this function should use Rect instead of four points
+	if cursorInRect(x, y, g.tilePalleteCoords) {
 		drawCursorOnPallete(screen, x, y)
 	}
 }
@@ -111,10 +114,18 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 
 // placeholder gonna hold place
 func main() {
+	game := &Game{
+		tilePalleteCoords: image.Rect(
+			palleteX,
+			palleteY,
+			palleteX+(tileWidth*palleteCols),
+			palleteY+(tileHeight*palleteRows),
+		)}
+
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 
 	ebiten.SetWindowTitle("LTOOLS - LIGHTER DEVELOPMENT TOOLS")
-	if err := ebiten.RunGame(&Game{}); err != nil {
+	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
 }
