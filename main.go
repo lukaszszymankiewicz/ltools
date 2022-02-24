@@ -25,9 +25,10 @@ const (
 type Game struct {
 	// static desktop coords
 	tilePalleteCoords image.Rectangle
+	currentTileToDraw image.Rectangle
 
 	// dynamic thingis
-	currentTileToDraw image.Rectangle
+	currentTileToDrawRect image.Rectangle
 }
 
 var img *ebiten.Image
@@ -45,7 +46,7 @@ func (g *Game) Update() error {
 	return nil
 }
 
-func cursorInRect(x, y, rect image.Rectangle) bool {
+func cursorInRect(x int, y int, rect image.Rectangle) bool {
 	if (x >= rect.Min.X && x <= rect.Max.X) && (y >= rect.Min.Y && y <= rect.Max.Y) {
 		return true
 	}
@@ -97,12 +98,32 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 	}
 
+
+    // check for changing the current tile
+    x, y := ebiten.CursorPosition()
+    if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && cursorInRect(x, y, g.tilePalleteCoords) {
+        leftCornerX := float64((int(((x-palleteX)/tileWidth)*tileWidth) + palleteX))
+        leftCornerY := float64((int(((y-palleteY)/tileHeight)*tileHeight) + palleteY))
+        g.currentTileToDrawRect = image.Rect(
+            int(leftCornerX),
+            int(leftCornerY),
+            int(leftCornerX+32),
+            int(leftCornerY+32),
+        )
+    }
+
+    // current tile to draw
+    subImg := img.SubImage(g.currentTileToDrawRect).(*ebiten.Image)
+    op := &ebiten.DrawImageOptions{}
+    op.GeoM.Translate(
+        float64(g.currentTileToDraw.Min.X),
+        float64(g.currentTileToDraw.Min.Y),
+    )
+    screen.DrawImage(subImg, op)
+
 	// mouse
-	x, y := ebiten.CursorPosition()
 	msg := fmt.Sprintf("x=%d, y=%d \n", x, y)
 	ebitenutil.DebugPrint(screen, msg)
-
-	// this function should use Rect instead of four points
 	if cursorInRect(x, y, g.tilePalleteCoords) {
 		drawCursorOnPallete(screen, x, y)
 	}
@@ -120,7 +141,15 @@ func main() {
 			palleteY,
 			palleteX+(tileWidth*palleteCols),
 			palleteY+(tileHeight*palleteRows),
-		)}
+        ),
+        currentTileToDrawRect: image.Rect(0, 0, 32, 32),
+        currentTileToDraw: image.Rect(
+			(palleteX+(tileWidth*(palleteCols))) / 2,
+			palleteY+(tileHeight*(palleteRows+1)),
+			((palleteX+(tileWidth*(palleteCols))) /2) + 32,
+			palleteY+(tileHeight*(palleteRows+1)) + 32,
+        ),
+    }
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 
