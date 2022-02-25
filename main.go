@@ -91,8 +91,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			float64(((currentTile/palleteCols)*tileHeight)+palleteY),
 		)
 		screen.DrawImage(subImg, op)
-
 		currentTile++
+
 		if currentTile >= palleteCols*palleteRows {
 			break
 		}
@@ -102,14 +102,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
     // check for changing the current tile
     x, y := ebiten.CursorPosition()
     if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && cursorInRect(x, y, g.tilePalleteCoords) {
-        leftCornerX := float64((int(((x-palleteX)/tileWidth)*tileWidth) + palleteX))
-        leftCornerY := float64((int(((y-palleteY)/tileHeight)*tileHeight) + palleteY))
-        g.currentTileToDrawRect = image.Rect(
-            int(leftCornerX),
-            int(leftCornerY),
-            int(leftCornerX+32),
-            int(leftCornerY+32),
-        )
+        currentTile := (((y-palleteY)/tileWidth) * tilesPerRow) + ((x-palleteX)/tileHeight)
+
+		g.currentTileToDrawRect = image.Rect(
+			(currentTile%tilesheetCols)*tileWidth,
+			(currentTile/tilesheetCols)*tileHeight,
+			((currentTile%tilesheetCols)*tileWidth)+tileWidth,
+			((currentTile/tilesheetCols)*tileWidth)+tileHeight,
+		)
+        ebitenutil.DebugPrint(screen, msg)
     }
 
     // current tile to draw
@@ -122,8 +123,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
     screen.DrawImage(subImg, op)
 
 	// mouse
-	msg := fmt.Sprintf("x=%d, y=%d \n", x, y)
-	ebitenutil.DebugPrint(screen, msg)
 	if cursorInRect(x, y, g.tilePalleteCoords) {
 		drawCursorOnPallete(screen, x, y)
 	}
