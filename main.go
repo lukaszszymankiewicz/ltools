@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "fmt"
+	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image"
@@ -37,9 +37,26 @@ const (
 )
 
 type Tileset struct {
-	image  *ebiten.Image
-	width  int
-	height int
+	image     *ebiten.Image
+	width      int
+	height     int
+    tilesUsed  int
+}
+
+type TileDesc struct {
+	tilePalleteCoords image.Rectangle
+    tileset *Tileset
+    tileNumber int   // tile number on TileStack
+    tilesUsed int
+}
+
+type CurrentTileToDraw struct {
+    tileset *Tileset
+    TileRectOnTileSet image.Rectangle
+
+	// subImg := g.tilesetPallete.image.SubImage(g.currentTileToDrawRect).(*ebiten.Image)
+    tileNumber int   // tile number on TileStack
+    tilesUsed int
 }
 
 type Game struct {
@@ -50,9 +67,11 @@ type Game struct {
 
 	// dynamic thingis
 	currentTileToDrawRect image.Rectangle
+	levelTiles [screenCanvasX][screenCanvasY]int
 
 	// images
 	tilesetPallete Tileset
+	tileStack [5]TileDesc
 }
 
 func newTileset(path string) Tileset {
@@ -104,13 +123,46 @@ func drawCursorOnPallete(screen *ebiten.Image, x int, y int, size float64) {
 	drawEmptyRect(screen, leftCornerX, leftCornerY, leftCornerX+size, leftCornerY+size, color.White)
 }
 
+func (g *Game) DrawTileOnCanvas(screen *ebiten.Image, x int, y int) {
+    levelTileX := int((x - screenCanvasX) / tileWidth)
+    levelTileY := int((y - screenCanvasY) / tileHeight)
+
+	leftCornerX := int((levelTileX * tileWidth) + screenCanvasX)
+	leftCornerY := int((levelTileY * tileHeight) + screenCanvasY)
+    fmt.Printf("%d, %d \n", int((x - screenCanvasX) / tileWidth), int((x - screenCanvasX) / tileWidth))
+
+    tilePalleteCoordsRect := image.Rect(
+        leftCornerX,
+        leftCornerY,
+        leftCornerX+tileWidth,
+        leftCornerY+tileHeight,
+    )
+
+    // this tile is empty here
+    if g.levelTiles[levelTileX][levelTileY] == 0 {
+        // check if currentTiletoDraw is in TileStack
+
+
+        g.tileStack[g.tilesetPallete.tilesUsed] = TileDesc{ tilePalleteCoordsRect,
+            &g.tilesetPallete,
+            g.tilesetPallete.tilesUsed,
+            1,
+        }
+        g.levelTiles[levelTileX][levelTileY] = g.tilesetPallete.tilesUsed
+        g.tilesetPallete.tilesUsed++
+
+    }
+
+
+
+}
+
 // TODO: this function should be divided into smaller functions!
 func (g *Game) HandleMouse(screen *ebiten.Image) {
 	tilesetHeight := g.tilesetPallete.height
-
+	x, y := ebiten.CursorPosition()
 	var tilesheetCols int = tilesetHeight / tileWidth
 
-	x, y := ebiten.CursorPosition()
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && coordsInRect(x, y, g.tilePalleteCoords) {
 		currentTile := (((y - screenTilePalleteY) / tileWidth) * nColsInScreenTilePallete) + ((x - screenTilePalleteX) / tileHeight)
 
@@ -123,14 +175,20 @@ func (g *Game) HandleMouse(screen *ebiten.Image) {
 	}
 
 	if coordsInRect(x, y, g.canvasCoords) {
+        // draw cursor shaped as tile
 		subImg := g.tilesetPallete.image.SubImage(g.currentTileToDrawRect).(*ebiten.Image)
 		op := &ebiten.DrawImageOptions{}
-
 		op.GeoM.Translate(
 			float64((((x-screenCanvasX)/tileWidth)*tileWidth)+screenCanvasX),
 			float64((((y-screenCanvasY)/tileHeight)*tileHeight)+screenCanvasY),
 		)
 		screen.DrawImage(subImg, op)
+
+        // mouse button is pressed so tile is put into canvas
+        if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+            g.DrawTileOnCanvas(screen, x, y)
+        }
+
 	}
 
 	if coordsInRect(x, y, g.tilePalleteCoords) {
@@ -220,8 +278,8 @@ func NewGame() *Game {
 		),
 		canvasCoords: image.Rect(
 			screenCanvasX,
-			screenCanvasY,
-			screenCanvasEndX,
+			screenCanvasY - 1,
+			screenCanvasEndX + 1,
 			screenCanvasEndY,
 		),
 		tilesetPallete: newTileset("tileset_1.png"),
