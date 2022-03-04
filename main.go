@@ -43,26 +43,23 @@ type Tileset struct {
     tilesUsed  int
 }
 
-type TileDesc struct {
-	tilePalleteCoords image.Rectangle
+type Tile struct {
     tileset *Tileset
-    tileNumber int   // tile number on TileStack
-    tilesUsed int
+	image   *ebiten.Image
+    PalleteX int
+    PalleteY int
+    NumberUsed int
 }
 
-type CurrentTileToDraw struct {
-    tileset *Tileset
-    TileRectOnTileSet image.Rectangle
-
-	// subImg := g.tilesetPallete.image.SubImage(g.currentTileToDrawRect).(*ebiten.Image)
-    tileNumber int   // tile number on TileStack
-    tilesUsed int
+type CurrentTile struct {
+    tile *Tile 
+    StackIndex int
 }
 
 type Game struct {
 	// static desktop coords
+    currentTile CurrentTile 
 	tilePalleteCoords image.Rectangle
-	currentTileToDraw image.Rectangle
 	canvasCoords      image.Rectangle
 
 	// dynamic thingis
@@ -71,7 +68,8 @@ type Game struct {
 
 	// images
 	tilesetPallete Tileset
-	tileStack [5]TileDesc
+	tileStack [256]Tile
+    tileStackLen int
 }
 
 func newTileset(path string) Tileset {
@@ -123,56 +121,84 @@ func drawCursorOnPallete(screen *ebiten.Image, x int, y int, size float64) {
 	drawEmptyRect(screen, leftCornerX, leftCornerY, leftCornerX+size, leftCornerY+size, color.White)
 }
 
+func (g *Game) clearStack(index int) {
+    if g.tileStack[index] == 0 {
+        g.tileStack = append(g.tileStack[:index], g.tileStack[index+1:]...)
+    }
+}
+
 func (g *Game) DrawTileOnCanvas(screen *ebiten.Image, x int, y int) {
-    levelTileX := int((x - screenCanvasX) / tileWidth)
-    levelTileY := int((y - screenCanvasY) / tileHeight)
-
-	leftCornerX := int((levelTileX * tileWidth) + screenCanvasX)
-	leftCornerY := int((levelTileY * tileHeight) + screenCanvasY)
-    fmt.Printf("%d, %d \n", int((x - screenCanvasX) / tileWidth), int((x - screenCanvasX) / tileWidth))
-
-    tilePalleteCoordsRect := image.Rect(
-        leftCornerX,
-        leftCornerY,
-        leftCornerX+tileWidth,
-        leftCornerY+tileHeight,
-    )
-
-    // this tile is empty here
-    if g.levelTiles[levelTileX][levelTileY] == 0 {
-        // check if currentTiletoDraw is in TileStack
-
-
-        g.tileStack[g.tilesetPallete.tilesUsed] = TileDesc{ tilePalleteCoordsRect,
-            &g.tilesetPallete,
-            g.tilesetPallete.tilesUsed,
-            1,
-        }
-        g.levelTiles[levelTileX][levelTileY] = g.tilesetPallete.tilesUsed
-        g.tilesetPallete.tilesUsed++
-
+    tileX := int((x - screenCanvasX) / tileWidth)
+    tileY := int((y - screenCanvasY) / tileHeight)
+    
+    if g.levelTiles[tileX][tileY] == 0 {
+        g.tileStack[g.currentTile.StackIndex].NumberUsed++
+    }
+    else if g.levelTiles[tileX][tileY] == g.currentTile.StackIndex {
+        // do nothing (bitchslap)
+    }
+    else {
+        g.TileStack[g.levelTiles[tileX][tileY]].NumberUsed =-1
+        g.clearStack()
+        g.tileStack[g.currentTile.StackIndex].NumberUsed++
+        g.levelTiles[tileX][tileY].NumberUsed++
     }
 
+	// leftCornerX := int((levelTileX * tileWidth) + screenCanvasX)
+	// leftCornerY := int((levelTileY * tileHeight) + screenCanvasY)
 
-
+    // tilePalleteCoordsRect := image.Rect(
+    //     leftCornerX,
+    //     leftCornerY,
+    //     leftCornerX+tileWidth,
+    //     leftCornerY+tileHeight,
+    // )
 }
 
 // TODO: this function should be divided into smaller functions!
-func (g *Game) HandleMouse(screen *ebiten.Image) {
-	tilesetHeight := g.tilesetPallete.height
-	x, y := ebiten.CursorPosition()
-	var tilesheetCols int = tilesetHeight / tileWidth
+func (g *Game) chooseTileFromPallete(x, y int) {
 
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && coordsInRect(x, y, g.tilePalleteCoords) {
-		currentTile := (((y - screenTilePalleteY) / tileWidth) * nColsInScreenTilePallete) + ((x - screenTilePalleteX) / tileHeight)
+        tileX := int((x - screenTilePalleteX) / tileWidth)
+        tileY := int((y - screenTilePalleteY) / tileHeight)
 
-		g.currentTileToDrawRect = image.Rect(
+        for i := range g.tileStackLen  {
+            if g.TileStack[index].PalleteX == tileX && g.TileStack[index].PalleteY == tileY {
+                g.currentTile := {
+                    &tile, i
+                }
+                // chosen tile is already used so we take params from tileStack
+                return
+            }
+        }
+        // new tile should be append to stack
+        g.tileStackLen++
+
+		tileRect = image.Rect(
 			(currentTile%tilesheetCols)*tileWidth,
 			(currentTile/tilesheetCols)*tileHeight,
 			((currentTile%tilesheetCols)*tileWidth)+tileWidth,
 			((currentTile/tilesheetCols)*tileWidth)+tileHeight,
 		)
-	}
+
+        g.TileStack[g.tileStackLen] := &CurrentTile {
+            Tile {
+                &g.tilesetPallete
+                g.tilesetPallete.image.SubImage(tileRect).(*ebiten.Image)
+                TileX
+                TileY
+            }
+            g.tileStackLen
+        }
+}
+
+func (g *Game) HandleMouse(screen *ebiten.Image) {
+    // TODO: this should be done on init
+	tilesetHeight := g.tilesetPallete.height
+    var tilesheetCols int = tilesetHeight / tileWidth
+
+	x, y := ebiten.CursorPosition()
+
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && coordsInRect(x, y, g.tilePalleteCoords) {
 
 	if coordsInRect(x, y, g.canvasCoords) {
         // draw cursor shaped as tile
