@@ -121,8 +121,10 @@ func drawCursorOnPallete(screen *ebiten.Image, x int, y int, size float64) {
 	drawEmptyRect(screen, leftCornerX, leftCornerY, leftCornerX+size, leftCornerY+size, color.White)
 }
 
+// checks if Tile needs to be deleted from TileStack. It happens if number of tile usage on level
+// is equal to zero
 func (g *Game) clearStack(index int) {
-    if g.tileStack[index] == 0 {
+    if g.tileStack[index].NumberUsed == 0 {
         g.tileStack = append(g.tileStack[:index], g.tileStack[index+1:]...)
     }
 }
@@ -138,87 +140,81 @@ func (g *Game) DrawTileOnCanvas(screen *ebiten.Image, x int, y int) {
         // do nothing (bitchslap)
     }
     else {
-        g.TileStack[g.levelTiles[tileX][tileY]].NumberUsed =-1
+        g.TileStack[g.levelTiles[tileX][tileY]].NumberUsed =- 1
         g.clearStack()
         g.tileStack[g.currentTile.StackIndex].NumberUsed++
         g.levelTiles[tileX][tileY].NumberUsed++
     }
 
-	// leftCornerX := int((levelTileX * tileWidth) + screenCanvasX)
-	// leftCornerY := int((levelTileY * tileHeight) + screenCanvasY)
-
-    // tilePalleteCoordsRect := image.Rect(
-    //     leftCornerX,
-    //     leftCornerY,
-    //     leftCornerX+tileWidth,
-    //     leftCornerY+tileHeight,
-    // )
 }
 
 // TODO: this function should be divided into smaller functions!
-func (g *Game) chooseTileFromPallete(x, y int) {
+func (g *Game) chooseTileFromPallete(x int, y int) {
 
         tileX := int((x - screenTilePalleteX) / tileWidth)
         tileY := int((y - screenTilePalleteY) / tileHeight)
 
-        for i := range g.tileStackLen  {
-            if g.TileStack[index].PalleteX == tileX && g.TileStack[index].PalleteY == tileY {
-                g.currentTile := {
-                    &tile, i
-                }
+		for i := 0; i < g.tileStackLen; i++ {
+            // TODO: different palletes are not possible to use
+			if g.TileStack[index].PalleteX == tileX && g.TileStack[index].PalleteY == tileY {
                 // chosen tile is already used so we take params from tileStack
+				g.currentTile := {
+                    &g.TileStack[index], 
+					i
+                }
                 return
             }
         }
+	
         // new tile should be append to stack
         g.tileStackLen++
 
 		tileRect = image.Rect(
-			(currentTile%tilesheetCols)*tileWidth,
-			(currentTile/tilesheetCols)*tileHeight,
-			((currentTile%tilesheetCols)*tileWidth)+tileWidth,
-			((currentTile/tilesheetCols)*tileWidth)+tileHeight,
+			tileX*tileWidth,
+			tileY*tileHeight,
+			(tileX*tileWidth)+tileWidth,
+			(tileY*tileWidth)+tileHeight,
 		)
 
         g.TileStack[g.tileStackLen] := &CurrentTile {
-            Tile {
-                &g.tilesetPallete
-                g.tilesetPallete.image.SubImage(tileRect).(*ebiten.Image)
-                TileX
-                TileY
+            &Tile {
+                &g.tilesetPallete,
+                g.tilesetPallete.image.SubImage(tileRect).(*ebiten.Image),
+                TileX,
+                TileY,
             }
             g.tileStackLen
         }
 }
 
-func (g *Game) HandleMouse(screen *ebiten.Image) {
-    // TODO: this should be done on init
-	tilesetHeight := g.tilesetPallete.height
-    var tilesheetCols int = tilesetHeight / tileWidth
+func (g *Game) DrawHoveredTileOnCanvas(x int, y int) {
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(
+		float64((((x-screenCanvasX)/tileWidth)*tileWidth)+screenCanvasX),
+		float64((((y-screenCanvasY)/tileHeight)*tileHeight)+screenCanvasY),
+	)
+	screen.DrawImage(g.CurrentTile.image, op)
+}
 
+func (g *Game) HandleMouse(screen *ebiten.Image) {
 	x, y := ebiten.CursorPosition()
 
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) && coordsInRect(x, y, g.tilePalleteCoords) {
-
 	if coordsInRect(x, y, g.canvasCoords) {
-        // draw cursor shaped as tile
-		subImg := g.tilesetPallete.image.SubImage(g.currentTileToDrawRect).(*ebiten.Image)
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(
-			float64((((x-screenCanvasX)/tileWidth)*tileWidth)+screenCanvasX),
-			float64((((y-screenCanvasY)/tileHeight)*tileHeight)+screenCanvasY),
-		)
-		screen.DrawImage(subImg, op)
+        // draw cursor shaped as tile while mouse is above level
+		g.DrawHoveredTileOnCanvas(x, y)
 
-        // mouse button is pressed so tile is put into canvas
+		// mouse button is pressed, so tile is put into canvas
         if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
             g.DrawTileOnCanvas(screen, x, y)
         }
-
 	}
 
 	if coordsInRect(x, y, g.tilePalleteCoords) {
 		drawCursorOnPallete(screen, x, y, 32.0)
+
+		if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+			g.DrawTileOnCanvas(screen, x, y)
+		}
 	}
 }
 
@@ -276,9 +272,27 @@ func (g *Game) DrawCanvas(screen *ebiten.Image) {
 	)
 }
 
+func (g *Game) DrawLevel(screen *ebiten.Image) {
+	for x := 0; x<g.screenCanvasTileX; x++ {
+		for y := y<g.screenCanvasTileY; y++ {
+			if tile:=levelTiles[x][y] != 0 {
+
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Translate(
+					float64(x * tileWidth + g.screenCanvasX),
+					float64(y * tileWidth + g.screenCanvasY),
+				)
+				screen.DrawImage(tile.image, op)
+			}
+
+		}
+	}
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.DrawTilesetPallete(screen)
 	g.DrawCanvas(screen)
+	g.DrawLevel(screen)
 	g.HandleMouse(screen)
 	g.DrawCurrentTile(screen)
 }
