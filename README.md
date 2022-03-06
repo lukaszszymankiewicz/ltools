@@ -11,6 +11,11 @@
 ----
 Developer Tools for Lighter game ([repo here](https://github.com/lukaszszymankiewicz/lighter))
 
+Current work status:
+
+
+![A test image](screenshot.gif)
+
 This toolchain will contain:
  - [ ] level editor
  - [ ] sprite/animation/hitbox editor
