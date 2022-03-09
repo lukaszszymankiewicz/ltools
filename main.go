@@ -7,37 +7,8 @@ import (
 	"image/color"
 	_ "image/png"
 	"log"
-)
-
-const (
-	// screen
-	ScreenWidth  = 640
-	ScreenHeight = 480
-	// tile
-	TileWidth  = 32
-	TileHeight = 32
-	// pallete
-	PalleteX        = 20
-	PalleteY        = 20
-	PalleteColsN    = 6
-	PalleteRowsN    = 10
-	PalleteEndX     = PalleteX + (TileWidth * PalleteColsN)
-	PalleteEndY     = PalleteY + (TileHeight * PalleteRowsN)
-	PalleteTilesMax = PalleteColsN * PalleteRowsN
-	// current tile to draw
-	CurrentTileToDrawX    = PalleteEndX / 2
-	CurrentTileToDrawY    = PalleteEndY + TileHeight
-	CurrentTileToDrawEndX = CurrentTileToDrawX + TileWidth
-	CurrentTileToDrawEndY = CurrentTileToDrawY + TileHeight
-	// canvas
-	CanvasColsN = 10
-	CanvasRowsN = 10
-	CanvasX     = PalleteEndX + (TileWidth * 2)
-	CanvasY     = PalleteY
-	CanvasEndX  = CanvasX + (TileWidth * CanvasColsN)
-	CanvasEndY  = CanvasY + (TileWidth * CanvasRowsN)
-	// cursor
-	CursorSize = 32
+    "src/canvas.go"
+    "src/const.go"
 )
 
 type Tileset struct {
@@ -64,13 +35,15 @@ type CurrentTile struct {
 }
 
 type Game struct {
+    // pallete
 	palleteCoords image.Rectangle
-	canvasCoords  image.Rectangle
 
 	// dynamic thingis
 	currentTile           CurrentTile
 	currentTileToDrawRect image.Rectangle
-	canvas                [CanvasX][CanvasY]int
+
+    // canvas
+	canvas                Canvas
 
 	// images
 	tileset      Tileset
@@ -112,19 +85,12 @@ func coordsInRect(x int, y int, rect image.Rectangle) bool {
 	return false
 }
 
-func drawEmptyRect(screen *ebiten.Image, rect image.Rectangle, color color.Color) {
-	ebitenutil.DrawLine(screen, float64(rect.Min.X), float64(rect.Min.Y), float64(rect.Max.X), float64(rect.Min.Y), color)
-	ebitenutil.DrawLine(screen, float64(rect.Min.X), float64(rect.Min.Y), float64(rect.Min.X), float64(rect.Max.Y+1), color)
-	ebitenutil.DrawLine(screen, float64(rect.Max.X), float64(rect.Min.Y), float64(rect.Max.X), float64(rect.Max.Y), color)
-	ebitenutil.DrawLine(screen, float64(rect.Min.X), float64(rect.Max.Y), float64(rect.Max.X), float64(rect.Max.Y), color)
-}
-
 func (g *Game) Update() error {
 	return nil
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (ScreenWidth, ScreenHeight int) {
-	return 640, 480
+	return 1388, 768
 }
 
 func (g *Game) posToTileCoordsOnTileset(x int, y int) (int, int) {
@@ -304,24 +270,6 @@ func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {
 			float64(CurrentTileToDrawY),
 		)
 		screen.DrawImage(g.currentTile.tile.image, op)
-	}
-}
-
-func (g *Game) drawCanvas(screen *ebiten.Image) {
-	drawEmptyRect(screen, g.canvasCoords, color.White)
-
-	for x := 0; x < CanvasColsN; x++ {
-		for y := 0; y < CanvasRowsN; y++ {
-			if tile := g.canvas[x][y]; tile != -1 {
-
-				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(
-					float64(x*TileWidth+CanvasX),
-					float64(y*TileWidth+CanvasY),
-				)
-				screen.DrawImage(g.tileStack[g.canvas[x][y]].image, op)
-			}
-		}
 	}
 }
 
