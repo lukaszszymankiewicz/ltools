@@ -15,10 +15,13 @@ type Pallete struct {
 	MaxTile int
 }
 
-func NewPallete(x int, y int, width int, height int) Pallete {
+func NewPallete(x int, y int, width int, height int, rows int, cols int, maxtile int) Pallete {
 	var pallete Pallete
 
 	pallete.Rect = image.Rect(x, y, x+width, y+height)
+	pallete.Cols = cols
+	pallete.Rows = rows
+	pallete.MaxTile = maxtile
 
 	return pallete
 }

@@ -2,12 +2,9 @@ package main
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	// "github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image"
-	// "image/color"
 	_ "image/png"
 	"log"
-	// "ltools/src/drawer"
 	lto "ltools/src/objects"
 )
 
@@ -23,15 +20,24 @@ const (
 	PalleteY        = 20
 	PalleteColsN    = 6
 	PalleteRowsN    = 10
+	PalleteMaxTile  = 40
 	PalleteEndX     = PalleteX + (TileWidth * PalleteColsN)
 	PalleteEndY     = PalleteY + (TileHeight * PalleteRowsN)
 	PalleteTilesMax = PalleteColsN * PalleteRowsN
 	// current tile to draw
-	CurrentTileToDrawX    = PalleteEndX / 2
-	CurrentTileToDrawY    = PalleteEndY + TileHeight
-	CurrentTileToDrawEndX = CurrentTileToDrawX + TileWidth
-	CurrentTileToDrawEndY = CurrentTileToDrawY + TileHeight
-	CursorSize            = 32
+	CurrentTileToDrawX = PalleteEndX / 2
+	CurrentTileToDrawY = PalleteEndY + TileHeight
+	// cursor
+	CursorSize = 32
+	// pallete
+	ViewportCols  = 10
+	ViewportRows  = 10
+	CanvasRows    = 100
+	CanvasCols    = 100
+	Canvas_y      = PalleteY
+	Canvas_x      = PalleteEndX + (TileWidth * 2)
+	Canvas_width  = (TileWidth * 10)
+	Canvas_height = (TileWidth * 10)
 )
 
 type Game struct {
@@ -164,15 +170,22 @@ func NewGame() *Game {
 		PalleteY,
 		PalleteEndX,
 		PalleteEndY,
+		PalleteRowsN,
+		PalleteColsN,
+		PalleteMaxTile,
 	)
 
 	g.Canvas = lto.NewCanvas(
-		10, 10, 10, 10,
-		PalleteEndX+(lto.TileWidth*2),
-		PalleteY,
-		(TileWidth * 10),
-		(TileWidth * 10),
+		ViewportRows,
+		ViewportCols,
+		CanvasRows,
+		CanvasCols,
+		Canvas_x,
+		Canvas_y,
+		Canvas_width,
+		Canvas_height,
 	)
+
 	g.Tileset = lto.NewTileset("tileset_1.png")
 
 	// post init
