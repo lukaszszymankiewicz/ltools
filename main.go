@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+    "github.com/hajimehoshi/ebiten/v2/inpututil"
 	"image"
 	_ "image/png"
 	"log"
@@ -30,14 +31,22 @@ const (
 	// cursor
 	CursorSize = 32
 	// pallete
-	ViewportCols  = 10
-	ViewportRows  = 10
+	ViewportCols  = 20
+	ViewportRows  = 30
 	CanvasRows    = 100
 	CanvasCols    = 100
 	Canvas_y      = PalleteY
 	Canvas_x      = PalleteEndX + (TileWidth * 2)
-	Canvas_width  = (TileWidth * 10)
-	Canvas_height = (TileWidth * 10)
+    // scroll arrows
+    ArrowRightX   = Canvas_x + (ViewportRows -1) * TileWidth + 1
+    ArrowRightY   = Canvas_y + ViewportCols * TileHeight + 2
+    ArrowLeftX    = Canvas_x + TileWidth
+    ArrowLeftY    = Canvas_y + ViewportCols * TileHeight + 2
+
+    ArrowUpX      = Canvas_x + (ViewportRows) * TileWidth + 2
+    ArrowUpY      = Canvas_y + TileHeight - 1
+    ArrowDownX    = Canvas_x + (ViewportRows+1) * TileWidth + 2
+    ArrowDownY    = Canvas_y + (ViewportCols - 1) * TileHeight + 1
 )
 
 type Game struct {
@@ -45,9 +54,10 @@ type Game struct {
 	lto.Canvas
 	lto.Tileset
 	lto.TileStack
-	//
-	currentTileToDrawRect image.Rectangle
-	tileStackLen          int
+    ScrollArrowRight lto.ScrollArrow
+    ScrollArrowLeft lto.ScrollArrow
+    ScrollArrowUp lto.ScrollArrow
+    ScrollArrowDown lto.ScrollArrow
 }
 
 func init() {
@@ -114,6 +124,7 @@ func (g *Game) drawHoveredTileOnCanvas(screen *ebiten.Image, x int, y int) {
 func (g *Game) handleMouseEvents(screen *ebiten.Image) {
 	x, y := ebiten.CursorPosition()
 
+    // TODO: maybe switch/case here?
 	if coordsInRect(x, y, g.Canvas.Rect) {
 		g.drawHoveredTileOnCanvas(screen, x, y)
 
@@ -129,6 +140,13 @@ func (g *Game) handleMouseEvents(screen *ebiten.Image) {
 			g.chooseTileFromPallete(x, y)
 		}
 	}
+
+	if coordsInRect(x, y, g.ScrollArrowRight.Rect) {
+        if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			g.MoveCanvas(1, 0)
+		}
+	}
+
 }
 
 func (g *Game) drawPallete(screen *ebiten.Image) {
@@ -155,11 +173,17 @@ func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {
 	g.DrawCurrentTile(screen, op)
 }
 
+
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.drawPallete(screen)
 	g.DrawCanvas(screen, g.GetAllTiles())
 	g.handleMouseEvents(screen)
 	g.drawCurrentTileToDraw(screen)
+    g.ScrollArrowRight.DrawScrollArrow(screen)
+    g.ScrollArrowLeft.DrawScrollArrow(screen)
+    g.ScrollArrowUp.DrawScrollArrow(screen)
+    g.ScrollArrowDown.DrawScrollArrow(screen)
+
 }
 
 func NewGame() *Game {
@@ -182,11 +206,13 @@ func NewGame() *Game {
 		CanvasCols,
 		Canvas_x,
 		Canvas_y,
-		Canvas_width,
-		Canvas_height,
 	)
 
 	g.Tileset = lto.NewTileset("tileset_1.png")
+    g.ScrollArrowRight = lto.NewScrollArrow(ArrowRightX, ArrowRightY, 0, false, false)
+    g.ScrollArrowLeft = lto.NewScrollArrow(ArrowLeftX, ArrowLeftY, 0, true, false)
+    g.ScrollArrowUp = lto.NewScrollArrow(ArrowUpX, ArrowUpY, 270, false, false)
+    g.ScrollArrowDown = lto.NewScrollArrow(ArrowDownX, ArrowDownY, 90, false, false)
 
 	// post init
 	g.addTileFromPalleteToStack(0, 0)
