@@ -120,26 +120,50 @@ func (c *Canvas) SetTileOnCanvas(x int, y int, value int) {
 	c.drawingArea[x*c.canvasRows + y + c.viewport_y + (c.viewport_x*c.canvasRows)] = value
 }
 
-func MaxVal(a int, b int) int {
-	if a > b {
-		return a
-	} else {
-		return b
-	}
-}
-
-func MinVal(a int, b int) int {
-	if a > b {
-		return b
-	} else {
-		return a
-	}
-}
-
 func (c *Canvas) MoveCanvas(x int, y int) {
 	new_x_value := c.viewport_x + x
 	new_y_value := c.viewport_y + y
 
 	c.viewport_x = MinVal(MaxVal(0, new_x_value), (c.viewportRows - c.viewport_x))
 	c.viewport_y = MinVal(MaxVal(0, new_y_value), (c.viewportCols - c.viewport_y))
+}
+
+
+func (c *Canvas) DrawXZipper(screen *ebiten.Image) {
+    len := ArrowRightX - ArrowLeftX - TileWidth
+	base := ArrowLeftX + TileWidth
+	if c.viewport_x == 0 { 
+		beg := 0
+	} else {
+		beg := int((c.viewport_x / c.canvasCols) * len)
+	}
+	end := int(((viewport_x + c.viewport_x) / c.canvasCols) * len)
+
+	rect := image.Rectangle(
+		base + beg,
+		ArrowLeftY,
+		base + end,
+		ArrowLeftY,
+	)
+	drawer.EmptyRect(screen, rect, color.Green)
+}
+
+
+func (c *Canvas) DrawYZipper(screen *ebiten.Image) {
+    len := ArrowDownX - ArrowUpX - TileHeight
+	base := ArrowDownX + TileHeight
+	if c.viewport_y == 0 { 
+		beg := 0
+	} else {
+		beg := int((c.viewport_y / c.canvasRows) * len)
+	}
+	end := int(((viewport_y + c.viewport_y) / c.canvasRows) * len)
+
+	rect := image.Rectangle(
+		base + beg,
+		ArrowUpY,
+		base + end,
+		ArrowUpY,
+	)
+	drawer.EmptyRect(screen, rect, color.Green)
 }

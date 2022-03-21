@@ -57,7 +57,6 @@ func (p *Pallete) PosToSubImageOnPallete(x int, y int, t *Tileset) *ebiten.Image
 	return t.TileNrToSubImageOnTileset(TileNr)
 }
 
-// TODO: add cursor struct
 func (p *Pallete) DrawCursorOnPallete(screen *ebiten.Image, x int, y int) {
 	cursorRect := p.PosToCursorCoords(x, y)
 	drawer.EmptyRect(screen, cursorRect, color.White)
