@@ -6,7 +6,6 @@ import (
 	"image/color"
 	_ "image/png"
 	"ltools/src/drawer"
-	"math"
 )
 
 type Canvas struct {
@@ -23,30 +22,15 @@ type Canvas struct {
 type ScrollArrow struct {
 	image *ebiten.Image
 	Rect  image.Rectangle
-	op    *ebiten.DrawImageOptions
 }
 
-func NewScrollArrow(x int, y int, rot int, flip_h bool, flip_v bool) ScrollArrow {
+func NewScrollArrow(x int, y int, path string) ScrollArrow {
 	var scrollArrow ScrollArrow
-    var scale_x int = 1
-    var scale_y int = 1
 
-	if flip_h {
-		scale_x = -1
-	} 
+	scrollArrow.image = loadImage(path)
 
-	if flip_h {
-		scale_x = -1
-	} 
-
-	op := &ebiten.DrawImageOptions{}
-    op.GeoM.Scale(float64(scale_x), float64(scale_y))
-    op.GeoM.Rotate(float64(rot%360) * 2 * math.Pi / 360)
-	op.GeoM.Translate(float64(x), float64(y))
-
-	scrollArrow.op = op
-	scrollArrow.image = loadImage("arrow.png")
-	// TODO: check how co get image width and height
+    // TODO: implement this
+    // width, height := scrollArrow.image.Size()
 	scrollArrow.Rect = image.Rect(x, y, x+32, y+32)
 
 	return scrollArrow
@@ -95,7 +79,10 @@ func (c *Canvas) ClearViewport() {
 }
 
 func (sa *ScrollArrow) DrawScrollArrow(screen *ebiten.Image) {
-	screen.DrawImage(sa.image, sa.op)
+    op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(sa.Rect.Min.X), float64(sa.Rect.Min.Y))
+
+	screen.DrawImage(sa.image, op)
 }
 
 func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
@@ -130,7 +117,7 @@ func (c *Canvas) GetTileOnCanvas(x int, y int) int {
 }
 
 func (c *Canvas) SetTileOnCanvas(x int, y int, value int) {
-	c.drawingArea[x*c.canvasRows+y] = value
+	c.drawingArea[x*c.canvasRows + y + c.viewport_y + (c.viewport_x*c.canvasRows)] = value
 }
 
 func MaxVal(a int, b int) int {
@@ -154,5 +141,5 @@ func (c *Canvas) MoveCanvas(x int, y int) {
 	new_y_value := c.viewport_y + y
 
 	c.viewport_x = MinVal(MaxVal(0, new_x_value), (c.viewportRows - c.viewport_x))
-	c.viewport_y = MinVal(MaxVal(0, new_y_value), (c.viewportRows - c.viewport_y))
+	c.viewport_y = MinVal(MaxVal(0, new_y_value), (c.viewportCols - c.viewport_y))
 }

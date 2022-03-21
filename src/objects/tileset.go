@@ -2,10 +2,8 @@ package objects
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image"
 	_ "image/png"
-	"log"
 )
 
 type Tileset struct {
@@ -16,15 +14,6 @@ type Tileset struct {
 	cols      int
 	Num       int
 	tilesUsed int
-}
-
-func loadImage(path string) *ebiten.Image {
-	var err error
-	img, _, err := ebitenutil.NewImageFromFile(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return img
 }
 
 func NewTileset(path string) Tileset {
