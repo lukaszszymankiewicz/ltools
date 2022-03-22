@@ -11,4 +11,3 @@ func coordsInRect(x int, y int, rect image.Rectangle) bool {
 	}
 	return false
 }
-

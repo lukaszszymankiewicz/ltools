@@ -12,10 +12,10 @@ type Game struct {
 	lto.Canvas
 	lto.Tileset
 	lto.TileStack
-    ScrollArrowRight lto.ScrollArrow
-    ScrollArrowLeft lto.ScrollArrow
-    ScrollArrowUp lto.ScrollArrow
-    ScrollArrowDown lto.ScrollArrow
+	ScrollArrowRight lto.ScrollArrow
+	ScrollArrowLeft  lto.ScrollArrow
+	ScrollArrowUp    lto.ScrollArrow
+	ScrollArrowDown  lto.ScrollArrow
 }
 
 func init() {
@@ -31,20 +31,19 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (ScreenWidth, ScreenHeigh
 	return 1388, 768
 }
 
-
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.drawPallete(screen)
 	g.DrawCanvas(screen, g.GetAllTiles())
 	g.handleMouseEvents(screen)
 	g.drawCurrentTileToDraw(screen)
-    // arrows
-    g.ScrollArrowRight.DrawScrollArrow(screen)
-    g.ScrollArrowLeft.DrawScrollArrow(screen)
-    g.ScrollArrowUp.DrawScrollArrow(screen)
-    g.ScrollArrowDown.DrawScrollArrow(screen)
-    // zip
-    g.DrawYZipper(screen)
-	g.DrawXZipper(screen)
+	// arrows
+	g.ScrollArrowRight.DrawScrollArrow(screen)
+	g.ScrollArrowLeft.DrawScrollArrow(screen)
+	g.ScrollArrowUp.DrawScrollArrow(screen)
+	g.ScrollArrowDown.DrawScrollArrow(screen)
+	// zip
+	// g.DrawYZipper(screen)
+	g.DrawXZipper(screen, ArrowLeftX+TileWidth+5, ArrowRightX-5, ArrowRightY, TileWidth)
 }
 
 func NewGame() *Game {
@@ -70,10 +69,10 @@ func NewGame() *Game {
 	)
 
 	g.Tileset = lto.NewTileset("assets/tileset_1.png")
-    g.ScrollArrowRight = lto.NewScrollArrow(ArrowRightX, ArrowRightY, "assets/arrow_r.png")
-    g.ScrollArrowLeft = lto.NewScrollArrow(ArrowLeftX, ArrowLeftY, "assets/arrow_l.png")
-    g.ScrollArrowUp = lto.NewScrollArrow(ArrowUpX, ArrowUpY, "assets/arrow_u.png")
-    g.ScrollArrowDown = lto.NewScrollArrow(ArrowDownX, ArrowDownY, "assets/arrow_d.png")
+	g.ScrollArrowRight = lto.NewScrollArrow(ArrowRightX, ArrowRightY, "assets/arrow_r.png")
+	g.ScrollArrowLeft = lto.NewScrollArrow(ArrowLeftX, ArrowLeftY, "assets/arrow_l.png")
+	g.ScrollArrowUp = lto.NewScrollArrow(ArrowUpX, ArrowUpY, "assets/arrow_u.png")
+	g.ScrollArrowDown = lto.NewScrollArrow(ArrowDownX, ArrowDownY, "assets/arrow_d.png")
 
 	// post init
 	g.addTileFromPalleteToStack(0, 0)

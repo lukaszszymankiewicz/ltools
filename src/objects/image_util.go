@@ -4,7 +4,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	_ "image/png"
-    "log"
+	"log"
 )
 
 func loadImage(path string) *ebiten.Image {
@@ -15,4 +15,3 @@ func loadImage(path string) *ebiten.Image {
 	}
 	return img
 }
-

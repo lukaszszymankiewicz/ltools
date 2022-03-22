@@ -29,8 +29,8 @@ func NewScrollArrow(x int, y int, path string) ScrollArrow {
 
 	scrollArrow.image = loadImage(path)
 
-    // TODO: implement this
-    // width, height := scrollArrow.image.Size()
+	// TODO: implement this
+	// width, height := scrollArrow.image.Size()
 	scrollArrow.Rect = image.Rect(x, y, x+32, y+32)
 
 	return scrollArrow
@@ -79,7 +79,7 @@ func (c *Canvas) ClearViewport() {
 }
 
 func (sa *ScrollArrow) DrawScrollArrow(screen *ebiten.Image) {
-    op := &ebiten.DrawImageOptions{}
+	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(sa.Rect.Min.X), float64(sa.Rect.Min.Y))
 
 	screen.DrawImage(sa.image, op)
@@ -117,7 +117,7 @@ func (c *Canvas) GetTileOnCanvas(x int, y int) int {
 }
 
 func (c *Canvas) SetTileOnCanvas(x int, y int, value int) {
-	c.drawingArea[x*c.canvasRows + y + c.viewport_y + (c.viewport_x*c.canvasRows)] = value
+	c.drawingArea[x*c.canvasRows+y+c.viewport_y+(c.viewport_x*c.canvasRows)] = value
 }
 
 func (c *Canvas) MoveCanvas(x int, y int) {
@@ -128,42 +128,18 @@ func (c *Canvas) MoveCanvas(x int, y int) {
 	c.viewport_y = MinVal(MaxVal(0, new_y_value), (c.viewportCols - c.viewport_y))
 }
 
+func (c *Canvas) DrawXZipper(screen *ebiten.Image, x1 int, x2 int, y int, height int) {
+    var start float64
+	len := float64(x2 - x1)
 
-func (c *Canvas) DrawXZipper(screen *ebiten.Image) {
-    len := ArrowRightX - ArrowLeftX - TileWidth
-	base := ArrowLeftX + TileWidth
-	if c.viewport_x == 0 { 
-		beg := 0
-	} else {
-		beg := int((c.viewport_x / c.canvasCols) * len)
+	if c.viewport_x == 0 {
+		start = float64(x1)
+    } else {
+		start = float64(x1) + (float64(c.viewport_x) / float64(c.canvasCols)) * len
 	}
-	end := int(((viewport_x + c.viewport_x) / c.canvasCols) * len)
+    end := float64(x1) + ((float64(c.viewport_x) + float64(c.viewportCols)) / float64(c.canvasCols)) * len
 
-	rect := image.Rectangle(
-		base + beg,
-		ArrowLeftY,
-		base + end,
-		ArrowLeftY,
-	)
-	drawer.EmptyRect(screen, rect, color.Green)
+    rect := image.Rect(int(start), y, int(end), y + height)
+    drawer.FilledRect(screen, rect, color.RGBA{191, 191, 191, 255})
 }
 
-
-func (c *Canvas) DrawYZipper(screen *ebiten.Image) {
-    len := ArrowDownX - ArrowUpX - TileHeight
-	base := ArrowDownX + TileHeight
-	if c.viewport_y == 0 { 
-		beg := 0
-	} else {
-		beg := int((c.viewport_y / c.canvasRows) * len)
-	}
-	end := int(((viewport_y + c.viewport_y) / c.canvasRows) * len)
-
-	rect := image.Rectangle(
-		base + beg,
-		ArrowUpY,
-		base + end,
-		ArrowUpY,
-	)
-	drawer.EmptyRect(screen, rect, color.Green)
-}

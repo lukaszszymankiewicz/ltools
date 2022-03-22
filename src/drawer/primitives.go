@@ -58,3 +58,15 @@ func EmptyBorder(screen *ebiten.Image, rect image.Rectangle, color color.Color) 
 	ebitenutil.DrawLine(screen, rightUpX, rightUpY, rightDownX, rightDownY, color)
 	ebitenutil.DrawLine(screen, leftDownX, leftDownY, rightDownX, rightDownY, color)
 }
+
+func FilledRect(screen *ebiten.Image, rect image.Rectangle, color color.Color) {
+    ebitenutil.DrawRect(
+       screen,
+       float64(rect.Min.X),
+       float64(rect.Min.Y),
+       float64(rect.Max.X - rect.Min.X),
+       float64(rect.Max.Y - rect.Min.Y),
+       color,
+   )
+}
+

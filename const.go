@@ -22,20 +22,19 @@ const (
 	// cursor
 	CursorSize = 32
 	// pallete
-	ViewportCols  = 20
-	ViewportRows  = 30
-	CanvasRows    = 100
-	CanvasCols    = 100
-	Canvas_y      = PalleteY
-	Canvas_x      = PalleteEndX + (TileWidth * 2)
-    // scroll arrows
-    ArrowRightX   = Canvas_x + (ViewportRows -1) * TileWidth + 1
-    ArrowRightY   = Canvas_y + ViewportCols * TileHeight + 2
-    ArrowLeftX    = Canvas_x
-    ArrowLeftY    = Canvas_y + ViewportCols * TileHeight + 2
-    ArrowUpX      = Canvas_x + (ViewportRows) * TileWidth + 2
-    ArrowUpY      = Canvas_y - 1
-    ArrowDownX    = Canvas_x + ViewportRows * TileWidth + 2
-    ArrowDownY    = Canvas_y + (ViewportCols - 1) * TileHeight + 1
+	ViewportCols = 20
+	ViewportRows = 30
+	CanvasRows   = 100
+	CanvasCols   = 100
+	Canvas_y     = PalleteY
+	Canvas_x     = PalleteEndX + (TileWidth * 2)
+	// scroll arrows
+	ArrowRightX = Canvas_x + (ViewportRows-1)*TileWidth + 1
+	ArrowRightY = Canvas_y + ViewportCols*TileHeight + 2
+	ArrowLeftX  = Canvas_x
+	ArrowLeftY  = Canvas_y + ViewportCols*TileHeight + 2
+	ArrowUpX    = Canvas_x + (ViewportRows)*TileWidth + 2
+	ArrowUpY    = Canvas_y - 1
+	ArrowDownX  = Canvas_x + ViewportRows*TileWidth + 2
+	ArrowDownY  = Canvas_y + (ViewportCols-1)*TileHeight + 1
 )
-

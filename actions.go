@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -74,6 +73,5 @@ func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {
 }
 
 func (g *Game) drawZippers(screen *ebiten.Image) {
-
 
 }
