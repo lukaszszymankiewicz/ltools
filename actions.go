@@ -71,7 +71,3 @@ func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {
 	)
 	g.DrawCurrentTile(screen, op)
 }
-
-func (g *Game) drawZippers(screen *ebiten.Image) {
-
-}

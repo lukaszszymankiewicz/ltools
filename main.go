@@ -41,9 +41,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.ScrollArrowLeft.DrawScrollArrow(screen)
 	g.ScrollArrowUp.DrawScrollArrow(screen)
 	g.ScrollArrowDown.DrawScrollArrow(screen)
-	// zip
-	// g.DrawYZipper(screen)
-	g.DrawXZipper(screen, ArrowLeftX+TileWidth+5, ArrowRightX-5, ArrowRightY, TileWidth)
 }
 
 func NewGame() *Game {
