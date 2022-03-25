@@ -15,6 +15,7 @@ type Pallete struct {
 	MaxTile int
 }
 
+// creates new Pallete struct
 func NewPallete(x int, y int, width int, height int, rows int, cols int, maxtile int) Pallete {
 	var pallete Pallete
 
@@ -26,10 +27,13 @@ func NewPallete(x int, y int, width int, height int, rows int, cols int, maxtile
 	return pallete
 }
 
+// translates mouse position to Tile coordinates, while mouse is pointing on Pallete
 func (p *Pallete) PosToTileCoordsOnPallete(x int, y int) (int, int) {
 	return int((x - p.Rect.Min.X) / TileWidth), int((y - p.Rect.Min.Y) / TileHeight)
 }
 
+// translates Tile number (order on which Tile occurs on Pallete) to its 
+// coordinates on screen
 func (p *Pallete) TileNrToCoordsOnPallete(tileNr int) (float64, float64) {
 	tileX := float64(((tileNr % p.Cols) * TileWidth) + p.Rect.Min.X)
 	tileY := float64(((tileNr / p.Cols) * TileHeight) + p.Rect.Min.Y)
@@ -37,6 +41,8 @@ func (p *Pallete) TileNrToCoordsOnPallete(tileNr int) (float64, float64) {
 	return tileX, tileY
 }
 
+// translates mouse position to coords of cursor (cursor is square which highlights 
+// Tile on which mouse is pointing)
 func (p *Pallete) PosToCursorCoords(x int, y int) image.Rectangle {
 	tileX, tileY := p.PosToTileCoordsOnPallete(x, y)
 
@@ -57,6 +63,7 @@ func (p *Pallete) PosToSubImageOnPallete(x int, y int, t *Tileset) *ebiten.Image
 	return t.TileNrToSubImageOnTileset(TileNr)
 }
 
+// draws cursor on Pallete
 func (p *Pallete) DrawCursorOnPallete(screen *ebiten.Image, x int, y int) {
 	cursorRect := p.PosToCursorCoords(x, y)
 	drawer.EmptyRect(screen, cursorRect, color.White)

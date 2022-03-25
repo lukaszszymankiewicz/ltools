@@ -7,6 +7,7 @@ import (
 	"log"
 )
 
+// loads image from given path
 func loadImage(path string) *ebiten.Image {
 	var err error
 	img, _, err := ebitenutil.NewImageFromFile(path)

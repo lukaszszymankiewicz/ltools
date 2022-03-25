@@ -16,6 +16,7 @@ type Tileset struct {
 	tilesUsed int
 }
 
+// creates new Tileset struct
 func NewTileset(path string) Tileset {
 	var tileset Tileset
 
@@ -30,6 +31,7 @@ func NewTileset(path string) Tileset {
 	return tileset
 }
 
+// translates Tile index number (order in which Tile occurs on Pallete)
 func (t *Tileset) TileNrToSubImageOnTileset(tileNr int) *ebiten.Image {
 	RectX, RectY := tileNr%t.cols*TileWidth, tileNr/t.rows*TileHeight
 	tileRect := image.Rect(RectX, RectY, RectX+TileWidth, RectY+TileHeight)

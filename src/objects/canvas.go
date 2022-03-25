@@ -33,6 +33,7 @@ type Canvas struct {
 	scroller_y   Scroller
 }
 
+// creates new scroller struct
 func NewScroller(x1 int, y1 int, x2 int, y2 int, color color.Color, bgcolor color.Color) Scroller {
 	var scroller Scroller
 
@@ -44,6 +45,7 @@ func NewScroller(x1 int, y1 int, x2 int, y2 int, color color.Color, bgcolor colo
 	return scroller
 }
 
+// creates new arrow for scroll control
 func NewScrollArrow(x int, y int, path string) ScrollArrow {
 	var scrollArrow ScrollArrow
 
@@ -55,6 +57,7 @@ func NewScrollArrow(x int, y int, path string) ScrollArrow {
 	return scrollArrow
 }
 
+// clears whole Canvas from any Tile
 func (c *Canvas) ClearDrawingArea() {
 	for x := 0; x < c.canvasCols; x++ {
 		for y := 0; y < c.canvasRows; y++ {
@@ -63,6 +66,7 @@ func (c *Canvas) ClearDrawingArea() {
 	}
 }
 
+// cleares only visible part of Canvas from any Tile
 func (c *Canvas) ClearViewport() {
 	for x := c.viewport_x; x < c.viewportRows+c.viewport_x; x++ {
 		for y := c.viewport_y; y < c.viewportCols+c.viewport_y; y++ {
@@ -71,6 +75,7 @@ func (c *Canvas) ClearViewport() {
 	}
 }
 
+// draws ScrollArrow
 func (sa *ScrollArrow) DrawScrollArrow(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(sa.Rect.Min.X), float64(sa.Rect.Min.Y))
@@ -78,6 +83,9 @@ func (sa *ScrollArrow) DrawScrollArrow(screen *ebiten.Image) {
 	screen.DrawImage(sa.image, op)
 }
 
+// draws both Scrollers. Each scroller is consisted from background and main part
+// Main part indicates how much of canvas is visible and position of this visible
+// part. Like in normal scroller
 func (c *Canvas) DrawScrollers(screen *ebiten.Image) {
 	// background
 	drawer.FilledRect(screen, c.scroller_x.MaxRect, c.scroller_x.bgcolor)
@@ -88,6 +96,10 @@ func (c *Canvas) DrawScrollers(screen *ebiten.Image) {
 	drawer.FilledRect(screen, c.scroller_y.Rect, c.scroller_y.color)
 }
 
+// draws all Canvas parts:
+// - Canvas border 
+// - actual Canvas (or rather its part visible by viewport)
+// - x and y Scrollers
 func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
 	// drawing the border around Canvas
 	drawer.EmptyBorder(screen, c.Rect, color.White)
@@ -111,23 +123,30 @@ func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
 	c.DrawScrollers(screen)
 }
 
+// translates mouse position to Tile position where it will be drawn on Canvas (Canvas x and y)
 func (c *Canvas) PosToTileCoordsOnCanvas(x int, y int) (int, int) {
 	return int((x - c.Rect.Min.X) / TileWidth), int((y - c.Rect.Min.Y) / TileHeight)
 }
 
+// translates mouse position to Tile position where it will be drawn on Canvas (screen x and y)
 func (c *Canvas) PosToTileHoveredOnCanvas(x int, y int) (int, int) {
 	tileX, tileY := c.PosToTileCoordsOnCanvas(x, y)
 	return tileX*TileWidth + c.Rect.Min.X, tileY*TileHeight + c.Rect.Min.Y
 }
 
+// returns Tile from Canvas by given position (Canvas x and y). Returned number is an
+// index on stack.
 func (c *Canvas) GetTileOnCanvas(x int, y int) int {
 	return c.drawingArea[x*c.canvasRows+y]
 }
 
+// sets current Tile to draw (brush) on Canvas. Canvas x and y are used, and Tile is 
+// selected by its position on stack
 func (c *Canvas) SetTileOnCanvas(x int, y int, value int) {
 	c.drawingArea[(x+c.viewport_x)*c.canvasRows+(y+c.viewport_y)] = value
 }
 
+// returns X Scrollers main part position
 func (c *Canvas) getXScrollerRect() image.Rectangle {
 	var start float64
 	len := float64(c.scroller_x.MaxRect.Max.X - c.scroller_x.MaxRect.Min.X)
@@ -142,6 +161,7 @@ func (c *Canvas) getXScrollerRect() image.Rectangle {
 	return image.Rect(int(start), c.scroller_x.MaxRect.Min.Y, int(end), c.scroller_x.MaxRect.Max.Y)
 }
 
+// returns Y Scrollers main part position
 func (c *Canvas) getYScrollerRect() image.Rectangle {
 	var start float64
 	len := float64(c.scroller_y.MaxRect.Max.Y - c.scroller_y.MaxRect.Min.Y)
@@ -156,11 +176,13 @@ func (c *Canvas) getYScrollerRect() image.Rectangle {
 	return image.Rect(c.scroller_y.MaxRect.Min.X, int(start), c.scroller_y.MaxRect.Max.X, int(end))
 }
 
+// updates Scrollers position due to viewport position according to viewport position
 func (c *Canvas) UpdateScrollers() {
 	c.scroller_x.Rect = c.getXScrollerRect()
 	c.scroller_y.Rect = c.getYScrollerRect()
 }
 
+// moves viewport
 func (c *Canvas) MoveCanvas(x int, y int) {
 	new_x_value := c.viewport_x + x
 	new_y_value := c.viewport_y + y
@@ -171,6 +193,7 @@ func (c *Canvas) MoveCanvas(x int, y int) {
 	c.UpdateScrollers()
 }
 
+// creates new canvas struct
 func NewCanvas(
 	viewportRows int, viewportCols int,
 	canvasRows int, canvasCols int,

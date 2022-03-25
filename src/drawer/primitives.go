@@ -8,6 +8,7 @@ import (
 	_ "image/png"
 )
 
+// draws empty rect (only rect border)
 func EmptyRect(screen *ebiten.Image, rect image.Rectangle, color color.Color) {
 	ebitenutil.DrawLine(
 		screen,
@@ -43,6 +44,7 @@ func EmptyRect(screen *ebiten.Image, rect image.Rectangle, color color.Color) {
 	)
 }
 
+// draws empty rect (only rect border)
 func EmptyBorder(screen *ebiten.Image, rect image.Rectangle, color color.Color) {
 	leftUpX := float64(rect.Min.X)
 	leftUpY := float64(rect.Min.Y) - 1
@@ -59,6 +61,7 @@ func EmptyBorder(screen *ebiten.Image, rect image.Rectangle, color color.Color) 
 	ebitenutil.DrawLine(screen, leftDownX, leftDownY, rightDownX, rightDownY, color)
 }
 
+// draws rect filled with color
 func FilledRect(screen *ebiten.Image, rect image.Rectangle, color color.Color) {
 	ebitenutil.DrawRect(
 		screen,

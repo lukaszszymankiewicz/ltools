@@ -18,19 +18,22 @@ type Game struct {
 	ScrollArrowDown  lto.ScrollArrow
 }
 
+// everything that needs to be set before first game loop iteration
 func init() {
 	ebiten.SetFullscreen(true)
 }
 
-// main loop
+// game loop
 func (g *Game) Update() error {
 	return nil
 }
 
+// returning game internal resolution
 func (g *Game) Layout(outsideWidth, outsideHeight int) (ScreenWidth, ScreenHeight int) {
 	return 1388, 768
 }
 
+// game draw loop
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.drawPallete(screen)
 	g.DrawCanvas(screen, g.GetAllTiles())
@@ -43,6 +46,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.ScrollArrowDown.DrawScrollArrow(screen)
 }
 
+// creates new game instance
 func NewGame() *Game {
 	var g Game
 
@@ -71,7 +75,7 @@ func NewGame() *Game {
 	g.ScrollArrowUp = lto.NewScrollArrow(ArrowUpX, ArrowUpY, "assets/arrow_u.png")
 	g.ScrollArrowDown = lto.NewScrollArrow(ArrowDownX, ArrowDownY, "assets/arrow_d.png")
 
-	// post init
+	// post init (works only on initialised structs)
 	g.addTileFromPalleteToStack(0, 0)
 	g.SetCurrentTile(0)
 	g.Canvas.ClearDrawingArea()

@@ -6,10 +6,10 @@ import (
 	_ "image/png"
 )
 
+// checking for any mouse event
 func (g *Game) handleMouseEvents(screen *ebiten.Image) {
 	x, y := ebiten.CursorPosition()
 
-	// TODO: maybe switch/case here?
 	if coordsInRect(x, y, g.Canvas.Rect) {
 		g.drawHoveredTileOnCanvas(screen, x, y)
 
