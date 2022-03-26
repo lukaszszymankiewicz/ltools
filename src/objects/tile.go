@@ -28,7 +28,7 @@ func NewTile(image *ebiten.Image, rowOnPallete int, colOnPallete int) Tile {
 	return newTile
 }
 
-// gets current Tile from stack 
+// gets current Tile from stack
 func (ts *TileStack) GetCurrentTile() Tile {
 	return ts.stack[ts.CurrentTile]
 }
@@ -51,7 +51,7 @@ func (ts *TileStack) ClearTileStack(i int) {
 	}
 }
 
-// updates number of Tile is used. Tile is selected by index on stack 
+// updates number of Tile is used. Tile is selected by index on stack
 func (ts *TileStack) UpdateTileUsage(i int, value int) {
 	ts.stack[i].NumberUsed += value
 }
