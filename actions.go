@@ -6,7 +6,7 @@ import (
 	lto "ltools/src/objects"
 )
 
-// draws single tile on canvas (check if current place is occupied is 
+// draws single tile on canvas (check if current place is occupied is
 // firstly done)
 func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 	tileX, tileY := g.PosToTileCoordsOnCanvas(x, y)
@@ -18,8 +18,8 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 	if oldTile == -1 {
 		newTile.NumberUsed++
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
-	
-	// current place is occupied by other tile (other than current tile to draw)
+
+		// current place is occupied by other tile (other than current tile to draw)
 	} else if oldTile != g.TileStack.CurrentTile {
 		g.UpdateTileUsage(oldTile, -1)
 		g.ClearTileStack(oldTile)
@@ -33,6 +33,7 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 // on pallete
 func (g *Game) addTileFromPalleteToStack(x int, y int) {
 	tileX, tileY := g.PosToTileCoordsOnPallete(x, y)
+	tileY += g.Pallete.Viewport_y
 	newTile := lto.NewTile(g.PosToSubImageOnPallete(x, y, &g.Tileset), tileX, tileY)
 	g.AddTileToStack(newTile)
 }
@@ -41,12 +42,13 @@ func (g *Game) addTileFromPalleteToStack(x int, y int) {
 // check, whether clicked tile is already in the stack is done.
 func (g *Game) chooseTileFromPallete(x int, y int) {
 	tileX, tileY := g.PosToTileCoordsOnPallete(x, y)
+	tileY += g.Pallete.Viewport_y
 
 	// chosen tile is already on stack, shorcut to it can be used
 	if tileIndex := g.CheckTileInStack(tileX, tileY); tileIndex != -1 {
 		g.SetCurrentTile(tileIndex)
 	} else {
-	// chosen tile is not on stack, additional attention is needed
+		// chosen tile is not on stack, additional attention is needed
 		g.addTileFromPalleteToStack(x, y)
 	}
 }
@@ -62,18 +64,21 @@ func (g *Game) drawHoveredTileOnCanvas(screen *ebiten.Image, x int, y int) {
 
 // draws pallete object
 func (g *Game) drawPallete(screen *ebiten.Image) {
+	offset := g.Pallete.Viewport_y * PalleteColsN
+
 	for n := 0; n < g.Tileset.Num; n++ {
-		subImg := g.TileNrToSubImageOnTileset(n)
+		subImg := g.TileNrToSubImageOnTileset(n + offset)
 
 		op := &ebiten.DrawImageOptions{}
 		x, y := g.TileNrToCoordsOnPallete(n)
 		op.GeoM.Translate(x, y)
 		screen.DrawImage(subImg, op)
 
-		if n > g.Pallete.MaxTile-2 {
+		if n > g.Pallete.Rows*g.Pallete.Cols-2 {
 			break
 		}
 	}
+	g.DrawPalleteScroller(screen)
 }
 
 // draws current tile (brush type)

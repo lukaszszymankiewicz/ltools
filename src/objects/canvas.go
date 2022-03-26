@@ -97,7 +97,7 @@ func (c *Canvas) DrawScrollers(screen *ebiten.Image) {
 }
 
 // draws all Canvas parts:
-// - Canvas border 
+// - Canvas border
 // - actual Canvas (or rather its part visible by viewport)
 // - x and y Scrollers
 func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
@@ -140,7 +140,7 @@ func (c *Canvas) GetTileOnCanvas(x int, y int) int {
 	return c.drawingArea[x*c.canvasRows+y]
 }
 
-// sets current Tile to draw (brush) on Canvas. Canvas x and y are used, and Tile is 
+// sets current Tile to draw (brush) on Canvas. Canvas x and y are used, and Tile is
 // selected by its position on stack
 func (c *Canvas) SetTileOnCanvas(x int, y int, value int) {
 	c.drawingArea[(x+c.viewport_x)*c.canvasRows+(y+c.viewport_y)] = value

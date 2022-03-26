@@ -8,14 +8,17 @@ const (
 	TileWidth  = 32
 	TileHeight = 32
 	// pallete
-	PalleteX        = 20
-	PalleteY        = 20
-	PalleteColsN    = 6
-	PalleteRowsN    = 10
-	PalleteMaxTile  = 40
-	PalleteEndX     = PalleteX + (TileWidth * PalleteColsN)
-	PalleteEndY     = PalleteY + (TileHeight * PalleteRowsN)
-	PalleteTilesMax = PalleteColsN * PalleteRowsN
+	PalleteX          = 20
+	PalleteY          = 20
+	PalleteColsN      = 6
+	PalleteRowsN      = 10
+	PalleteMaxTile    = PalleteColsN * PalleteRowsN
+	PalleteEndX       = PalleteX + (TileWidth * PalleteColsN)
+	PalleteEndY       = PalleteY + (TileHeight * PalleteRowsN)
+	PalleteArrowUpX   = PalleteEndX
+	PalleteArrowUpY   = PalleteY
+	PalleteArrowDownX = PalleteEndX
+	PalleteArrowDownY = PalleteEndY
 	// current tile to draw
 	CurrentTileToDrawX = PalleteEndX / 2
 	CurrentTileToDrawY = PalleteEndY + TileHeight

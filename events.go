@@ -50,4 +50,17 @@ func (g *Game) handleMouseEvents(screen *ebiten.Image) {
 			g.MoveCanvas(0, 1)
 		}
 	}
+
+	if coordsInRect(x, y, g.PalleteScrollArrowUp.Rect) {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			g.MovePallete(0, -1)
+		}
+	}
+
+	if coordsInRect(x, y, g.PalleteScrollArrowDown.Rect) {
+		if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+			g.MovePallete(0, 1)
+		}
+	}
+
 }

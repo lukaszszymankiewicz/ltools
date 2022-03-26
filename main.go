@@ -12,10 +12,12 @@ type Game struct {
 	lto.Canvas
 	lto.Tileset
 	lto.TileStack
-	ScrollArrowRight lto.ScrollArrow
-	ScrollArrowLeft  lto.ScrollArrow
-	ScrollArrowUp    lto.ScrollArrow
-	ScrollArrowDown  lto.ScrollArrow
+	ScrollArrowRight       lto.ScrollArrow
+	ScrollArrowLeft        lto.ScrollArrow
+	ScrollArrowUp          lto.ScrollArrow
+	ScrollArrowDown        lto.ScrollArrow
+	PalleteScrollArrowUp   lto.ScrollArrow
+	PalleteScrollArrowDown lto.ScrollArrow
 }
 
 // everything that needs to be set before first game loop iteration
@@ -44,11 +46,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.ScrollArrowLeft.DrawScrollArrow(screen)
 	g.ScrollArrowUp.DrawScrollArrow(screen)
 	g.ScrollArrowDown.DrawScrollArrow(screen)
+	g.PalleteScrollArrowUp.DrawScrollArrow(screen)
+	g.PalleteScrollArrowDown.DrawScrollArrow(screen)
+
 }
 
 // creates new game instance
 func NewGame() *Game {
 	var g Game
+
+	g.Tileset = lto.NewTileset("assets/tileset_1.png")
 
 	g.Pallete = lto.NewPallete(
 		PalleteX,
@@ -57,7 +64,7 @@ func NewGame() *Game {
 		PalleteEndY,
 		PalleteRowsN,
 		PalleteColsN,
-		PalleteMaxTile,
+		g.Tileset.Num/PalleteColsN,
 	)
 
 	g.Canvas = lto.NewCanvas(
@@ -69,11 +76,12 @@ func NewGame() *Game {
 		Canvas_y,
 	)
 
-	g.Tileset = lto.NewTileset("assets/tileset_1.png")
 	g.ScrollArrowRight = lto.NewScrollArrow(ArrowRightX, ArrowRightY, "assets/arrow_r.png")
 	g.ScrollArrowLeft = lto.NewScrollArrow(ArrowLeftX, ArrowLeftY, "assets/arrow_l.png")
 	g.ScrollArrowUp = lto.NewScrollArrow(ArrowUpX, ArrowUpY, "assets/arrow_u.png")
 	g.ScrollArrowDown = lto.NewScrollArrow(ArrowDownX, ArrowDownY, "assets/arrow_d.png")
+	g.PalleteScrollArrowUp = lto.NewScrollArrow(PalleteArrowUpX, PalleteArrowUpY, "assets/arrow_u.png")
+	g.PalleteScrollArrowDown = lto.NewScrollArrow(PalleteArrowDownX, PalleteArrowDownY, "assets/arrow_d.png")
 
 	// post init (works only on initialised structs)
 	g.addTileFromPalleteToStack(0, 0)
