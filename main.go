@@ -18,6 +18,7 @@ type Game struct {
 	ScrollArrowDown        lto.ScrollArrow
 	PalleteScrollArrowUp   lto.ScrollArrow
 	PalleteScrollArrowDown lto.ScrollArrow
+    Recorder 
 }
 
 // everything that needs to be set before first game loop iteration

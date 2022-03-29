@@ -18,6 +18,7 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 	if oldTile == -1 {
 		newTile.NumberUsed++
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
+        g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, -1)
 
 		// current place is occupied by other tile (other than current tile to draw)
 	} else if oldTile != g.TileStack.CurrentTile {
@@ -26,6 +27,8 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 
 		newTile.NumberUsed++
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
+        g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, oldTile)
+
 	}
 }
 
