@@ -13,11 +13,13 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 
 	oldTile := g.GetTileOnCanvas(tileX, tileY)
 	newTile := g.GetCurrentTile()
+    g.StartRecording()
 
 	// current place is empty
 	if oldTile == -1 {
 		newTile.NumberUsed++
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
+        g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, -1)
 
 		// current place is occupied by other tile (other than current tile to draw)
 	} else if oldTile != g.TileStack.CurrentTile {
@@ -26,6 +28,7 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 
 		newTile.NumberUsed++
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
+        g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, oldTile)
 	}
 }
 
@@ -90,3 +93,16 @@ func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {
 	)
 	g.DrawCurrentTile(screen, op)
 }
+
+// undraws given record
+func (g *Game) UndrawOneRecord(record Record) {
+    // if record to undraw is empty there is nothing to undraw!
+	if len(record.x_coords) == 0 {
+        return
+    }
+
+    for i:=0; i<len(record.x_coords); i++ {
+        g.SetTileOnCanvas(record.x_coords[i], record.y_coords[i], record.old_tiles[i])
+    }
+}
+

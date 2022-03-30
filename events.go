@@ -62,5 +62,19 @@ func (g *Game) handleMouseEvents(screen *ebiten.Image) {
 			g.MovePallete(0, 1)
 		}
 	}
+    
+    // post click events
+    if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+        if g.IsRecording() {
+            g.SaveRecord()
+        }
+        g.StopRecording()
+    }
+}
 
+func (g *Game) handleKeyboardEvents() {
+    if inpututil.IsKeyJustPressed(ebiten.KeyZ) {
+        recordToUndone := g.UndoOneRecord()
+        g.UndrawOneRecord(recordToUndone)
+    }
 }

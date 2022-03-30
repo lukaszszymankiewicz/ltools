@@ -18,6 +18,7 @@ type Game struct {
 	ScrollArrowDown        lto.ScrollArrow
 	PalleteScrollArrowUp   lto.ScrollArrow
 	PalleteScrollArrowDown lto.ScrollArrow
+    Recorder 
 }
 
 // everything that needs to be set before first game loop iteration
@@ -40,6 +41,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.drawPallete(screen)
 	g.DrawCanvas(screen, g.GetAllTiles())
 	g.handleMouseEvents(screen)
+    g.handleKeyboardEvents()
 	g.drawCurrentTileToDraw(screen)
 	// arrows
 	g.ScrollArrowRight.DrawScrollArrow(screen)
