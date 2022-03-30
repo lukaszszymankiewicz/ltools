@@ -4,6 +4,11 @@ import (
     "fmt"
 )
 
+const (
+    RECORDING_IDLE = iota
+    RECORDING_DRAWING = iota
+)
+
 // Record struct holds one change on Canvas while drawing
 // Because one stroke can draw multiple tiles at ones, all 
 // changed tiles coords must be held both with old tiles which 
@@ -18,7 +23,7 @@ type Record struct {
 type Recorder struct {
     records []Record  // old records
     pointer int
-    length  int
+    state int
 }
 
 func NewRecord (x int, y int, new_tile int, old_tile int) Record {
@@ -32,31 +37,65 @@ func NewRecord (x int, y int, new_tile int, old_tile int) Record {
     return r
 }
 
-func (r *Record) Append (x int, y int, new_tile int, old_tile int) {
-    r.x_coords = append(r.x_coords, x)
-    r.y_coords = append(r.y_coords, y)
-    r.tiles = append(r.tiles, new_tile)
-    r.old_tiles = append(r.old_tiles, old_tile)
-}
-
 func (rc *Recorder) AddNew (x int, y int, new_tile int, old_tile int) {
     r := NewRecord(x, y, new_tile, old_tile)
     rc.records = append(rc.records, r)
-    rc.length++
-    rc.pointer = rc.length
+}
+
+
+func (rc *Recorder) StopRecording () {
+    rc.state = RECORDING_IDLE
+}
+
+func (rc *Recorder) StartRecording () {
+    rc.state = RECORDING_DRAWING
+}
+
+func (rc *Recorder) IsRecording () bool {
+    if rc.state == RECORDING_DRAWING {
+        return true
+    } else {
+        return false
+    }
 }
 
 func (rc *Recorder) AppendToCurrent (x int, y int, new_tile int, old_tile int) {
-    rc.records[rc.length].x_coords = append(rc.records[rc.length].x_coords, x)
-    rc.records[rc.length].y_coords = append(rc.records[rc.length].y_coords, y)
-    rc.records[rc.length].tiles = append(rc.records[rc.length].tiles, new_tile)
-    rc.records[rc.length].old_tiles = append(rc.records[rc.length].old_tiles, old_tile)
+    if len(rc.records) == rc.pointer {
+        rc.AddNew(x, y, new_tile, old_tile)
+    } else {
+        rc.records[rc.pointer].x_coords = append(rc.records[rc.pointer].x_coords, x)
+        rc.records[rc.pointer].y_coords = append(rc.records[rc.pointer].y_coords, y)
+        rc.records[rc.pointer].tiles = append(rc.records[rc.pointer].tiles, new_tile)
+        rc.records[rc.pointer].old_tiles = append(rc.records[rc.pointer].old_tiles, old_tile)
+    }
+}
+
+func (rc *Recorder) UndoOneRecord () Record {
+    if len(rc.records) == 0 {
+        return Record{}
+    }
+    record_to_undone := rc.records[len(rc.records)-1]
+    rc.records = rc.records[:len(rc.records)-1]
+    rc.pointer--
+    return record_to_undone
+}
+
+func (rc *Recorder) SaveRecord () {
+    rc.pointer++
 }
 
 func (rc *Recorder) Debug () {
-    for i:=0; i<rc.length; i++ {
+    fmt.Printf("\n\n")
+    fmt.Printf("pointer: %d\n", rc.pointer)
+    fmt.Printf("length: %d\n", len(rc.records))
+
+    for i:=0; i<len(rc.records); i++ {
         for j:=0; j<len(rc.records[i].x_coords); j++ {
-            fmt.Printf("record = %d -> %d %d, \n", i, rc.records[i].x_coords[j], rc.records[i].x_coords[j])
+            x := rc.records[i].x_coords[j]
+            y := rc.records[i].y_coords[j]
+            tile := rc.records[i].tiles[j]
+            old := rc.records[i].old_tiles[j]
+            fmt.Printf("record:%d, tile:%d -> coord: %d %d, tile (%d) replaced (%d) \n", i, j, x, y, tile, old)
         }
     }
 }

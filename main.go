@@ -41,6 +41,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.drawPallete(screen)
 	g.DrawCanvas(screen, g.GetAllTiles())
 	g.handleMouseEvents(screen)
+    g.handleKeyboardEvents()
 	g.drawCurrentTileToDraw(screen)
 	// arrows
 	g.ScrollArrowRight.DrawScrollArrow(screen)

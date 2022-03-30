@@ -13,6 +13,7 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 
 	oldTile := g.GetTileOnCanvas(tileX, tileY)
 	newTile := g.GetCurrentTile()
+    g.StartRecording()
 
 	// current place is empty
 	if oldTile == -1 {
@@ -28,8 +29,9 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 		newTile.NumberUsed++
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
         g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, oldTile)
-
 	}
+    g.Recorder.Debug()
+
 }
 
 // ads new tile to tile stack, allowing for easy acces to it, after clicking on it
@@ -93,3 +95,14 @@ func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {
 	)
 	g.DrawCurrentTile(screen, op)
 }
+
+func (g *Game) UndrawOneRecord(record Record) {
+    if len(record.x_coords) == 0 {
+        return
+    }
+
+    for i:=0; i<len(record.x_coords); i++ {
+        g.SetTileOnCanvas(record.x_coords[i], record.y_coords[i], record.old_tiles[i])
+    }
+}
+
