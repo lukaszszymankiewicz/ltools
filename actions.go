@@ -30,8 +30,6 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
         g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, oldTile)
 	}
-    g.Recorder.Debug()
-
 }
 
 // ads new tile to tile stack, allowing for easy acces to it, after clicking on it
@@ -96,8 +94,10 @@ func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {
 	g.DrawCurrentTile(screen, op)
 }
 
+// undraws given record
 func (g *Game) UndrawOneRecord(record Record) {
-    if len(record.x_coords) == 0 {
+    // if record to undraw is empty there is nothing to undraw!
+	if len(record.x_coords) == 0 {
         return
     }
 
