@@ -28,6 +28,6 @@ and create such a program that will allow anybody to make their own creations fo
 
 All tools will work in the browser and will allow to test it out there as well.
 
-Because only editor I know is RPG Maker 2000, Ltools will probalby be a huge ripoff of it.
+Because one and only editor I really know is RPG Maker 2000, Ltools will propably be a huge ripoff of it.
 
 ----
