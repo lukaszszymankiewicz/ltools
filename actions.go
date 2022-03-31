@@ -8,8 +8,8 @@ import (
 
 // draws single tile on canvas (check if current place is occupied is
 // firstly done)
-func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
-	tileX, tileY := g.PosToTileCoordsOnCanvas(x, y)
+func (g *Game) drawTileOnCanvas(screen *ebiten.Image) {
+	tileX, tileY := g.PosToTileCoordsOnCanvas(g.mouse_x, g.mouse_y)
 
 	oldTile := g.GetTileOnCanvas(tileX, tileY)
 	newTile := g.GetCurrentTile()
@@ -34,17 +34,17 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 
 // ads new tile to tile stack, allowing for easy acces to it, after clicking on it
 // on pallete
-func (g *Game) addTileFromPalleteToStack(x int, y int) {
-	tileX, tileY := g.PosToTileCoordsOnPallete(x, y)
+func (g *Game) addTileFromPalleteToStack() {
+	tileX, tileY := g.PosToTileCoordsOnPallete(g.mouse_x, g.mouse_y)
 	tileY += g.Pallete.Viewport_y
-	newTile := lto.NewTile(g.PosToSubImageOnPallete(x, y, &g.Tileset), tileX, tileY)
+	newTile := lto.NewTile(g.PosToSubImageOnPallete(g.mouse_x, g.mouse_y, &g.Tileset), tileX, tileY)
 	g.AddTileToStack(newTile)
 }
 
 // everything that needs to be happen after clicking on tile on pallete
 // check, whether clicked tile is already in the stack is done.
-func (g *Game) chooseTileFromPallete(x int, y int) {
-	tileX, tileY := g.PosToTileCoordsOnPallete(x, y)
+func (g *Game) chooseTileFromPallete() {
+	tileX, tileY := g.PosToTileCoordsOnPallete(g.mouse_x, g.mouse_y)
 	tileY += g.Pallete.Viewport_y
 
 	// chosen tile is already on stack, shorcut to it can be used
@@ -52,14 +52,14 @@ func (g *Game) chooseTileFromPallete(x int, y int) {
 		g.SetCurrentTile(tileIndex)
 	} else {
 		// chosen tile is not on stack, additional attention is needed
-		g.addTileFromPalleteToStack(x, y)
+		g.addTileFromPalleteToStack(g.mouse_x, g.mouse_y)
 	}
 }
 
 // draws current tile to draw while mouse is whether canvas rect.
 // tile is showing precise place where it will be placed
-func (g *Game) drawHoveredTileOnCanvas(screen *ebiten.Image, x int, y int) {
-	TileX, TileY := g.PosToTileHoveredOnCanvas(x, y)
+func (g *Game) drawHoveredTileOnCanvas(screen *ebiten.Image) {
+	TileX, TileY := g.PosToTileHoveredOnCanvas(g.mouse_x, g.mouse_y)
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(TileX), float64(TileY))
 	g.DrawCurrentTile(screen, op)

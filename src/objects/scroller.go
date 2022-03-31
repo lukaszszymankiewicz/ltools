@@ -63,66 +63,16 @@ func (sa *ScrollArrow) DrawScrollArrow(screen *ebiten.Image) {
 }
 
 func (s *scroller) DrawScroller(screen *ebiten.Image) {
-    // arrows 
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(s.arrowLow.Image.Rect.Min.X), float64(s.arrowLow.Image.Rect.Min.Y))
-	screen.DrawImage(s.arrowLow.Image, op)
+    // arrows
+	s.arrowLow.DrawScrollArrow(screen)
+	s.arrowhHigh.DrawScrollArrow(screen)
 
 	// background
-	drawer.FilledRect(screen, c.scroller_x.MaxRect, c.scroller_x.bgcolor)
-	drawer.FilledRect(screen, c.scroller_y.MaxRect, c.scroller_y.bgcolor)
+	drawer.FilledRect(screen, s.MaxRect, s.bgcolor)
 
 	// actual scroller
-	drawer.FilledRect(screen, c.scroller_x.Rect, c.scroller_x.color)
 	drawer.FilledRect(screen, c.scroller_y.Rect, c.scroller_y.color)
 }
 
-// draws both Scrollers. Each scroller is consisted from background and main part
-// Main part indicates how much of canvas is visible and position of this visible
-// part. Like in normal scroller
-func (c *Canvas) DrawScrollers(screen *ebiten.Image) {
-	// background
-	drawer.FilledRect(screen, c.scroller_x.MaxRect, c.scroller_x.bgcolor)
-	drawer.FilledRect(screen, c.scroller_y.MaxRect, c.scroller_y.bgcolor)
 
-	// actual scroller
-	drawer.FilledRect(screen, c.scroller_x.Rect, c.scroller_x.color)
-	drawer.FilledRect(screen, c.scroller_y.Rect, c.scroller_y.color)
-}
-
-// returns X Scrollers main part position
-func (c *Canvas) getXScrollerRect() image.Rectangle {
-	var start float64
-	len := float64(c.scroller_x.MaxRect.Max.X - c.scroller_x.MaxRect.Min.X)
-
-	if c.viewport_x == 0 {
-		start = float64(c.scroller_x.MaxRect.Min.X)
-	} else {
-		start = float64(c.scroller_x.MaxRect.Min.X) + (float64(c.viewport_x)/float64(c.canvasCols))*len
-	}
-	end := float64(c.scroller_x.MaxRect.Min.X) + ((float64(c.viewport_x)+float64(c.viewportCols))/float64(c.canvasCols))*len
-
-	return image.Rect(int(start), c.scroller_x.MaxRect.Min.Y, int(end), c.scroller_x.MaxRect.Max.Y)
-}
-
-// returns Y Scrollers main part position
-func (c *Canvas) getYScrollerRect() image.Rectangle {
-	var start float64
-	len := float64(c.scroller_y.MaxRect.Max.Y - c.scroller_y.MaxRect.Min.Y)
-
-	if c.viewport_y == 0 {
-		start = float64(c.scroller_y.MaxRect.Min.Y)
-	} else {
-		start = float64(c.scroller_y.MaxRect.Min.Y) + (float64(c.viewport_y)/float64(c.canvasRows))*len
-	}
-	end := float64(c.scroller_y.MaxRect.Min.Y) + ((float64(c.viewport_y)+float64(c.viewportRows))/float64(c.canvasRows))*len
-
-	return image.Rect(c.scroller_y.MaxRect.Min.X, int(start), c.scroller_y.MaxRect.Max.X, int(end))
-}
-
-// updates Scrollers position due to viewport position according to viewport position
-func (c *Canvas) UpdateScrollers() {
-	c.scroller_x.Rect = c.getXScrollerRect()
-	c.scroller_y.Rect = c.getYScrollerRect()
-}
 

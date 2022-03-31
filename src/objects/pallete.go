@@ -13,50 +13,29 @@ type Pallete struct {
 	Cols       int
 	Rows       int
 	MaxRows    int
-	scroller   Scroller
 	Viewport_y int
-}
-
-// creates new Pallete struct
-func NewPallete(x1 int, y1 int, x2 int, y2 int, rows int, cols int, maxrows int) Pallete {
-	var pallete Pallete
-
-	pallete.Rect = image.Rect(x1, y1, x2, y2)
-	pallete.Cols = cols
-	pallete.Rows = rows
-	pallete.MaxRows = maxrows
-
-	pallete.scroller = NewScroller(
-		x2,
-		y1+32,
-		x2+32,
-		y2,
-		color.RGBA{96, 96, 96, 255},
-		color.RGBA{192, 192, 192, 255},
-	)
-
-	pallete.updateScrollers()
-
-	return pallete
+	scroller_y   Scroller
+	clickableAreas map[image.Rectangle]func()
+	hoverableAreas map[image.Rectangle]func()
 }
 
 // returns Y Scrollers main part position
 func (p *Pallete) getScrollerRect() image.Rectangle {
 	var start float64
-	len := float64(p.scroller.MaxRect.Max.Y - p.scroller.MaxRect.Min.Y)
+	len := float64(p.y_scroller.MaxRect.Max.Y - p.y_scroller.MaxRect.Min.Y)
 
 	if p.Viewport_y == 0 {
-		start = float64(p.scroller.MaxRect.Min.Y)
+		start = float64(p.y_scroller.MaxRect.Min.Y)
 	} else {
-		start = float64(p.scroller.MaxRect.Min.Y) + (float64(p.Viewport_y)/float64(p.MaxRows))*len
+		start = float64(p.y_scroller.MaxRect.Min.Y) + (float64(p.Viewport_y)/float64(p.MaxRows))*len
 	}
-	end := float64(p.scroller.MaxRect.Min.Y) + ((float64(p.Viewport_y)+float64(p.Rows))/float64(p.MaxRows))*len
+	end := float64(p.y_scroller.MaxRect.Min.Y) + ((float64(p.Viewport_y)+float64(p.Rows))/float64(p.MaxRows))*len
 
-	return image.Rect(p.scroller.MaxRect.Min.X, int(start), p.scroller.MaxRect.Max.X, int(end))
+	return image.Rect(p.y_scroller.MaxRect.Min.X, int(start), p.y_scroller.MaxRect.Max.X, int(end))
 }
 
 func (p *Pallete) updateScrollers() {
-	p.scroller.Rect = p.getScrollerRect()
+	p.y_scroller.Rect = p.getScrollerRect()
 }
 
 // translates mouse position to Tile coordinates, while mouse is pointing on Pallete
@@ -101,15 +80,49 @@ func (p *Pallete) DrawCursorOnPallete(screen *ebiten.Image, x int, y int) {
 	drawer.EmptyRect(screen, cursorRect, color.White)
 }
 
-func (p *Pallete) DrawPalleteScroller(screen *ebiten.Image) {
-	drawer.FilledRect(screen, p.scroller.MaxRect, p.scroller.bgcolor)
-	drawer.FilledRect(screen, p.scroller.Rect, p.scroller.color)
-}
-
 func (p *Pallete) MovePallete(x int, y int) {
 	new_value := p.Viewport_y + y
 
+	// TODO: whats that 10?
 	p.Viewport_y = MinVal(MaxVal(0, new_value), (p.MaxRows - 10))
 
 	p.updateScrollers()
+}
+
+// creates new Pallete struct
+func NewPallete(
+	x_pos int, y_pos int, 
+	viewportRows int, viewportCols int, 
+	maxrows int
+) Pallete {
+	var p Pallete
+
+	p.Cols = viewportCols
+	p.Rows = viewportRows
+	p.MaxRows = maxrows
+
+	p.Rect = image.Rect(
+		x, 
+		y, 
+		x_pos+TileWidth*viewportCols,
+		y_pos+TileHeight*viewportRows,
+	)
+
+	p.y_scroller = NewScroller(
+		x_pos+TileWidth*viewportCols+2,
+		y_pos,
+		TileWidth*viewportCols,
+		TileHeight*viewportRows,
+		scrollerColor,
+		scrollerBGColor
+	)
+	p.clickableAreas = make(map[image.Rectangle]func())
+	p.hoverableAreas = make(map[image.Rectangle]func())
+
+	p.clickableAreas[p.scroller_y.arrowLow.Image.Rect] = c.MovePallete(0, 1)
+	p.clickableAreas[p.scroller_y.arrowHigh.Image.Rect] = c.MovePallete(0, -1)
+
+	p.updateScrollers()
+
+	return p
 }

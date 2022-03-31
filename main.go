@@ -12,13 +12,9 @@ type Game struct {
 	lto.Canvas
 	lto.Tileset
 	lto.TileStack
-	ScrollArrowRight       lto.ScrollArrow
-	ScrollArrowLeft        lto.ScrollArrow
-	ScrollArrowUp          lto.ScrollArrow
-	ScrollArrowDown        lto.ScrollArrow
-	PalleteScrollArrowUp   lto.ScrollArrow
-	PalleteScrollArrowDown lto.ScrollArrow
-    Recorder 
+    Recorder
+	mouse_x int
+	mouse_y int
 }
 
 // everything that needs to be set before first game loop iteration
@@ -38,19 +34,12 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (ScreenWidth, ScreenHeigh
 
 // game draw loop
 func (g *Game) Draw(screen *ebiten.Image) {
+	g.mouse_x, g.mouse_y := ebiten.CursorPosition()
 	g.drawPallete(screen)
 	g.DrawCanvas(screen, g.GetAllTiles())
 	g.handleMouseEvents(screen)
     g.handleKeyboardEvents()
 	g.drawCurrentTileToDraw(screen)
-	// arrows
-	g.ScrollArrowRight.DrawScrollArrow(screen)
-	g.ScrollArrowLeft.DrawScrollArrow(screen)
-	g.ScrollArrowUp.DrawScrollArrow(screen)
-	g.ScrollArrowDown.DrawScrollArrow(screen)
-	g.PalleteScrollArrowUp.DrawScrollArrow(screen)
-	g.PalleteScrollArrowDown.DrawScrollArrow(screen)
-
 }
 
 // creates new game instance
@@ -62,8 +51,6 @@ func NewGame() *Game {
 	g.Pallete = lto.NewPallete(
 		PalleteX,
 		PalleteY,
-		PalleteEndX,
-		PalleteEndY,
 		PalleteRowsN,
 		PalleteColsN,
 		g.Tileset.Num/PalleteColsN,
@@ -78,17 +65,19 @@ func NewGame() *Game {
 		Canvas_y,
 	)
 
-	g.ScrollArrowRight = lto.NewScrollArrow(ArrowRightX, ArrowRightY, "assets/arrow_r.png")
-	g.ScrollArrowLeft = lto.NewScrollArrow(ArrowLeftX, ArrowLeftY, "assets/arrow_l.png")
-	g.ScrollArrowUp = lto.NewScrollArrow(ArrowUpX, ArrowUpY, "assets/arrow_u.png")
-	g.ScrollArrowDown = lto.NewScrollArrow(ArrowDownX, ArrowDownY, "assets/arrow_d.png")
-	g.PalleteScrollArrowUp = lto.NewScrollArrow(PalleteArrowUpX, PalleteArrowUpY, "assets/arrow_u.png")
-	g.PalleteScrollArrowDown = lto.NewScrollArrow(PalleteArrowDownX, PalleteArrowDownY, "assets/arrow_d.png")
-
 	// post init (works only on initialised structs)
 	g.addTileFromPalleteToStack(0, 0)
 	g.SetCurrentTile(0)
-	g.Canvas.ClearDrawingArea()
+
+	// binding the functions
+	c.clickableAreas[c.Rect] = g.drawTileOnCanvas(screen)
+	p.clickableAreas[p.Rect] = g.chooseTileFromPallete()
+
+	c.clickableAreas[c.Rect] = g.drawTileOnCanvas(screen)
+	p.clickableAreas[p.Rect] = g.chooseTileFromPallete()
+
+	c.hoverableAreas[c.Rect] = g.drawHoveredTileOnCanvas(screen)
+	p.hoverableAreas[p.Rect] = g.DrawCursorOnPallete(screen)
 
 	return &g
 }
