@@ -4,7 +4,5 @@ import (
 	"image/color"
 )
 
-const (
-	scrollerBGColor = color.RGBA{96, 96, 96, 255}
-	scrollerColor = color.RGBA{96, 96, 96, 255}
-)
+var scrollerBGColor color.RGBA = color.RGBA{96, 96, 96, 255}
+var scrollerColor color.RGBA = color.RGBA{128, 128, 128, 128}
