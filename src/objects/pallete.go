@@ -22,20 +22,20 @@ type Pallete struct {
 // returns Y Scrollers main part position
 func (p *Pallete) getScrollerRect() image.Rectangle {
 	var start float64
-	len := float64(p.y_scroller.MaxRect.Max.Y - p.y_scroller.MaxRect.Min.Y)
+	len := float64(p.scroller_y.MaxRect.Max.Y - p.scroller_y.MaxRect.Min.Y)
 
 	if p.Viewport_y == 0 {
-		start = float64(p.y_scroller.MaxRect.Min.Y)
+		start = float64(p.scroller_y.MaxRect.Min.Y)
 	} else {
-		start = float64(p.y_scroller.MaxRect.Min.Y) + (float64(p.Viewport_y)/float64(p.MaxRows))*len
+		start = float64(p.scroller_y.MaxRect.Min.Y) + (float64(p.Viewport_y)/float64(p.MaxRows))*len
 	}
-	end := float64(p.y_scroller.MaxRect.Min.Y) + ((float64(p.Viewport_y)+float64(p.Rows))/float64(p.MaxRows))*len
+	end := float64(p.scroller_y.MaxRect.Min.Y) + ((float64(p.Viewport_y)+float64(p.Rows))/float64(p.MaxRows))*len
 
-	return image.Rect(p.y_scroller.MaxRect.Min.X, int(start), p.y_scroller.MaxRect.Max.X, int(end))
+	return image.Rect(p.scroller_y.MaxRect.Min.X, int(start), p.scroller_y.MaxRect.Max.X, int(end))
 }
 
 func (p *Pallete) updateScrollers() {
-	p.y_scroller.Rect = p.getScrollerRect()
+	p.scroller_y.Rect = p.getScrollerRect()
 }
 
 // translates mouse position to Tile coordinates, while mouse is pointing on Pallete
@@ -80,6 +80,14 @@ func (p *Pallete) DrawCursorOnPallete(screen *ebiten.Image, x int, y int) {
 	drawer.EmptyRect(screen, cursorRect, color.White)
 }
 
+func (p *Pallete) MovePalleteUp() {
+    p.MovePallete(0, 1)
+}
+
+func (p *Pallete) MovePalleteDown() {
+    p.MovePallete(0, -1)
+}
+
 func (p *Pallete) MovePallete(x int, y int) {
 	new_value := p.Viewport_y + y
 
@@ -93,7 +101,7 @@ func (p *Pallete) MovePallete(x int, y int) {
 func NewPallete(
 	x_pos int, y_pos int, 
 	viewportRows int, viewportCols int, 
-	maxrows int
+	maxrows int,
 ) Pallete {
 	var p Pallete
 
@@ -102,25 +110,25 @@ func NewPallete(
 	p.MaxRows = maxrows
 
 	p.Rect = image.Rect(
-		x, 
-		y, 
+		x_pos, 
+		y_pos, 
 		x_pos+TileWidth*viewportCols,
 		y_pos+TileHeight*viewportRows,
 	)
 
-	p.y_scroller = NewScroller(
+	p.scroller_y = NewScroller(
 		x_pos+TileWidth*viewportCols+2,
 		y_pos,
 		TileWidth*viewportCols,
 		TileHeight*viewportRows,
 		scrollerColor,
-		scrollerBGColor
+		scrollerBGColor,
 	)
 	p.clickableAreas = make(map[image.Rectangle]func())
 	p.hoverableAreas = make(map[image.Rectangle]func())
 
-	p.clickableAreas[p.scroller_y.arrowLow.Image.Rect] = c.MovePallete(0, 1)
-	p.clickableAreas[p.scroller_y.arrowHigh.Image.Rect] = c.MovePallete(0, -1)
+	p.clickableAreas[p.scroller_y.arrowLow.rect] = p.MovePalleteUp
+	p.clickableAreas[p.scroller_y.arrowHigh.rect] = p.MovePalleteDown
 
 	p.updateScrollers()
 

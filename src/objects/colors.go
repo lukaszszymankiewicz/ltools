@@ -1,7 +1,6 @@
 package objects
 
 import (
-	"image"
 	"image/color"
 )
 

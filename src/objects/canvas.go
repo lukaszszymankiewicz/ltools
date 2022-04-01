@@ -65,7 +65,8 @@ func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
 	}
 
 	// drawing the scrollers
-	c.DrawScrollers(screen)
+    c.scroller_x.DrawScroller(screen)
+    c.scroller_y.DrawScroller(screen)
 }
 
 // translates mouse position to Tile position where it will be drawn on Canvas (Canvas x and y)
@@ -91,6 +92,26 @@ func (c *Canvas) SetTileOnCanvas(x int, y int, value int) {
 	c.drawingArea[(x+c.viewport_x)*c.canvasRows+(y+c.viewport_y)] = value
 }
 
+// moves viewport left
+func (c *Canvas) MoveCanvasLeft() {
+    c.MoveCanvas(-1, 0)
+}
+
+// moves viewport right
+func (c *Canvas) MoveCanvasRight() {
+    c.MoveCanvas(1, 0)
+}
+
+// moves viewport up
+func (c *Canvas) MoveCanvasUp() {
+    c.MoveCanvas(0, -1)
+}
+
+// moves viewport down
+func (c *Canvas) MoveCanvasDown() {
+    c.MoveCanvas(0, 1)
+}
+
 // moves viewport
 func (c *Canvas) MoveCanvas(x int, y int) {
 	new_x_value := c.viewport_x + x
@@ -101,6 +122,7 @@ func (c *Canvas) MoveCanvas(x int, y int) {
 
 	c.UpdateScrollers()
 }
+
 // returns X Scrollers main part position
 func (c *Canvas) getXScrollerRect() image.Rectangle {
 	var start float64
@@ -165,7 +187,7 @@ func NewCanvas(
 		TileWidth*viewportCols,
 		TileHeight*viewportRows,
 		scrollerColor,
-		scrollerBGColor
+		scrollerBGColor,
 	)
 
 	c.scroller_y = NewScroller(
@@ -174,17 +196,17 @@ func NewCanvas(
 		TileWidth*viewportCols,
 		TileHeight*viewportRows,
 		scrollerColor,
-		scrollerBGColor
+		scrollerBGColor,
 	)
 
 	c.clickableAreas = make(map[image.Rectangle]func())
 	c.hoverableAreas = make(map[image.Rectangle]func())
 
-	c.clickableAreas[c.scroller_x.arrowLow.Image.Rect] = c.MoveCanvas(-1, 0)
-	c.clickableAreas[c.scroller_x.arrowHigh.Image.Rect] = c.MoveCanvas(1, 0)
+	c.clickableAreas[c.scroller_x.arrowLow.rect] = c.MoveCanvasLeft
+	c.clickableAreas[c.scroller_x.arrowHigh.rect] = c.MoveCanvasRight
 
-	c.clickableAreas[c.scroller_y.arrowLow.Image.Rect] = c.MoveCanvas(0, 1)
-	c.clickableAreas[c.scroller_y.arrowHigh.Image.Rect] = c.MoveCanvas(0, -1)
+	c.clickableAreas[c.scroller_y.arrowLow.rect] = c.MoveCanvasUp
+	c.clickableAreas[c.scroller_y.arrowHigh.rect] = c.MoveCanvasDown
 
     c.UpdateScrollers()
 	c.ClearDrawingArea()
