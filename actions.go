@@ -8,18 +8,18 @@ import (
 
 // draws single tile on canvas (check if current place is occupied is
 // firstly done)
-func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
-	tileX, tileY := g.PosToTileCoordsOnCanvas(x, y)
+func (g *Game) drawTileOnCanvas(screen *ebiten.Image) {
+	tileX, tileY := g.PosToTileCoordsOnCanvas(g.mouse_x, g.mouse_y)
 
 	oldTile := g.GetTileOnCanvas(tileX, tileY)
 	newTile := g.GetCurrentTile()
-    g.StartRecording()
+	g.StartRecording()
 
 	// current place is empty
 	if oldTile == -1 {
 		newTile.NumberUsed++
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
-        g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, -1)
+		g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, -1)
 
 		// current place is occupied by other tile (other than current tile to draw)
 	} else if oldTile != g.TileStack.CurrentTile {
@@ -28,23 +28,23 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image, x int, y int) {
 
 		newTile.NumberUsed++
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
-        g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, oldTile)
+		g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, oldTile)
 	}
 }
 
 // ads new tile to tile stack, allowing for easy acces to it, after clicking on it
 // on pallete
-func (g *Game) addTileFromPalleteToStack(x int, y int) {
-	tileX, tileY := g.PosToTileCoordsOnPallete(x, y)
+func (g *Game) addTileFromPalleteToStack() {
+	tileX, tileY := g.PosToTileCoordsOnPallete(g.mouse_x, g.mouse_y)
 	tileY += g.Pallete.Viewport_y
-	newTile := lto.NewTile(g.PosToSubImageOnPallete(x, y, &g.Tileset), tileX, tileY)
+	newTile := lto.NewTile(g.PosToSubImageOnPallete(g.mouse_x, g.mouse_y, &g.Tileset), tileX, tileY)
 	g.AddTileToStack(newTile)
 }
 
 // everything that needs to be happen after clicking on tile on pallete
 // check, whether clicked tile is already in the stack is done.
-func (g *Game) chooseTileFromPallete(x int, y int) {
-	tileX, tileY := g.PosToTileCoordsOnPallete(x, y)
+func (g *Game) chooseTileFromPallete(screen *ebiten.Image) {
+	tileX, tileY := g.PosToTileCoordsOnPallete(g.mouse_x, g.mouse_y)
 	tileY += g.Pallete.Viewport_y
 
 	// chosen tile is already on stack, shorcut to it can be used
@@ -52,14 +52,14 @@ func (g *Game) chooseTileFromPallete(x int, y int) {
 		g.SetCurrentTile(tileIndex)
 	} else {
 		// chosen tile is not on stack, additional attention is needed
-		g.addTileFromPalleteToStack(x, y)
+		g.addTileFromPalleteToStack()
 	}
 }
 
 // draws current tile to draw while mouse is whether canvas rect.
 // tile is showing precise place where it will be placed
-func (g *Game) drawHoveredTileOnCanvas(screen *ebiten.Image, x int, y int) {
-	TileX, TileY := g.PosToTileHoveredOnCanvas(x, y)
+func (g *Game) drawHoveredTileOnCanvas(screen *ebiten.Image) {
+	TileX, TileY := g.PosToTileHoveredOnCanvas(g.mouse_x, g.mouse_y)
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(TileX), float64(TileY))
 	g.DrawCurrentTile(screen, op)
@@ -81,7 +81,7 @@ func (g *Game) drawPallete(screen *ebiten.Image) {
 			break
 		}
 	}
-	g.DrawPalleteScroller(screen)
+	g.Pallete.Scroller_y.Draw(screen)
 }
 
 // draws current tile (brush type)
@@ -96,13 +96,18 @@ func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {
 
 // undraws given record
 func (g *Game) UndrawOneRecord(record Record) {
-    // if record to undraw is empty there is nothing to undraw!
+	// if record to undraw is empty there is nothing to undraw!
 	if len(record.x_coords) == 0 {
-        return
-    }
+		return
+	}
 
-    for i:=0; i<len(record.x_coords); i++ {
-        g.SetTileOnCanvas(record.x_coords[i], record.y_coords[i], record.old_tiles[i])
-    }
+	for i := 0; i < len(record.x_coords); i++ {
+		g.SetTileOnCanvas(record.x_coords[i], record.y_coords[i], record.old_tiles[i])
+	}
 }
 
+// draw cursor on Pallete
+func (g *Game) drawCursorOnPallete(screen *ebiten.Image) {
+	x, y := g.Pallete.PosToCursorCoords(g.mouse_x, g.mouse_y)
+	g.Cursor.DrawCursor(screen, x, y)
+}
