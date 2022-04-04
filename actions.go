@@ -13,13 +13,13 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image) {
 
 	oldTile := g.GetTileOnCanvas(tileX, tileY)
 	newTile := g.GetCurrentTile()
-    g.StartRecording()
+	g.StartRecording()
 
 	// current place is empty
 	if oldTile == -1 {
 		newTile.NumberUsed++
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
-        g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, -1)
+		g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, -1)
 
 		// current place is occupied by other tile (other than current tile to draw)
 	} else if oldTile != g.TileStack.CurrentTile {
@@ -28,7 +28,7 @@ func (g *Game) drawTileOnCanvas(screen *ebiten.Image) {
 
 		newTile.NumberUsed++
 		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
-        g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, oldTile)
+		g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, oldTile)
 	}
 }
 
@@ -43,7 +43,7 @@ func (g *Game) addTileFromPalleteToStack() {
 
 // everything that needs to be happen after clicking on tile on pallete
 // check, whether clicked tile is already in the stack is done.
-func (g *Game) chooseTileFromPallete() {
+func (g *Game) chooseTileFromPallete(screen *ebiten.Image) {
 	tileX, tileY := g.PosToTileCoordsOnPallete(g.mouse_x, g.mouse_y)
 	tileY += g.Pallete.Viewport_y
 
@@ -52,7 +52,7 @@ func (g *Game) chooseTileFromPallete() {
 		g.SetCurrentTile(tileIndex)
 	} else {
 		// chosen tile is not on stack, additional attention is needed
-		g.addTileFromPalleteToStack(g.mouse_x, g.mouse_y)
+		g.addTileFromPalleteToStack()
 	}
 }
 
@@ -81,7 +81,7 @@ func (g *Game) drawPallete(screen *ebiten.Image) {
 			break
 		}
 	}
-	g.DrawPalleteScroller(screen)
+	g.Pallete.Scroller_y.Draw(screen)
 }
 
 // draws current tile (brush type)
@@ -96,13 +96,18 @@ func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {
 
 // undraws given record
 func (g *Game) UndrawOneRecord(record Record) {
-    // if record to undraw is empty there is nothing to undraw!
+	// if record to undraw is empty there is nothing to undraw!
 	if len(record.x_coords) == 0 {
-        return
-    }
+		return
+	}
 
-    for i:=0; i<len(record.x_coords); i++ {
-        g.SetTileOnCanvas(record.x_coords[i], record.y_coords[i], record.old_tiles[i])
-    }
+	for i := 0; i < len(record.x_coords); i++ {
+		g.SetTileOnCanvas(record.x_coords[i], record.y_coords[i], record.old_tiles[i])
+	}
 }
 
+// draw cursor on Pallete
+func (g *Game) drawCursorOnPallete(screen *ebiten.Image) {
+	x, y := g.Pallete.PosToCursorCoords(g.mouse_x, g.mouse_y)
+	g.Cursor.DrawCursor(screen, x, y)
+}

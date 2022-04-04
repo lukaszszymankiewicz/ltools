@@ -6,45 +6,47 @@ import (
 	_ "image/png"
 )
 
-// checking for any mouse event
+// handles all mouse events
 func (g *Game) handleMouseEvents(screen *ebiten.Image) {
 
-	for rect, f := range g.Pallete.hoverableAreas {
+	// mouse cursor hovering event
+	for rect, f := range g.HoverableAreas {
 		if coordsInRect(g.mouse_x, g.mouse_y, rect) {
-			f()
-		}
-	}
-	for rect, f := range g.Canvas.hoverableAreas {
-		if coordsInRect(g.mouse_x, g.mouse_y, rect) {
-			f()
+			f(screen)
 		}
 	}
 
+	// mouse button single click button events
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+		for rect, f := range g.SingleClickableAreas {
+			if coordsInRect(g.mouse_x, g.mouse_y, rect) {
+				f(screen)
+			}
+		}
+	}
+
+	// mouse button still click button events
 	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		for rect, f := range g.Pallete.ClickableAreas {
+		for rect, f := range g.ClickableAreas {
 			if coordsInRect(g.mouse_x, g.mouse_y, rect) {
-				f()
-			}
-		}
-		for rect, f := range g.Canvas.ClickableAreas {
-			if coordsInRect(g.mouse_x, g.mouse_y, rect) {
-				f()
+				f(screen)
 			}
 		}
 	}
 
-    // post click events
-    if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
-        if g.IsRecording() {
-            g.SaveRecord()
-        }
-        g.StopRecording()
-    }
+	// mouse button release button events
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+		if g.IsRecording() {
+			g.SaveRecord()
+		}
+		g.StopRecording()
+	}
 }
 
+// keyboard events
 func (g *Game) handleKeyboardEvents() {
-    if inpututil.IsKeyJustPressed(ebiten.KeyZ) {
-        recordToUndone := g.UndoOneRecord()
-        g.UndrawOneRecord(recordToUndone)
-    }
+	if inpututil.IsKeyJustPressed(ebiten.KeyZ) {
+		recordToUndone := g.UndoOneRecord()
+		g.UndrawOneRecord(recordToUndone)
+	}
 }

@@ -1,3 +1,4 @@
+// global object const
 package objects
 
 const (

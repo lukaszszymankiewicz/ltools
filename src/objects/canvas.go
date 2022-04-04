@@ -17,10 +17,8 @@ type Canvas struct {
 	viewportRows int
 	viewport_x   int
 	viewport_y   int
-	scroller_x   Scroller
-	scroller_y   Scroller
-	clickableAreas map[image.Rectangle]func()
-	hoverableAreas map[image.Rectangle]func()
+	Scroller_x   Scroller
+	Scroller_y   Scroller
 }
 
 // clears whole Canvas from any Tile
@@ -65,8 +63,8 @@ func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
 	}
 
 	// drawing the scrollers
-    c.scroller_x.DrawScroller(screen)
-    c.scroller_y.DrawScroller(screen)
+	c.Scroller_x.Draw(screen)
+	c.Scroller_y.Draw(screen)
 }
 
 // translates mouse position to Tile position where it will be drawn on Canvas (Canvas x and y)
@@ -93,23 +91,23 @@ func (c *Canvas) SetTileOnCanvas(x int, y int, value int) {
 }
 
 // moves viewport left
-func (c *Canvas) MoveCanvasLeft() {
-    c.MoveCanvas(-1, 0)
+func (c *Canvas) MoveCanvasLeft(*ebiten.Image) {
+	c.MoveCanvas(-1, 0)
 }
 
 // moves viewport right
-func (c *Canvas) MoveCanvasRight() {
-    c.MoveCanvas(1, 0)
+func (c *Canvas) MoveCanvasRight(*ebiten.Image) {
+	c.MoveCanvas(1, 0)
 }
 
 // moves viewport up
-func (c *Canvas) MoveCanvasUp() {
-    c.MoveCanvas(0, -1)
+func (c *Canvas) MoveCanvasUp(*ebiten.Image) {
+	c.MoveCanvas(0, -1)
 }
 
 // moves viewport down
-func (c *Canvas) MoveCanvasDown() {
-    c.MoveCanvas(0, 1)
+func (c *Canvas) MoveCanvasDown(*ebiten.Image) {
+	c.MoveCanvas(0, 1)
 }
 
 // moves viewport
@@ -126,37 +124,37 @@ func (c *Canvas) MoveCanvas(x int, y int) {
 // returns X Scrollers main part position
 func (c *Canvas) getXScrollerRect() image.Rectangle {
 	var start float64
-	len := float64(c.scroller_x.MaxRect.Max.X - c.scroller_x.MaxRect.Min.X)
+	len := float64(c.Scroller_x.MaxRect.Max.X - c.Scroller_x.MaxRect.Min.X)
 
 	if c.viewport_x == 0 {
-		start = float64(c.scroller_x.MaxRect.Min.X)
+		start = float64(c.Scroller_x.MaxRect.Min.X)
 	} else {
-		start = float64(c.scroller_x.MaxRect.Min.X) + (float64(c.viewport_x)/float64(c.canvasCols))*len
+		start = float64(c.Scroller_x.MaxRect.Min.X) + (float64(c.viewport_x)/float64(c.canvasCols))*len
 	}
-	end := float64(c.scroller_x.MaxRect.Min.X) + ((float64(c.viewport_x)+float64(c.viewportCols))/float64(c.canvasCols))*len
+	end := float64(c.Scroller_x.MaxRect.Min.X) + ((float64(c.viewport_x)+float64(c.viewportCols))/float64(c.canvasCols))*len
 
-	return image.Rect(int(start), c.scroller_x.MaxRect.Min.Y, int(end), c.scroller_x.MaxRect.Max.Y)
+	return image.Rect(int(start), c.Scroller_x.MaxRect.Min.Y, int(end), c.Scroller_x.MaxRect.Max.Y)
 }
 
 // returns Y Scrollers main part position
 func (c *Canvas) getYScrollerRect() image.Rectangle {
 	var start float64
-	len := float64(c.scroller_y.MaxRect.Max.Y - c.scroller_y.MaxRect.Min.Y)
+	len := float64(c.Scroller_y.MaxRect.Max.Y - c.Scroller_y.MaxRect.Min.Y)
 
 	if c.viewport_y == 0 {
-		start = float64(c.scroller_y.MaxRect.Min.Y)
+		start = float64(c.Scroller_y.MaxRect.Min.Y)
 	} else {
-		start = float64(c.scroller_y.MaxRect.Min.Y) + (float64(c.viewport_y)/float64(c.canvasRows))*len
+		start = float64(c.Scroller_y.MaxRect.Min.Y) + (float64(c.viewport_y)/float64(c.canvasRows))*len
 	}
-	end := float64(c.scroller_y.MaxRect.Min.Y) + ((float64(c.viewport_y)+float64(c.viewportRows))/float64(c.canvasRows))*len
+	end := float64(c.Scroller_y.MaxRect.Min.Y) + ((float64(c.viewport_y)+float64(c.viewportRows))/float64(c.canvasRows))*len
 
-	return image.Rect(c.scroller_y.MaxRect.Min.X, int(start), c.scroller_y.MaxRect.Max.X, int(end))
+	return image.Rect(c.Scroller_y.MaxRect.Min.X, int(start), c.Scroller_y.MaxRect.Max.X, int(end))
 }
 
 // updates Scrollers position due to viewport position according to viewport position
 func (c *Canvas) UpdateScrollers() {
-	c.scroller_x.Rect = c.getXScrollerRect()
-	c.scroller_y.Rect = c.getYScrollerRect()
+	c.Scroller_x.Rect = c.getXScrollerRect()
+	c.Scroller_y.Rect = c.getYScrollerRect()
 }
 
 // creates new canvas struct
@@ -173,7 +171,6 @@ func NewCanvas(
 	c.canvasCols = canvasCols
 	c.drawingArea = make([]int, canvasRows*canvasCols)
 
-
 	c.Rect = image.Rect(
 		x_pos,
 		y_pos,
@@ -181,34 +178,21 @@ func NewCanvas(
 		y_pos+TileHeight*viewportRows,
 	)
 
-	c.scroller_x = NewScroller(
+	c.Scroller_x = NewScroller(
 		x_pos,
-		y_pos+TileHeight*viewportRows+2,
-		TileWidth*viewportCols,
-		TileHeight*viewportRows,
-		scrollerColor,
-		scrollerBGColor,
-	)
-
-	c.scroller_y = NewScroller(
-		x_pos+TileWidth*viewportCols+2,
 		y_pos,
 		TileWidth*viewportCols,
 		TileHeight*viewportRows,
-		scrollerColor,
-		scrollerBGColor,
 	)
 
-	c.clickableAreas = make(map[image.Rectangle]func())
-	c.hoverableAreas = make(map[image.Rectangle]func())
+	c.Scroller_y = NewScroller(
+		x_pos+TileWidth*viewportCols,
+		y_pos,
+		TileWidth,
+		TileHeight*viewportRows,
+	)
 
-	c.clickableAreas[c.scroller_x.arrowLow.rect] = c.MoveCanvasLeft
-	c.clickableAreas[c.scroller_x.arrowHigh.rect] = c.MoveCanvasRight
-
-	c.clickableAreas[c.scroller_y.arrowLow.rect] = c.MoveCanvasUp
-	c.clickableAreas[c.scroller_y.arrowHigh.rect] = c.MoveCanvasDown
-
-    c.UpdateScrollers()
+	c.UpdateScrollers()
 	c.ClearDrawingArea()
 
 	return c

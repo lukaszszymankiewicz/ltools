@@ -3,9 +3,6 @@ package objects
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
-	"image/color"
-	_ "image/png"
-	"ltools/src/drawer"
 )
 
 type Pallete struct {
@@ -14,28 +11,27 @@ type Pallete struct {
 	Rows       int
 	MaxRows    int
 	Viewport_y int
-	scroller_y   Scroller
-	clickableAreas map[image.Rectangle]func()
-	hoverableAreas map[image.Rectangle]func()
+	Scroller_y Scroller
 }
 
 // returns Y Scrollers main part position
 func (p *Pallete) getScrollerRect() image.Rectangle {
+
 	var start float64
-	len := float64(p.scroller_y.MaxRect.Max.Y - p.scroller_y.MaxRect.Min.Y)
+	len := float64(p.Scroller_y.MaxRect.Max.Y - p.Scroller_y.MaxRect.Min.Y)
 
 	if p.Viewport_y == 0 {
-		start = float64(p.scroller_y.MaxRect.Min.Y)
+		start = float64(p.Scroller_y.MaxRect.Min.Y)
 	} else {
-		start = float64(p.scroller_y.MaxRect.Min.Y) + (float64(p.Viewport_y)/float64(p.MaxRows))*len
+		start = float64(p.Scroller_y.MaxRect.Min.Y) + (float64(p.Viewport_y)/float64(p.MaxRows))*len
 	}
-	end := float64(p.scroller_y.MaxRect.Min.Y) + ((float64(p.Viewport_y)+float64(p.Rows))/float64(p.MaxRows))*len
-
-	return image.Rect(p.scroller_y.MaxRect.Min.X, int(start), p.scroller_y.MaxRect.Max.X, int(end))
+	end := float64(p.Scroller_y.MaxRect.Min.Y) + ((float64(p.Viewport_y)+float64(p.Rows))/float64(p.MaxRows))*len
+	return image.Rect(p.Scroller_y.MaxRect.Min.X, int(start), p.Scroller_y.MaxRect.Max.X, int(end))
 }
 
+// updates scroller position
 func (p *Pallete) updateScrollers() {
-	p.scroller_y.Rect = p.getScrollerRect()
+	p.Scroller_y.Rect = p.getScrollerRect()
 }
 
 // translates mouse position to Tile coordinates, while mouse is pointing on Pallete
@@ -52,15 +48,11 @@ func (p *Pallete) TileNrToCoordsOnPallete(tileNr int) (float64, float64) {
 	return tileX, tileY
 }
 
-// translates mouse position to coords of cursor (cursor is square which highlights
-// Tile on which mouse is pointing)
-func (p *Pallete) PosToCursorCoords(x int, y int) image.Rectangle {
+// translates mouse position to nearest tile on pallete upper left corner
+func (p *Pallete) PosToCursorCoords(x int, y int) (int, int) {
 	tileX, tileY := p.PosToTileCoordsOnPallete(x, y)
 
-	leftCornerX := (tileX * TileWidth) + p.Rect.Min.X
-	leftCornerY := (tileY * TileHeight) + p.Rect.Min.Y
-
-	return image.Rect(leftCornerX, leftCornerY, leftCornerX+CursorSize, leftCornerY+CursorSize)
+	return (tileX * TileWidth) + p.Rect.Min.X, (tileY * TileHeight) + p.Rect.Min.Y
 }
 
 // translating from mouse position to tile on pallete. Please note that Pallete do not need to have
@@ -74,33 +66,29 @@ func (p *Pallete) PosToSubImageOnPallete(x int, y int, t *Tileset) *ebiten.Image
 	return t.TileNrToSubImageOnTileset(TileNr)
 }
 
-// draws cursor on Pallete
-func (p *Pallete) DrawCursorOnPallete(screen *ebiten.Image, x int, y int) {
-	cursorRect := p.PosToCursorCoords(x, y)
-	drawer.EmptyRect(screen, cursorRect, color.White)
+// moves pallete up
+func (p *Pallete) MovePalleteUp(screen *ebiten.Image) {
+	p.MovePallete(0, -1)
 }
 
-func (p *Pallete) MovePalleteUp() {
-    p.MovePallete(0, 1)
+// moves pallete down
+func (p *Pallete) MovePalleteDown(screen *ebiten.Image) {
+	p.MovePallete(0, 1)
 }
 
-func (p *Pallete) MovePalleteDown() {
-    p.MovePallete(0, -1)
-}
-
+// moves pallete in given direction
 func (p *Pallete) MovePallete(x int, y int) {
 	new_value := p.Viewport_y + y
 
-	// TODO: whats that 10?
-	p.Viewport_y = MinVal(MaxVal(0, new_value), (p.MaxRows - 10))
+	p.Viewport_y = MinVal(MaxVal(0, new_value), (p.MaxRows - ViewportRowsN))
 
 	p.updateScrollers()
 }
 
 // creates new Pallete struct
 func NewPallete(
-	x_pos int, y_pos int, 
-	viewportRows int, viewportCols int, 
+	x_pos int, y_pos int,
+	viewportRows int, viewportCols int,
 	maxrows int,
 ) Pallete {
 	var p Pallete
@@ -110,25 +98,18 @@ func NewPallete(
 	p.MaxRows = maxrows
 
 	p.Rect = image.Rect(
-		x_pos, 
-		y_pos, 
+		x_pos,
+		y_pos,
 		x_pos+TileWidth*viewportCols,
 		y_pos+TileHeight*viewportRows,
 	)
 
-	p.scroller_y = NewScroller(
+	p.Scroller_y = NewScroller(
 		x_pos+TileWidth*viewportCols+2,
 		y_pos,
 		TileWidth*viewportCols,
 		TileHeight*viewportRows,
-		scrollerColor,
-		scrollerBGColor,
 	)
-	p.clickableAreas = make(map[image.Rectangle]func())
-	p.hoverableAreas = make(map[image.Rectangle]func())
-
-	p.clickableAreas[p.scroller_y.arrowLow.rect] = p.MovePalleteUp
-	p.clickableAreas[p.scroller_y.arrowHigh.rect] = p.MovePalleteDown
 
 	p.updateScrollers()
 
