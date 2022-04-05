@@ -8,8 +8,8 @@ const (
 	TileWidth  = 32
 	TileHeight = 32
 	// pallete
-	PalleteX          = 20
-	PalleteY          = 20
+	PalleteX          = 50
+	PalleteY          = 50
 	PalleteColsN      = 6
 	PalleteRowsN      = 10
 	PalleteMaxTile    = PalleteColsN * PalleteRowsN
