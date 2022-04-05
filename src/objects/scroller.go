@@ -29,19 +29,18 @@ func NewScroller(x int, y int, width int, height int) Scroller {
 	// we are assuming that this is x-scroller if it is wider that higher
 	if width > height {
 		s.arrowLow = NewScrollArrow(x, y+height, "assets/arrow_l.png")
-		s.arrowHigh = NewScrollArrow(x+width-32, y+height, "assets/arrow_r.png")
-
 		// we assuming that both arrows are the same size
-		arrow_width, arrow_height := s.arrowHigh.Size()
+		arrow_width, arrow_height := s.arrowLow.Size()
+		s.arrowHigh = NewScrollArrow(x+width-arrow_width, y+height, "assets/arrow_r.png")
+
 		s.MaxRect = image.Rect(x+arrow_width, y+height, x+width-arrow_width, y+height+arrow_height)
 
 	} else {
 		// we are assuming that this is y-scroller if it is higher than wider
 		s.arrowLow = NewScrollArrow(x, y, "assets/arrow_u.png")
-		s.arrowHigh = NewScrollArrow(x, y+height-32, "assets/arrow_d.png")
-
 		// we assuming that both arrows are the same size
-		arrow_width, arrow_height := s.arrowHigh.Size()
+		arrow_width, arrow_height := s.arrowLow.Size()
+		s.arrowHigh = NewScrollArrow(x, y+height-arrow_height, "assets/arrow_d.png")
 
 		s.MaxRect = image.Rect(x, y+arrow_height, x+arrow_width, y+height-arrow_height)
 	}
