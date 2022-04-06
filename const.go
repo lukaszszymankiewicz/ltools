@@ -1,6 +1,11 @@
 package main
 
 const (
+    MODE_DRAW = iota
+    MODE_LIGHT
+)
+
+const (
 	// screen
 	ScreenWidth  = 1366
 	ScreenHeight = 768

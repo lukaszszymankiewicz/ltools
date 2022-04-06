@@ -6,6 +6,21 @@ import (
 	lto "ltools/src/objects"
 )
 
+func (g *Game) setFunctionsDueMode() {
+    if g.mode == DRAW_MODE {
+        g.ClickableAreas[g.Canvas.Rect] = g.drawTileOnCanvas
+        g.ClickableAreas[g.Pallete.Rect] = g.chooseTileFromPallete
+        g.HoverableAreas[g.Canvas.Rect] = g.drawHoveredTileOnCanvas
+        g.HoverableAreas[g.Pallete.Rect] = g.drawCursorOnPallete
+    } else {
+        g.ClickableAreas[g.Canvas.Rect] = g.drawTileOnCanvas
+        g.ClickableAreas[g.Pallete.Rect] = g.chooseTileFromPallete
+        g.HoverableAreas[g.Canvas.Rect] = g.drawHoveredTileOnCanvas
+        g.HoverableAreas[g.Pallete.Rect] = g.drawCursorOnPallete
+    }
+}
+
+
 // draws single tile on canvas (check if current place is occupied is
 // firstly done)
 func (g *Game) drawTileOnCanvas(screen *ebiten.Image) {
