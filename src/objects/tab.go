@@ -3,9 +3,7 @@ package objects
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
-	"image/color"
 	_ "image/png"
-	"ltools/src/drawer"
 )
 
 type Tab struct {
@@ -17,38 +15,47 @@ type Tab struct {
 type Tabber struct {
     tabs []Tab
     active int
+    x int
+    y int
 }
 
-func NewTab(x int, y int, locked_path string, unlocked_path image) Tab {
+func NewTab(x int, y int, locked_path string, unlocked_path string) Tab {
 	var t Tab
 
 	t.locked_image = loadImage(locked_path)
 	t.unlocked_image = loadImage(unlocked_path)
 
 	width, height := t.unlocked_image.Size()
-    t.rect = image.Rect(x, y, x+width, y+height)
+    t.Rect = image.Rect(x, y, x+width, y+height)
 
 	return t
 }
 
-func (t *Tabber) AppendTab (x int, y int, locked_path string, unlocked_path string) {
+func (tb *Tabber) AppendTab (x int, y int, locked_path string, unlocked_path string) {
     tab := NewTab(x, y, locked_path, unlocked_path)
-    r.x_coords = append(r.x_coords, x)
+    tb.tabs = append(tb.tabs, tab)
 }
 
-func NewTabber() Tabber {
+func NewTabber(x int, y int) Tabber {
 	var tb Tabber
+	tb.x = x
+	tb.y = y
 	return tb
+}
+
+func (tb *Tabber) AddNewTabToTabber(locked_path string, unlocked_path string) {
+    tb.AppendTab(tb.x, tb.y, locked_path, unlocked_path)
+    width, _ := tb.tabs[0].locked_image.Size()
+    tb.x += width
 }
 
 // prepare Complete Tabber
 func NewCompleteTabber(x int, y int) Tabber {
-    tb := NewTabber
+    tb := NewTabber(x, y)
 
-    tb.AppendTab(x, y, "assets/tile_tab_locked.png", "assets/tile_tab_locked.png")
-    width, _ := tb.tabs[0].locked_image.Size()
-
-    tb.AppendTab(x+width, y, "assets/light_tab_locked.png", "assets/light_tab_locked.png")
+    tb.AddNewTabToTabber("assets/tile_tab_locked.png", "assets/tile_tab_unlocked.png")
+    tb.AddNewTabToTabber("assets/light_tab_locked.png", "assets/light_tab_unlocked.png")
+    tb.AddNewTabToTabber("assets/entities_tab_locked.png", "assets/entities_tab_unlocked.png")
 
     return tb
 }
@@ -58,24 +65,16 @@ func (tb *Tabber) DrawTabber(screen *ebiten.Image) {
     for i:=0; i<len(tb.tabs); i++ {
 
         op := &ebiten.DrawImageOptions{}
-        op.GeoM.Translate(tb[i].rect.Min.X, tb[i].rect.Min.Y)
+        op.GeoM.Translate(float64(tb.tabs[i].Rect.Min.X), float64(tb.tabs[i].Rect.Min.Y))
 
         if i == tb.active {
-            screen.DrawImage(tb[i].unlocked_image, op)
+            screen.DrawImage(tb.tabs[i].unlocked_image, op)
         } else {
-            screen.DrawImage(tb[i].locked_image, op)
+            screen.DrawImage(tb.tabs[i].locked_image, op)
         }
     }
 }
 
-func (tb *Tabber) ChangeTabToTile(screen *ebiten.Image) {
-    tb.active == 0
-}
-
-func (tb *Tabber) ChangeTabToLight(screen *ebiten.Image) {
-    tb.active == 1
-}
-
-func (tb *Tabber) ChangeTabToSpecial(screen *ebiten.Image) {
-    tb.active == 2
+func (tb *Tabber) ChangeTab(tab int) {
+    tb.active = tab
 }

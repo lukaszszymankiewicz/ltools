@@ -7,7 +7,7 @@ import (
 )
 
 func (g *Game) setFunctionsDueMode() {
-    if g.mode == DRAW_MODE {
+    if g.mode == MODE_DRAW {
         g.ClickableAreas[g.Canvas.Rect] = g.drawTileOnCanvas
         g.ClickableAreas[g.Pallete.Rect] = g.chooseTileFromPallete
         g.HoverableAreas[g.Canvas.Rect] = g.drawHoveredTileOnCanvas

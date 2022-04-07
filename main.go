@@ -14,17 +14,13 @@ type Game struct {
 	lto.Tileset
 	lto.TileStack
 	lto.Cursor
+    lto.Tabber
 	Recorder
-    // to one struct
-    lto.Controller
 	mouse_x              int
 	mouse_y              int
-    // to one struct 
-    lto FunctionMapper
 	ClickableAreas       map[image.Rectangle]func(*ebiten.Image)
 	SingleClickableAreas map[image.Rectangle]func(*ebiten.Image)
 	HoverableAreas       map[image.Rectangle]func(*ebiten.Image)
-    // this can be as it is here
     mode                 int
 }
 
@@ -51,6 +47,7 @@ func (g *Game) UpdateControllersState() {
 // game draw loop
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.UpdateControllersState()
+    g.DrawTabber(screen)
 	g.drawPallete(screen)
 	g.DrawCanvas(screen, g.GetAllTiles())
 	g.handleKeyboardEvents()
@@ -81,6 +78,7 @@ func NewGame() *Game {
 	)
 	g.Cursor = lto.NewCursor(CursorSize)
     g.mode = MODE_DRAW 
+    g.Tabber = lto.NewCompleteTabber(TabberX, TabberY)
 
 	// post init (works only on already initialised structs)
 	g.addTileFromPalleteToStack()
@@ -93,12 +91,12 @@ func NewGame() *Game {
 
 	g.ClickableAreas[g.Canvas.Rect] = g.drawTileOnCanvas
 	g.ClickableAreas[g.Pallete.Rect] = g.chooseTileFromPallete
+
 	g.HoverableAreas[g.Canvas.Rect] = g.drawHoveredTileOnCanvas
 	g.HoverableAreas[g.Pallete.Rect] = g.drawCursorOnPallete
 
 	g.SingleClickableAreas[g.Pallete.Scroller_y.LowArrowRect()] = g.Pallete.MovePalleteUp
 	g.SingleClickableAreas[g.Pallete.Scroller_y.HighArrowRect()] = g.Pallete.MovePalleteDown
-
 	g.SingleClickableAreas[g.Canvas.Scroller_x.LowArrowRect()] = g.Canvas.MoveCanvasLeft
 	g.SingleClickableAreas[g.Canvas.Scroller_x.HighArrowRect()] = g.Canvas.MoveCanvasRight
 	g.SingleClickableAreas[g.Canvas.Scroller_y.LowArrowRect()] = g.Canvas.MoveCanvasUp
