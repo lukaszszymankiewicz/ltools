@@ -3,71 +3,62 @@ package main
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	_ "image/png"
-	lto "ltools/src/objects"
 )
-
-func (g *Game) setFunctionsDueMode() {
-    if g.mode == MODE_DRAW {
-        g.ClickableAreas[g.Canvas.Rect] = g.drawTileOnCanvas
-        g.ClickableAreas[g.Pallete.Rect] = g.chooseTileFromPallete
-        g.HoverableAreas[g.Canvas.Rect] = g.drawHoveredTileOnCanvas
-        g.HoverableAreas[g.Pallete.Rect] = g.drawCursorOnPallete
-    } else {
-        g.ClickableAreas[g.Canvas.Rect] = g.drawTileOnCanvas
-        g.ClickableAreas[g.Pallete.Rect] = g.chooseTileFromPallete
-        g.HoverableAreas[g.Canvas.Rect] = g.drawHoveredTileOnCanvas
-        g.HoverableAreas[g.Pallete.Rect] = g.drawCursorOnPallete
-    }
-}
-
 
 // draws single tile on canvas (check if current place is occupied is
 // firstly done)
 func (g *Game) drawTileOnCanvas(screen *ebiten.Image) {
-	tileX, tileY := g.PosToTileCoordsOnCanvas(g.mouse_x, g.mouse_y)
+	x, y := g.PosToTileCoordsOnCanvas(g.mouse_x, g.mouse_y)
+    
+    oldTile := g.GetTileOnDrawingArea(x, y)
+    drawTile := g.CurrentTileIndex()
 
-	oldTile := g.GetTileOnCanvas(tileX, tileY)
-	newTile := g.GetCurrentTile()
-	g.StartRecording()
+    if g.mode == MODE_LIGHT { 
+        if oldTile == -1 {
+            g.StartRecording()
+            g.UpdateTileUsage(drawTile, +1)
+            g.SetTileOnCanvas(x, y, drawTile)
+            g.Recorder.AppendToCurrent(x, y, drawTile, -1)
+        }
+    } else if g.mode == MODE_DRAW {
+        g.StartRecording()
 
-	// current place is empty
-	if oldTile == -1 {
-		newTile.NumberUsed++
-		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
-		g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, -1)
+        // current place is empty
+        if oldTile == -1 {
+            g.UpdateTileUsage(drawTile, +1)
+            g.Recorder.AppendToCurrent(x, y, drawTile, -1)
 
-		// current place is occupied by other tile (other than current tile to draw)
-	} else if oldTile != g.TileStack.CurrentTile {
-		g.UpdateTileUsage(oldTile, -1)
-		g.ClearTileStack(oldTile)
+        // current place is occupied by other tile (other than current tile to draw)
+        } else if oldTile != drawTile {
+            g.UpdateTileUsage(drawTile, +1)
+            g.UpdateTileUsage(oldTile, -1)
+            g.Recorder.AppendToCurrent(x, y, drawTile, oldTile)
+        }
+        g.SetTileOnCanvas(x, y, drawTile)
+    }
 
-		newTile.NumberUsed++
-		g.SetTileOnCanvas(tileX, tileY, g.TileStack.CurrentTile)
-		g.Recorder.AppendToCurrent(tileX, tileY, g.TileStack.CurrentTile, oldTile)
-	}
 }
 
 // ads new tile to tile stack, allowing for easy acces to it, after clicking on it
 // on pallete
-func (g *Game) addTileFromPalleteToStack() {
-	tileX, tileY := g.PosToTileCoordsOnPallete(g.mouse_x, g.mouse_y)
-	tileY += g.Pallete.Viewport_y
-	newTile := lto.NewTile(g.PosToSubImageOnPallete(g.mouse_x, g.mouse_y, &g.Tileset), tileX, tileY)
-	g.AddTileToStack(newTile)
+func (g *Game) addTileFromPalleteToStack(row int, col int, tileset int) {
+    image := g.PosToSubImageOnPallete(g.mouse_x, g.mouse_y, g.Tileseter.GetCurrent())
+	g.AppendToStack(image, row, col, tileset)
 }
 
 // everything that needs to be happen after clicking on tile on pallete
 // check, whether clicked tile is already in the stack is done.
 func (g *Game) chooseTileFromPallete(screen *ebiten.Image) {
-	tileX, tileY := g.PosToTileCoordsOnPallete(g.mouse_x, g.mouse_y)
-	tileY += g.Pallete.Viewport_y
+	row, col := g.PosToTileCoordsOnPallete(g.mouse_x, g.mouse_y)
+	col += g.Pallete.Viewport_y
+    tilesetIndex := g.Tileseter.GetCurrentIndex()
 
 	// chosen tile is already on stack, shorcut to it can be used
-	if tileIndex := g.CheckTileInStack(tileX, tileY); tileIndex != -1 {
-		g.SetCurrentTile(tileIndex)
+	if i := g.CheckTileInStack(row, col, tilesetIndex); i != -1 {
+		g.SetCurrentTile(i)
 	} else {
 		// chosen tile is not on stack, additional attention is needed
-		g.addTileFromPalleteToStack()
+		g.addTileFromPalleteToStack(row, col, tilesetIndex)
 	}
 }
 
@@ -83,9 +74,10 @@ func (g *Game) drawHoveredTileOnCanvas(screen *ebiten.Image) {
 // draws pallete object
 func (g *Game) drawPallete(screen *ebiten.Image) {
 	offset := g.Pallete.Viewport_y * PalleteColsN
+    tileset := g.Tileseter.GetCurrent()  
 
-	for n := 0; n < g.Tileset.Num; n++ {
-		subImg := g.TileNrToSubImageOnTileset(n + offset)
+	for n := 0; n < tileset.Num; n++ {
+		subImg := tileset.TileNrToSubImageOnTileset(n + offset)
 
 		op := &ebiten.DrawImageOptions{}
 		x, y := g.TileNrToCoordsOnPallete(n)
@@ -125,4 +117,26 @@ func (g *Game) UndrawOneRecord(record Record) {
 func (g *Game) drawCursorOnPallete(screen *ebiten.Image) {
 	x, y := g.Pallete.PosToCursorCoords(g.mouse_x, g.mouse_y)
 	g.Cursor.DrawCursor(screen, x, y)
+}
+
+func (g *Game) changeMode(mode int) {
+    g.Tabber.ChangeTab(mode)
+    g.mode = mode
+    g.Tileseter.SetCurrent(mode)
+    g.Canvas.ChangeLayer(g.mode)
+}
+
+// change tab to draw
+func (g *Game) changeModeToDraw(screen *ebiten.Image) {
+    g.changeMode(MODE_DRAW)
+}
+
+// change tab to drawing light
+func (g *Game) changeModeToDrawLight(screen *ebiten.Image) {
+    g.changeMode(MODE_LIGHT)
+}
+    
+// change tab to drawing entities
+func (g *Game) changeModeToDrawEntities(screen *ebiten.Image) {
+    g.changeMode(MODE_ENTITIES)
 }

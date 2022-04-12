@@ -5,32 +5,37 @@ import (
 )
 
 type Tile struct {
-	Image        *ebiten.Image
-	rowOnPallete int
-	colOnPallete int
-	NumberUsed   int
+	Image    *ebiten.Image   // Tile image
+	row       int            // row number on Pallete
+	col       int            // col number on Pallete
+	n         int            // number of tile is used on Canvas
+    tileset   int            // index of Tilseset from which Tile is taken
 }
 
 type TileStack struct {
-	stack       []Tile
-	len         int
-	CurrentTile int
+	stack       []Tile       // collection of Tile
+	current     int          // current chosen Tile to draw
+}
+
+func (ts *TileStack) CurrentTileIndex() int {
+    return ts.current
 }
 
 // creates new Tile
-func NewTile(image *ebiten.Image, rowOnPallete int, colOnPallete int) Tile {
-	var newTile Tile
+func NewTile(image *ebiten.Image, row int, col int, tileset int) Tile {
+	var t Tile
 
-	newTile.Image = image
-	newTile.rowOnPallete = rowOnPallete
-	newTile.colOnPallete = colOnPallete
+	t.Image   = image
+	t.row     = row
+	t.col     = col
+	t.tileset = tileset
 
-	return newTile
+	return t
 }
 
 // gets current Tile from stack
 func (ts *TileStack) GetCurrentTile() Tile {
-	return ts.stack[ts.CurrentTile]
+	return ts.stack[ts.current]
 }
 
 // gets Tile from stack by its index in stack
@@ -40,27 +45,29 @@ func (ts *TileStack) GetTileFromStack(i int) Tile {
 
 // gets number of times Tile is drawn. Tile is selected by its index on stack
 func (ts *TileStack) GetTileNumberUsed(i int) int {
-	return ts.GetTileFromStack(i).NumberUsed
+	return ts.GetTileFromStack(i).n
 }
 
 // checks if Tile needs to be deleted from TileStack. It happens if number of tile usage on level
 // is equal to zero
-func (ts *TileStack) ClearTileStack(i int) {
-	if ts.GetTileNumberUsed(i) == 0 {
-		ts.stack = append(ts.stack[:i], ts.stack[i+1:]...)
-	}
+func (ts *TileStack) ClearTileStack() {
+    for i:=0; i<len(ts.stack); i++ {
+        if ts.GetTileNumberUsed(i) == 0 {
+            ts.stack = append(ts.stack[:i], ts.stack[i+1:]...)
+        }
+    }
 }
 
 // updates number of Tile is used. Tile is selected by index on stack
 func (ts *TileStack) UpdateTileUsage(i int, value int) {
-	ts.stack[i].NumberUsed += value
+	ts.stack[i].n += value
 }
 
 // check if Tile is already used (so it is present on TileStack). If so, its index in stack is
 // returned, if not -1 is returned (ANSI C style!)
-func (ts *TileStack) CheckTileInStack(tileX int, tileY int) (stackIndex int) {
-	for i := 0; i < ts.len; i++ {
-		if ts.stack[i].rowOnPallete == tileX && ts.stack[i].colOnPallete == tileY {
+func (ts *TileStack) CheckTileInStack(row int, col int, tileset int) (i int) {
+	for i := 0; i < len(ts.stack); i++ {
+		if ts.stack[i].row == row && ts.stack[i].col == col && ts.stack[i].tileset == tileset{
 			return i
 		}
 	}
@@ -68,14 +75,19 @@ func (ts *TileStack) CheckTileInStack(tileX int, tileY int) (stackIndex int) {
 }
 
 // adds new Tile to stack
+func (ts *TileStack) AppendToStack(image *ebiten.Image, row int, col int, tileset int) {
+    tile := NewTile(image, row, col, tileset)
+	ts.stack = append(ts.stack, tile)
+}
+
+// adds new Tile to stack
 func (ts *TileStack) AddTileToStack(tile Tile) {
 	ts.stack = append(ts.stack, tile)
-	ts.len++
 }
 
 // sets current Tile which will be used as brush
-func (ts *TileStack) SetCurrentTile(index int) {
-	ts.CurrentTile = index
+func (ts *TileStack) SetCurrentTile(i int) {
+	ts.current = i
 }
 
 // returns whole stack

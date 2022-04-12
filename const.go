@@ -3,6 +3,8 @@ package main
 const (
     MODE_DRAW = iota
     MODE_LIGHT
+    MODE_ENTITIES
+    MODE_ALL
 )
 
 const (

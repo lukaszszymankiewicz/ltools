@@ -11,13 +11,12 @@ import (
 type Game struct {
 	lto.Pallete
 	lto.Canvas
-	lto.Tileset
+	lto.Tileseter
 	lto.TileStack
 	lto.Cursor
     lto.Tabber
 	Recorder
-	mouse_x              int
-	mouse_y              int
+    Controller
 	ClickableAreas       map[image.Rectangle]func(*ebiten.Image)
 	SingleClickableAreas map[image.Rectangle]func(*ebiten.Image)
 	HoverableAreas       map[image.Rectangle]func(*ebiten.Image)
@@ -39,11 +38,6 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (ScreenWidth, ScreenHeigh
 	return 1388, 768
 }
 
-// updates all controlers global state (only mouse by now)
-func (g *Game) UpdateControllersState() {
-	g.mouse_x, g.mouse_y = ebiten.CursorPosition()
-}
-
 // game draw loop
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.UpdateControllersState()
@@ -58,14 +52,14 @@ func (g *Game) Draw(screen *ebiten.Image) {
 // creates new game instance
 func NewGame() *Game {
 	var g Game
-	g.Tileset = lto.NewTileset("assets/tileset_1.png")
+	g.Tileseter = lto.NewCompleteTilesetter()
 
 	g.Pallete = lto.NewPallete(
 		PalleteX,
 		PalleteY,
 		PalleteRowsN,
 		PalleteColsN,
-		g.Tileset.Num/PalleteColsN,
+        g.Tileseter.GetCurrent().Num/PalleteColsN,
 	)
 
 	g.Canvas = lto.NewCanvas(
@@ -75,13 +69,14 @@ func NewGame() *Game {
 		CanvasCols,
 		Canvas_x,
 		Canvas_y,
+        MODE_ALL,
 	)
 	g.Cursor = lto.NewCursor(CursorSize)
     g.mode = MODE_DRAW 
     g.Tabber = lto.NewCompleteTabber(TabberX, TabberY)
 
 	// post init (works only on already initialised structs)
-	g.addTileFromPalleteToStack()
+	g.addTileFromPalleteToStack(0, 0, 0)
 	g.SetCurrentTile(0)
 
 	// binding the functions (yeah, it looks kinda lame)
@@ -101,6 +96,10 @@ func NewGame() *Game {
 	g.SingleClickableAreas[g.Canvas.Scroller_x.HighArrowRect()] = g.Canvas.MoveCanvasRight
 	g.SingleClickableAreas[g.Canvas.Scroller_y.LowArrowRect()] = g.Canvas.MoveCanvasUp
 	g.SingleClickableAreas[g.Canvas.Scroller_y.HighArrowRect()] = g.Canvas.MoveCanvasDown
+
+	g.SingleClickableAreas[g.Tabber.AreaRect(MODE_DRAW)] = g.changeModeToDraw
+	g.SingleClickableAreas[g.Tabber.AreaRect(MODE_LIGHT)] = g.changeModeToDrawLight
+	g.SingleClickableAreas[g.Tabber.AreaRect(MODE_ENTITIES)] = g.changeModeToDrawEntities
 
 	return &g
 }

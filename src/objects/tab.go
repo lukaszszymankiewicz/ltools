@@ -49,6 +49,10 @@ func (tb *Tabber) AddNewTabToTabber(locked_path string, unlocked_path string) {
     tb.x += width
 }
 
+func (tb *Tabber) AreaRect(i int) image.Rectangle {
+    return tb.tabs[i].Rect
+}
+
 // prepare Complete Tabber
 func NewCompleteTabber(x int, y int) Tabber {
     tb := NewTabber(x, y)
