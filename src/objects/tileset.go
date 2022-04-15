@@ -62,16 +62,22 @@ func NewCompleteTilesetter() Tileseter {
     return tsr
 }
 
-// prepare Complete Tabber
+// sets current Tileset index
 func (tsr *Tileseter) SetCurrent (n int) {
     tsr.current = n
 }
 
-// prepare Complete Tabber
+// prepare current Tileset index
 func (tsr *Tileseter) GetCurrentIndex () int {
     return tsr.current
 }
 
+// prepare current Tileset index
+func (tsr *Tileseter) GetTilesetByIndex(i int) Tileset {
+    return tsr.tilesets[i]
+}
+
+// gets current Tileset
 func (tsr *Tileseter) GetCurrent() Tileset {
     return tsr.tilesets[tsr.current]
 }

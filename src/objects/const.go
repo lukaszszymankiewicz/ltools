@@ -2,6 +2,11 @@
 package objects
 
 const (
+    LAYER_DRAW = iota
+    LAYER_LIGHT
+)
+
+const (
 	TileWidth        = 32
 	TileHeight       = 32
 	ViewportColsN    = 10

@@ -8,6 +8,11 @@ const (
 )
 
 const (
+    LAYER_DRAW = iota
+    LAYER_LIGHT
+)
+
+const (
 	// screen
 	ScreenWidth  = 1366
 	ScreenHeight = 768
@@ -48,7 +53,8 @@ const (
 	ArrowDownX  = Canvas_x + ViewportCols*TileWidth + 2
 	ArrowDownY  = Canvas_y + (ViewportRows-1)*TileHeight + 1
     // tabber
-	TabberX          = Canvas_x
-	TabberY          = PalleteY - TileHeight - 1
-
+	TabberX     = Canvas_x
+	TabberY     = PalleteY - TileHeight - 1
+    // looks great
+    EMPTY       = -1
 )

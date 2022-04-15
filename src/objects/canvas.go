@@ -54,25 +54,29 @@ func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
 	// drawing Tiles and tiles on it
 	for x := c.viewport_x; x < c.viewportCols+c.viewport_x; x++ {
 		for y := c.viewport_y; y < c.viewportRows+c.viewport_y; y++ {
-			if tile_index := c.GetTileOnDrawingArea(x, y); tile_index != -1 {
-                
-                tile := tiles[tile_index]
+            tile_index := c.GetTileOnDrawingArea(x, y, LAYER_DRAW); 
+            light_index := c.GetTileOnDrawingArea(x, y, LAYER_LIGHT);
 
+			if light_index != -1 {
+                tile := tiles[light_index]
                 op := &ebiten.DrawImageOptions{}
                 op.GeoM.Translate(
                     float64((x-c.viewport_x)*TileWidth+c.Rect.Min.X),
                     float64((y-c.viewport_y)*TileWidth+c.Rect.Min.Y),
                 )
-
-                if tile.tileset == 0 {
-                    op.ColorM.Scale(1.0, 1.0, 1.0, alpha_mode)
-                } else {
-                    op.ColorM.Scale(1.0, 1.0, 1.0, 1.0)
-                }
-
                 screen.DrawImage(tile.Image, op)
-
 			}
+			if tile_index != -1 {
+                tile := tiles[tile_index]
+                op := &ebiten.DrawImageOptions{}
+                op.GeoM.Translate(
+                    float64((x-c.viewport_x)*TileWidth+c.Rect.Min.X),
+                    float64((y-c.viewport_y)*TileWidth+c.Rect.Min.Y),
+                )
+                op.ColorM.Scale(1.0, 1.0, 1.0, alpha_mode)
+                screen.DrawImage(tile.Image, op)
+            }
+
 		}
 	}
 
@@ -94,23 +98,14 @@ func (c *Canvas) PosToTileHoveredOnCanvas(x int, y int) (int, int) {
 
 // returns Tile from Canvas by given position (Canvas x and y). Returned number is an
 // index on stack.
-func (c *Canvas) GetTileOnDrawingArea(x int, y int) int {
-    var tile int
-    tile = -1
-
-    tile = c.drawingAreas[0][x*c.canvasRows+y]
-    if tile == -1 {
-        tile = c.drawingAreas[1][x*c.canvasRows+y]
-    }
-
-    return tile
+func (c *Canvas) GetTileOnDrawingArea(x int, y int, n int) int {
+    return c.drawingAreas[n][x*c.canvasRows+y]
 }
 
 // sets current Tile to draw (brush) on Canvas. Canvas x and y are used, and Tile is
 // selected by its position on stack
-func (c *Canvas) SetTileOnCanvas(x int, y int, value int) {
-    // yeahh...
-    c.drawingAreas[c.current_layer][(x+c.viewport_x)*c.canvasRows+(y+c.viewport_y)] = value
+func (c *Canvas) SetTileOnCanvas(x int, y int, value int, layer int) {
+    c.drawingAreas[layer][(x+c.viewport_x)*c.canvasRows+(y+c.viewport_y)] = value
 }
 
 // moves viewport left

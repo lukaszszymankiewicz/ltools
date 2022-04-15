@@ -3,40 +3,73 @@ package main
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	_ "image/png"
+    lto "ltools/src/objects"
 )
 
-// draws single tile on canvas (check if current place is occupied is
-// firstly done)
+// by now, only thing that can be drawn in the LIGHT_LAYER is an obstacle (obstacle blocks player
+// both with light). Tile can be either a normal tile OR an obstacle. Drawing normals tiles has
+// higher priority so, obstacles are erased if user click on postion where obstacle lays. Below
+// logic is kind ugly and should be generalized ad nearest refactor
+func (g *Game) drawNormalTileOnCanvas(x int, y int, screen *ebiten.Image) {
+    oldTile := g.GetTileOnDrawingArea(x, y, LAYER_DRAW)
+    lightTile := g.GetTileOnDrawingArea(x, y, LAYER_LIGHT)
+    drawTile := g.CurrentTileIndex()
+
+    // if light obstacle is cleaned it should be cleaned from light layer too
+    if lightTile != -1 {
+        g.SetTileOnCanvas(x, y, EMPTY, LAYER_LIGHT)
+        g.Recorder.AppendToCurrent(x, y, EMPTY, lightTile, LAYER_LIGHT, LAYER_LIGHT)
+    }
+
+    // current place is empty
+    if oldTile == EMPTY {
+        g.UpdateTileUsage(drawTile, +1)
+        g.Recorder.AppendToCurrent(x, y, drawTile, oldTile, LAYER_DRAW, LAYER_DRAW)
+        g.SetTileOnCanvas(x, y, drawTile, LAYER_DRAW)
+    // current place is occupied by other tile (other than current tile to draw)
+    } else if oldTile != drawTile {
+        g.UpdateTileUsage(drawTile, +1)
+        g.UpdateTileUsage(oldTile, -1)
+        g.SetTileOnCanvas(x, y, drawTile, LAYER_DRAW)
+        g.Recorder.AppendToCurrent(x, y, drawTile, oldTile, LAYER_DRAW, LAYER_DRAW)
+    } 
+
+}
+
+func (g *Game) drawLightObstacleTile(x int, y int, screen *ebiten.Image) {
+    lightTile := g.GetTileOnDrawingArea(x, y, LAYER_LIGHT)
+    oldTile := g.GetTileOnDrawingArea(x, y, LAYER_DRAW)
+
+    // TODO: this should be done separatly on game initialization
+    if g.CheckTileInStack(0, 0, 1) == EMPTY {
+        image := g.PosToSubImageOnPallete(PalleteX+2, PalleteY+2, g.GetTilesetByIndex(1))
+        g.AppendToStack(image, 0, 0, 1)
+    }
+    drawTile := g.CheckTileInStack(0, 0, 1)
+
+    if oldTile == EMPTY && lightTile == EMPTY{
+        g.StartRecording()
+        g.UpdateTileUsage(drawTile, +1)
+        g.SetTileOnCanvas(x, y, drawTile, LAYER_LIGHT)
+        g.Recorder.AppendToCurrent(x, y, drawTile, EMPTY, LAYER_LIGHT, LAYER_LIGHT)
+    }
+}
+
+// draws any type of Tile on Canvas. Normal type tile spreads light obstacle around 
 func (g *Game) drawTileOnCanvas(screen *ebiten.Image) {
 	x, y := g.PosToTileCoordsOnCanvas(g.mouse_x, g.mouse_y)
     
-    oldTile := g.GetTileOnDrawingArea(x, y)
-    drawTile := g.CurrentTileIndex()
-
     if g.mode == MODE_LIGHT { 
-        if oldTile == -1 {
-            g.StartRecording()
-            g.UpdateTileUsage(drawTile, +1)
-            g.SetTileOnCanvas(x, y, drawTile)
-            g.Recorder.AppendToCurrent(x, y, drawTile, -1)
-        }
+        g.StartRecording()
+        g.drawLightObstacleTile(x, y, screen)
     } else if g.mode == MODE_DRAW {
         g.StartRecording()
-
-        // current place is empty
-        if oldTile == -1 {
-            g.UpdateTileUsage(drawTile, +1)
-            g.Recorder.AppendToCurrent(x, y, drawTile, -1)
-
-        // current place is occupied by other tile (other than current tile to draw)
-        } else if oldTile != drawTile {
-            g.UpdateTileUsage(drawTile, +1)
-            g.UpdateTileUsage(oldTile, -1)
-            g.Recorder.AppendToCurrent(x, y, drawTile, oldTile)
-        }
-        g.SetTileOnCanvas(x, y, drawTile)
+        g.drawNormalTileOnCanvas(x, y, screen)
+        g.drawLightObstacleTile(lto.MinVal(x+1, CanvasCols), y, screen)
+        g.drawLightObstacleTile(x, lto.MinVal(y+1, CanvasRows), screen)
+        g.drawLightObstacleTile(lto.MaxVal(x-1, 0), y, screen)
+        g.drawLightObstacleTile(x, lto.MaxVal(y-1, 0), screen)
     }
-
 }
 
 // ads new tile to tile stack, allowing for easy acces to it, after clicking on it
@@ -101,15 +134,15 @@ func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {
 	g.DrawCurrentTile(screen, op)
 }
 
-// undraws given record
+// undraws given record (single non-interrrupted mouse click)
 func (g *Game) UndrawOneRecord(record Record) {
 	// if record to undraw is empty there is nothing to undraw!
 	if len(record.x_coords) == 0 {
 		return
 	}
 
-	for i := 0; i < len(record.x_coords); i++ {
-		g.SetTileOnCanvas(record.x_coords[i], record.y_coords[i], record.old_tiles[i])
+    for i := len(record.x_coords)-1; i>-1; i-- {
+		g.SetTileOnCanvas(record.x_coords[i], record.y_coords[i], record.old_tiles[i], record.old_layers[i])
 	}
 }
 
@@ -119,6 +152,7 @@ func (g *Game) drawCursorOnPallete(screen *ebiten.Image) {
 	g.Cursor.DrawCursor(screen, x, y)
 }
 
+// global function for changing mode of editor
 func (g *Game) changeMode(mode int) {
     g.Tabber.ChangeTab(mode)
     g.mode = mode

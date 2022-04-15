@@ -17,10 +17,6 @@ type TileStack struct {
 	current     int          // current chosen Tile to draw
 }
 
-func (ts *TileStack) CurrentTileIndex() int {
-    return ts.current
-}
-
 // creates new Tile
 func NewTile(image *ebiten.Image, row int, col int, tileset int) Tile {
 	var t Tile
@@ -41,6 +37,11 @@ func (ts *TileStack) GetCurrentTile() Tile {
 // gets Tile from stack by its index in stack
 func (ts *TileStack) GetTileFromStack(i int) Tile {
 	return ts.stack[i]
+}
+
+// gets Tile from stack by its index in stack
+func (ts *TileStack) GetTileTileset(i int) int {
+	return ts.stack[i].tileset
 }
 
 // gets number of times Tile is drawn. Tile is selected by its index on stack
@@ -93,6 +94,11 @@ func (ts *TileStack) SetCurrentTile(i int) {
 // returns whole stack
 func (ts *TileStack) GetAllTiles() []Tile {
 	return ts.stack
+}
+
+// returns current Tileset index
+func (ts *TileStack) CurrentTileIndex() int {
+    return ts.current
 }
 
 // draws current Tile on screen

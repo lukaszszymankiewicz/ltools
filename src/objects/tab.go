@@ -19,6 +19,7 @@ type Tabber struct {
     y int
 }
 
+// creates new Tab struct
 func NewTab(x int, y int, locked_path string, unlocked_path string) Tab {
 	var t Tab
 
@@ -31,11 +32,7 @@ func NewTab(x int, y int, locked_path string, unlocked_path string) Tab {
 	return t
 }
 
-func (tb *Tabber) AppendTab (x int, y int, locked_path string, unlocked_path string) {
-    tab := NewTab(x, y, locked_path, unlocked_path)
-    tb.tabs = append(tb.tabs, tab)
-}
-
+// creates new Tabber struct
 func NewTabber(x int, y int) Tabber {
 	var tb Tabber
 	tb.x = x
@@ -43,12 +40,20 @@ func NewTabber(x int, y int) Tabber {
 	return tb
 }
 
+// appends new Tab to Tabber
+func (tb *Tabber) AppendTab (x int, y int, locked_path string, unlocked_path string) {
+    tab := NewTab(x, y, locked_path, unlocked_path)
+    tb.tabs = append(tb.tabs, tab)
+}
+
+// creates new Tab and appends it to Tabber
 func (tb *Tabber) AddNewTabToTabber(locked_path string, unlocked_path string) {
     tb.AppendTab(tb.x, tb.y, locked_path, unlocked_path)
     width, _ := tb.tabs[0].locked_image.Size()
     tb.x += width
 }
 
+// returns single Tab rectangle coords
 func (tb *Tabber) AreaRect(i int) image.Rectangle {
     return tb.tabs[i].Rect
 }
@@ -79,6 +84,7 @@ func (tb *Tabber) DrawTabber(screen *ebiten.Image) {
     }
 }
 
+// sets current Tab of Tabber
 func (tb *Tabber) ChangeTab(tab int) {
     tb.active = tab
 }
