@@ -59,7 +59,7 @@ func (p *Pallete) PosToCursorCoords(x int, y int) (int, int) {
 // exacly the same number of rows and columns as tileset (tileset file is basically trimmed to fit
 // fixed pallete number of rows and cols). To get column and row of pallete, some basic
 // transposition is needed
-func (p *Pallete) PosToSubImageOnPallete(x int, y int, t *Tileset) *ebiten.Image {
+func (p *Pallete) PosToSubImageOnPallete(x int, y int, t Tileset) *ebiten.Image {
 	TileX, TileY := p.PosToTileCoordsOnPallete(x, y)
 	TileNr := TileX + (TileY * p.Cols) + (p.Viewport_y * p.Cols)
 

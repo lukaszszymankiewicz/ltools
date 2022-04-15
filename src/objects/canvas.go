@@ -9,34 +9,31 @@ import (
 )
 
 type Canvas struct {
-	canvasRows   int
-	canvasCols   int
-	drawingArea  []int
-	Rect         image.Rectangle
-	viewportCols int
-	viewportRows int
-	viewport_x   int
-	viewport_y   int
-	Scroller_x   Scroller
-	Scroller_y   Scroller
+	canvasRows     int
+	canvasCols     int
+	drawingAreas   [][]int
+    current_layer  int
+	Rect           image.Rectangle
+	viewportCols   int
+	viewportRows   int
+	viewport_x     int
+	viewport_y     int
+	Scroller_x     Scroller
+	Scroller_y     Scroller
 }
 
-// clears whole Canvas from any Tile
-func (c *Canvas) ClearDrawingArea() {
-	for x := 0; x < c.canvasCols; x++ {
-		for y := 0; y < c.canvasRows; y++ {
-			c.drawingArea[x*c.canvasRows+y] = -1
-		}
-	}
-}
+// makes all layers of canvas, and fills it with -1 (empty)
+func (c *Canvas) ClearDrawingAreas(n_layers int) {
+    
+    for i:=0; i<n_layers; i++ {
+        c.drawingAreas[i] = make([]int, c.canvasRows * c.canvasCols)
 
-// cleares only visible part of Canvas from any Tile
-func (c *Canvas) ClearViewport() {
-	for x := c.viewport_x; x < c.viewportRows+c.viewport_x; x++ {
-		for y := c.viewport_y; y < c.viewportCols+c.viewport_y; y++ {
-			c.drawingArea[x*c.canvasRows+y] = -1
-		}
-	}
+        for x := 0; x < c.canvasCols; x++ {
+            for y := 0; y < c.canvasRows; y++ {
+                c.drawingAreas[i][x*c.canvasRows+y] = -1
+            }
+        }
+    }
 }
 
 // draws all Canvas parts:
@@ -47,18 +44,39 @@ func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
 	// drawing the border around Canvas
 	drawer.EmptyBorder(screen, c.Rect, color.White)
 
-	// drawing Canvas and tiles on it
+    var alpha_mode float64 
+    alpha_mode = 1.0
+
+    if c.current_layer == TransparentLayer { 
+        alpha_mode = CanvasAlphaMod         
+    }
+
+	// drawing Tiles and tiles on it
 	for x := c.viewport_x; x < c.viewportCols+c.viewport_x; x++ {
 		for y := c.viewport_y; y < c.viewportRows+c.viewport_y; y++ {
-			if tile_index := c.GetTileOnCanvas(x, y); tile_index != -1 {
+            tile_index := c.GetTileOnDrawingArea(x, y, LAYER_DRAW); 
+            light_index := c.GetTileOnDrawingArea(x, y, LAYER_LIGHT);
 
-				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(
-					float64((x-c.viewport_x)*TileWidth+c.Rect.Min.X),
-					float64((y-c.viewport_y)*TileWidth+c.Rect.Min.Y),
-				)
-				screen.DrawImage(tiles[tile_index].Image, op)
+			if light_index != -1 {
+                tile := tiles[light_index]
+                op := &ebiten.DrawImageOptions{}
+                op.GeoM.Translate(
+                    float64((x-c.viewport_x)*TileWidth+c.Rect.Min.X),
+                    float64((y-c.viewport_y)*TileWidth+c.Rect.Min.Y),
+                )
+                screen.DrawImage(tile.Image, op)
 			}
+			if tile_index != -1 {
+                tile := tiles[tile_index]
+                op := &ebiten.DrawImageOptions{}
+                op.GeoM.Translate(
+                    float64((x-c.viewport_x)*TileWidth+c.Rect.Min.X),
+                    float64((y-c.viewport_y)*TileWidth+c.Rect.Min.Y),
+                )
+                op.ColorM.Scale(1.0, 1.0, 1.0, alpha_mode)
+                screen.DrawImage(tile.Image, op)
+            }
+
 		}
 	}
 
@@ -80,14 +98,14 @@ func (c *Canvas) PosToTileHoveredOnCanvas(x int, y int) (int, int) {
 
 // returns Tile from Canvas by given position (Canvas x and y). Returned number is an
 // index on stack.
-func (c *Canvas) GetTileOnCanvas(x int, y int) int {
-	return c.drawingArea[x*c.canvasRows+y]
+func (c *Canvas) GetTileOnDrawingArea(x int, y int, n int) int {
+    return c.drawingAreas[n][x*c.canvasRows+y]
 }
 
 // sets current Tile to draw (brush) on Canvas. Canvas x and y are used, and Tile is
 // selected by its position on stack
-func (c *Canvas) SetTileOnCanvas(x int, y int, value int) {
-	c.drawingArea[(x+c.viewport_x)*c.canvasRows+(y+c.viewport_y)] = value
+func (c *Canvas) SetTileOnCanvas(x int, y int, value int, layer int) {
+    c.drawingAreas[layer][(x+c.viewport_x)*c.canvasRows+(y+c.viewport_y)] = value
 }
 
 // moves viewport left
@@ -157,19 +175,25 @@ func (c *Canvas) UpdateScrollers() {
 	c.Scroller_y.Rect = c.getYScrollerRect()
 }
 
+// switches layer
+func (c *Canvas) ChangeLayer(n int) {
+	c.current_layer = n
+}
+
 // creates new canvas struct
 func NewCanvas(
 	viewportRows int, viewportCols int,
 	canvasRows int, canvasCols int,
 	x_pos int, y_pos int,
+    n_layers int,
 ) Canvas {
 	var c Canvas
 
 	c.viewportRows = viewportRows
 	c.viewportCols = viewportCols
-	c.canvasRows = canvasRows
-	c.canvasCols = canvasCols
-	c.drawingArea = make([]int, canvasRows*canvasCols)
+	c.canvasRows   = canvasRows
+	c.canvasCols   = canvasCols
+	c.drawingAreas = make([][]int, n_layers)
 
 	c.Rect = image.Rect(
 		x_pos,
@@ -193,7 +217,7 @@ func NewCanvas(
 	)
 
 	c.UpdateScrollers()
-	c.ClearDrawingArea()
+	c.ClearDrawingAreas(n_layers)
 
 	return c
 }
