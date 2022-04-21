@@ -10,6 +10,8 @@ type Tile struct {
 	col       int            // col number on Pallete
 	n         int            // number of tile is used on Canvas
     tileset   int            // index of Tilseset from which Tile is taken
+    unique    bool
+    required  bool
 }
 
 type TileStack struct {
@@ -32,6 +34,12 @@ func NewTile(image *ebiten.Image, row int, col int, tileset int) Tile {
 // gets current Tile from stack
 func (ts *TileStack) GetCurrentTile() Tile {
 	return ts.stack[ts.current]
+}
+
+
+func (ts *TileStack) GetCurrentTilePos() (int, int) {
+    tile := ts.stack[ts.current]
+    return tile.row, tile.col
 }
 
 // gets Tile from stack by its index in stack

@@ -10,6 +10,7 @@ const (
 const (
     LAYER_DRAW = iota
     LAYER_LIGHT
+    LAYER_ENTITY
 )
 
 const (

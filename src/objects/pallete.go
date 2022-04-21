@@ -3,6 +3,7 @@ package objects
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
+    // "fmt"
 )
 
 type Pallete struct {
@@ -34,20 +35,6 @@ func (p *Pallete) updateScrollers() {
 	p.Scroller_y.Rect = p.getScrollerRect()
 }
 
-// translates mouse position to Tile coordinates, while mouse is pointing on Pallete
-func (p *Pallete) PosToTileCoordsOnPallete(x int, y int) (int, int) {
-	return int((x - p.Rect.Min.X) / TileWidth), int((y - p.Rect.Min.Y) / TileHeight)
-}
-
-// translates Tile number (order on which Tile occurs on Pallete) to its
-// coordinates on screen
-func (p *Pallete) TileNrToCoordsOnPallete(tileNr int) (float64, float64) {
-	tileX := float64(((tileNr % p.Cols) * TileWidth) + p.Rect.Min.X)
-	tileY := float64(((tileNr / p.Cols) * TileHeight) + p.Rect.Min.Y)
-
-	return tileX, tileY
-}
-
 // translates mouse position to nearest tile on pallete upper left corner
 func (p *Pallete) PosToCursorCoords(x int, y int) (int, int) {
 	tileX, tileY := p.PosToTileCoordsOnPallete(x, y)
@@ -55,15 +42,22 @@ func (p *Pallete) PosToCursorCoords(x int, y int) (int, int) {
 	return (tileX * TileWidth) + p.Rect.Min.X, (tileY * TileHeight) + p.Rect.Min.Y
 }
 
-// translating from mouse position to tile on pallete. Please note that Pallete do not need to have
-// exacly the same number of rows and columns as tileset (tileset file is basically trimmed to fit
-// fixed pallete number of rows and cols). To get column and row of pallete, some basic
-// transposition is needed
 func (p *Pallete) PosToSubImageOnPallete(x int, y int, t Tileset) *ebiten.Image {
-	TileX, TileY := p.PosToTileCoordsOnPallete(x, y)
-	TileNr := TileX + (TileY * p.Cols) + (p.Viewport_y * p.Cols)
+    RectX := int((x - p.Rect.Min.X) / TileWidth)
+    RectY := int((y - p.Rect.Min.Y) / TileHeight)
 
-	return t.TileNrToSubImageOnTileset(TileNr)
+	tileRect := image.Rect(RectX, RectY, RectX+TileWidth, RectY+TileHeight)
+
+	return t.image.SubImage(tileRect).(*ebiten.Image)
+}
+
+func (p *Pallete) PalletePosToSubImageOnPallete(row int, col int, t Tileset) *ebiten.Image {
+    RectX := row * TileWidth
+    RectY := col * TileHeight
+
+	tileRect := image.Rect(RectX, RectY, RectX+TileWidth, RectY+TileHeight)
+
+	return t.image.SubImage(tileRect).(*ebiten.Image)
 }
 
 // moves pallete up
@@ -79,9 +73,7 @@ func (p *Pallete) MovePalleteDown(screen *ebiten.Image) {
 // moves pallete in given direction
 func (p *Pallete) MovePallete(x int, y int) {
 	new_value := p.Viewport_y + y
-
 	p.Viewport_y = MinVal(MaxVal(0, new_value), (p.MaxRows - ViewportRowsN))
-
 	p.updateScrollers()
 }
 
@@ -115,3 +107,9 @@ func NewPallete(
 
 	return p
 }
+
+// translates mouse position to Tile coordinates, while mouse is pointing on Pallete
+func (p *Pallete) PosToTileCoordsOnPallete(x int, y int) (int, int) {
+    return int((x - p.Rect.Min.X) / TileWidth), int((y - p.Rect.Min.Y) / TileHeight)
+}
+

@@ -13,6 +13,7 @@ type Game struct {
 	lto.Canvas
 	lto.Tileseter
 	lto.TileStack
+    lto.EntityStack
 	lto.Cursor
     lto.Tabber
 	Recorder
@@ -53,6 +54,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func NewGame() *Game {
 	var g Game
 	g.Tileseter = lto.NewCompleteTilesetter()
+    g.EntityStack = lto.CreateNewEntityStack()
 
 	g.Pallete = lto.NewPallete(
 		PalleteX,
@@ -78,6 +80,7 @@ func NewGame() *Game {
 	// post init (works only on already initialised structs)
 	g.addTileFromPalleteToStack(0, 0, 0)
 	g.SetCurrentTile(0)
+    g.createTilesetFromEntityStack()
 
 	// binding the functions (yeah, it looks kinda lame)
 	g.ClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))
