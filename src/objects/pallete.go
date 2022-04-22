@@ -6,17 +6,56 @@ import (
     // "fmt"
 )
 
+// Pallete struct serves as a wrapper for brushes which can be drawn.
+// each "brush" is just a single Tile. Group of tile are called Tileset. Each Tileset represent one
+// logical layer of level. Collection of Tileset (grouping multiple layers) is called Tileseter
 type Pallete struct {
 	Rect       image.Rectangle
 	Cols       int
 	Rows       int
 	MaxRows    int
 	Viewport_y int
+    Tilesets   Tileseter 
 	Scroller_y Scroller
+}
+
+// creates new Pallete struct
+func NewPallete(
+	x_pos int,
+    y_pos int,
+	rows int,
+    cols int,
+    [][]string tilesets,
+) Pallete {
+	var p Pallete
+
+	p.Cols = cols
+	p.Rows = rows
+
+	p.Rect = image.Rect(
+		x_pos,
+		y_pos,
+		x_pos+TileWidth*cols,
+		y_pos+TileHeight*rows,
+	)
+
+	p.Scroller_y = NewScroller(
+		p.Rect.Max.X+SCROLLER_X_OFFSET ,
+		y_pos,
+		TileWidth*cols,
+		TileHeight*rows,
+	)
+    p.Tileseter = NewTileseter(tilesets)
+
+	p.updateScrollers()
+
+	return p
 }
 
 // returns Y Scrollers main part position
 func (p *Pallete) getScrollerRect() image.Rectangle {
+    tileset := g.Tileseter.GetCurrent()  
+    maxRows := tileset.rows
 
 	var start float64
 	len := float64(p.Scroller_y.MaxRect.Max.Y - p.Scroller_y.MaxRect.Min.Y)
@@ -24,9 +63,9 @@ func (p *Pallete) getScrollerRect() image.Rectangle {
 	if p.Viewport_y == 0 {
 		start = float64(p.Scroller_y.MaxRect.Min.Y)
 	} else {
-		start = float64(p.Scroller_y.MaxRect.Min.Y) + (float64(p.Viewport_y)/float64(p.MaxRows))*len
+		start = float64(p.Scroller_y.MaxRect.Min.Y) + (float64(p.Viewport_y)/float64(MaxRows))*len
 	}
-	end := float64(p.Scroller_y.MaxRect.Min.Y) + ((float64(p.Viewport_y)+float64(p.Rows))/float64(p.MaxRows))*len
+	end := float64(p.Scroller_y.MaxRect.Min.Y) + ((float64(p.Viewport_y)+float64(p.Rows))/float64(MaxRows))*len
 	return image.Rect(p.Scroller_y.MaxRect.Min.X, int(start), p.Scroller_y.MaxRect.Max.X, int(end))
 }
 
@@ -36,28 +75,34 @@ func (p *Pallete) updateScrollers() {
 }
 
 // translates mouse position to nearest tile on pallete upper left corner
-func (p *Pallete) PosToCursorCoords(x int, y int) (int, int) {
-	tileX, tileY := p.PosToTileCoordsOnPallete(x, y)
+func (p *Pallete) MousePosToCursorRect(x int, y int) image.Rectangle {
+	tileX, tileY := p.MousePosToTileRowAndColOnPallete(x, y)
 
-	return (tileX * TileWidth) + p.Rect.Min.X, (tileY * TileHeight) + p.Rect.Min.Y
+    tileRect := image.Rect(
+        tileX * TileWidth) + p.Rect.Min.X,,
+        (tileY * TileHeight) + p.Rect.Min.Y,
+
+        tileX * TileWidth) + p.Rect.Min.X+CursorSize,
+        (tileY * TileHeight) + p.Rect.Min.Y+CursorSize,
+    )
 }
 
-func (p *Pallete) PosToSubImageOnPallete(x int, y int, t Tileset) *ebiten.Image {
+// function for grabbing some tile from pallete
+func (p *Pallete) MousePosToTileImageOnPallete(x int, y int) *ebiten.Image {
     RectX := int((x - p.Rect.Min.X) / TileWidth)
-    RectY := int((y - p.Rect.Min.Y) / TileHeight)
+    RectY := int((y - p.Rect.Min.Y) / TileHeight) + p.Viewport_y
 
 	tileRect := image.Rect(RectX, RectY, RectX+TileWidth, RectY+TileHeight)
 
-	return t.image.SubImage(tileRect).(*ebiten.Image)
+    tileset := g.Tileseter.GetCurrent()  
+
+	return tileset.image.SubImage(tileRect).(*ebiten.Image)
 }
 
-func (p *Pallete) PalletePosToSubImageOnPallete(row int, col int, t Tileset) *ebiten.Image {
-    RectX := row * TileWidth
-    RectY := col * TileHeight
-
-	tileRect := image.Rect(RectX, RectY, RectX+TileWidth, RectY+TileHeight)
-
-	return t.image.SubImage(tileRect).(*ebiten.Image)
+// translates mouse position to Tile coordinates (its row and col on pallete), while mouse is
+// pointing on Pallete
+func (p *Pallete) MousePosToTileRowAndColOnPallete(x int, y int) (int, int) {
+    return int((x - p.Rect.Min.X) / TileWidth), int((y - p.Rect.Min.Y) / TileHeight)
 }
 
 // moves pallete up
@@ -77,39 +122,16 @@ func (p *Pallete) MovePallete(x int, y int) {
 	p.updateScrollers()
 }
 
-// creates new Pallete struct
-func NewPallete(
-	x_pos int, y_pos int,
-	viewportRows int, viewportCols int,
-	maxrows int,
-) Pallete {
-	var p Pallete
+// draws pallete object
+func (p *Pallete) drawPallete(screen *ebiten.Image) {
+    tileset := g.Tileseter.GetCurrent()  
 
-	p.Cols = viewportCols
-	p.Rows = viewportRows
-	p.MaxRows = maxrows
+    tileRect := image.Rect(0, g.Viewport_y, p.Rows*TileWidth, g.Viewport_y +p.Cols*TileHeight)
+    pallete_image := tileset.image.SubImage(tileRect).(*ebiten.Image)
 
-	p.Rect = image.Rect(
-		x_pos,
-		y_pos,
-		x_pos+TileWidth*viewportCols,
-		y_pos+TileHeight*viewportRows,
-	)
+    op.GeoM.Translate(PalleteX, PalleteY)
+    screen.DrawImage(pallete_image, op)
 
-	p.Scroller_y = NewScroller(
-		x_pos+TileWidth*viewportCols+2,
-		y_pos,
-		TileWidth*viewportCols,
-		TileHeight*viewportRows,
-	)
-
-	p.updateScrollers()
-
-	return p
-}
-
-// translates mouse position to Tile coordinates, while mouse is pointing on Pallete
-func (p *Pallete) PosToTileCoordsOnPallete(x int, y int) (int, int) {
-    return int((x - p.Rect.Min.X) / TileWidth), int((y - p.Rect.Min.Y) / TileHeight)
+	g.Pallete.Scroller_y.Draw(screen)
 }
 

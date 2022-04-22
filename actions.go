@@ -116,29 +116,6 @@ func (g *Game) drawHoveredTileOnCanvas(screen *ebiten.Image) {
 	g.DrawCurrentTile(screen, op)
 }
 
-// draws pallete object
-func (g *Game) drawPallete(screen *ebiten.Image) {
-	offset := g.Pallete.Viewport_y * PalleteColsN
-    tileset := g.Tileseter.GetCurrent()  
-
-	for n := 0; n < tileset.Num; n++ {
-		subImg := tileset.TileNrToSubImageOnTileset(n + offset)
-
-		op := &ebiten.DrawImageOptions{}
-
-        row := n % PalleteColsN        
-        col := (n / PalleteColsN) + offset
-        image := PosToSubImageOnPallete(row, col, tileset)
-
-		op.GeoM.Translate(row*TileWidth, col*TileHeight)
-		screen.DrawImage(image, op)
-
-		if n > g.Pallete.Rows*g.Pallete.Cols-2 {
-			break
-		}
-	}
-	g.Pallete.Scroller_y.Draw(screen)
-}
 
 // draws current tile (brush type)
 func (g *Game) drawCurrentTileToDraw(screen *ebiten.Image) {

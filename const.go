@@ -58,4 +58,6 @@ const (
 	TabberY     = PalleteY - TileHeight - 1
     // looks great
     EMPTY       = -1
+    // scrollers
+    SCROLLER_X_OFFSET = 2
 )

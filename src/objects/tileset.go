@@ -23,6 +23,8 @@ type Tileseter struct {
 }
 
 // create new Tileset from set of paths (could be only one path)
+// this is propably not so smart take on transofmring any picture to fixed size pallete, but such
+// implementation gets rid of traforming tile-on-image-position to tile-on-tileset-position fuss
 func NewTileset(paths []string, index int) Tileset {
 	var tileset Tileset
 
@@ -32,10 +34,10 @@ func NewTileset(paths []string, index int) Tileset {
 
     // calculating overall timeset size
     for i:=0; i<len(paths); i++ {
-        new_image := loadImage(paths[i])
-        images = append(images, new_image)
+        tiles_on_single_tileset := loadImage(paths[i])
+        tiles = append(tiles, tiles_on_single_tileset)
 
-        width, height := tileset.image.Size()
+        width, height := tiles_on_single_tileset.Size()
         n_tiles += (width / TileWidth) * (tileset.height / TileHeight)
     }
 
@@ -53,86 +55,50 @@ func NewTileset(paths []string, index int) Tileset {
         // this fuss is required mostly to always have tileset with same size no matter what image
         // is inputted
         for z := 0; z <n; z++ {
+            // tile cut from original image
             rect_x = (z % cols) * TileWidth
             rect_y = (z / cols) * TileHeight
             tileRect := image.Rect(rect_x, rect_y, rect_x+TileWidth, rect_y+TileHeight)
             tile := t.image.SubImage(tileRect).(*ebiten.Image)
 
+            // tile placed on new position
             x := (i%PalleteColsN) * TileWidth
             y := (i/PalleteColsN) * TileHeight
             op := &ebiten.DrawImageOptions{}
             op.GeoM.Translate(float64(x), float64(y))
 
-            tileset_image.DrawImage(g.EntityStack.Stack[i].Image, op)
-
+            tileset_image.DrawImage(tile, op)
         }
-
-
-
     }
 
-	return tileset
-}
-
-// creates new Tileset struct
-func NewTilesetFromFile(path string, index int) Tileset {
-	var tileset Tileset
-
-	tileset.image = loadImage(path)
+	tileset.image = tileset_image
 	width, height := tileset.image.Size()
 	tileset.width  = width
 	tileset.height = height
 	tileset.rows   = tileset.width / TileWidth
-	tileset.cols   = tileset.height / TileHeight
-	tileset.Num    = tileset.rows * tileset.cols
+	tileset.cols   = PalleteColsN
+	tileset.Num    = n_tiles 
 	tileset.index  = index
 
 	return tileset
 }
 
-// creates new Tileset struct from ready image
-func NewTilesetFromImage(image *ebiten.Image) Tileset {
-	var tileset Tileset
-
-	tileset.image = image
-	width, height := tileset.image.Size()
-	tileset.width  = width
-	tileset.height = height
-	tileset.rows   = tileset.width / TileWidth
-	tileset.cols   = tileset.height / TileHeight
-	tileset.Num    = tileset.rows * tileset.cols
-
-	return tileset
-}
-
 // creates new Tileseter struct
-func NewTileseter() Tileseter {
+func NewTileseter([][]string tilesets_paths) Tileseter {
 	var tsr Tileseter
+    
+    for i:=0; i<len(tilesets_paths); i++ {
+        tsr.AddNewToTilesetter(tilesets_paths[i])
+    }
 
 	return tsr 
 }
 
 // adds new Tileset to Tileseter, creating Tileset from image file
-func (tsr *Tileseter) AddNewToTilesetter(path string) {
+func (tsr *Tileseter) AddNewToTilesetter(path []string) {
     index := len(tsr.tilesets)
-    ts := NewTilesetFromFile(path, index)
+    ts := NewTileset(paths, index)
     tsr.tilesets = append(tsr.tilesets, ts)
-}
-
-// appends new Tileset to Tileseter
-func (tsr *Tileseter) AppendToTilesetter(ts Tileset) {
-    ts.index = len(tsr.tilesets)
-    tsr.tilesets = append(tsr.tilesets, ts)
-}
-
-// prepare Complete Tabber
-func NewCompleteTilesetter() Tileseter {
-    tsr := NewTileseter() 
-
-    tsr.AddNewToTilesetter("assets/tileset_1.png")
-    tsr.AddNewToTilesetter("assets/no_light.png")
-
-    return tsr
 }
 
 // sets current Tileset index
@@ -154,12 +120,3 @@ func (tsr *Tileseter) GetTilesetByIndex(i int) Tileset {
 func (tsr *Tileseter) GetCurrent() Tileset {
     return tsr.tilesets[tsr.current]
 }
-
-// translates Tile index number (order in which Tile occurs on Pallete)
-func (t *Tileset) TileNrToSubImageOnTileset(n int) *ebiten.Image {
-	RectX, RectY := n%t.cols*TileWidth, n/t.rows*TileHeight
-	tileRect := image.Rect(RectX, RectY, RectX+TileWidth, RectY+TileHeight)
-
-	return t.image.SubImage(tileRect).(*ebiten.Image)
-}
-
