@@ -10,6 +10,7 @@ type Tile struct {
 	col       int            // col number on Pallete
 	n         int            // number of tile is used on Canvas
     tileset   int            // index of Tilseset from which Tile is taken
+    unique    bool
 }
 
 type TileStack struct {
@@ -18,13 +19,14 @@ type TileStack struct {
 }
 
 // creates new Tile
-func NewTile(image *ebiten.Image, row int, col int, tileset int) Tile {
+func NewTile(image *ebiten.Image, row int, col int, tileset int, unique bool) Tile {
 	var t Tile
 
 	t.Image   = image
 	t.row     = row
 	t.col     = col
 	t.tileset = tileset
+	t.unique  = unique 
 
 	return t
 }
@@ -32,6 +34,12 @@ func NewTile(image *ebiten.Image, row int, col int, tileset int) Tile {
 // gets current Tile from stack
 func (ts *TileStack) GetCurrentTile() Tile {
 	return ts.stack[ts.current]
+}
+
+
+func (ts *TileStack) GetCurrentTilePos() (int, int) {
+    tile := ts.stack[ts.current]
+    return tile.row, tile.col
 }
 
 // gets Tile from stack by its index in stack
@@ -42,6 +50,16 @@ func (ts *TileStack) GetTileFromStack(i int) Tile {
 // gets Tile from stack by its index in stack
 func (ts *TileStack) GetTileTileset(i int) int {
 	return ts.stack[i].tileset
+}
+
+// gets Tile from stack by its index in stack
+func (ts *TileStack) TileIsUnique(i int) bool {
+	return ts.stack[i].unique
+}
+
+// gets Tile from stack by its index in stack
+func (ts *TileStack) TileUsage(i int) int {
+	return ts.stack[i].n
 }
 
 // gets number of times Tile is drawn. Tile is selected by its index on stack
@@ -76,8 +94,8 @@ func (ts *TileStack) CheckTileInStack(row int, col int, tileset int) (i int) {
 }
 
 // adds new Tile to stack
-func (ts *TileStack) AppendToStack(image *ebiten.Image, row int, col int, tileset int) {
-    tile := NewTile(image, row, col, tileset)
+func (ts *TileStack) AppendToStack(image *ebiten.Image, row int, col int, tileset int, unique bool) {
+    tile := NewTile(image, row, col, tileset, unique)
 	ts.stack = append(ts.stack, tile)
 }
 
