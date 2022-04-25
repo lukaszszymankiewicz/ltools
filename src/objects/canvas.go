@@ -36,26 +36,31 @@ func (c *Canvas) ClearDrawingAreas(n_layers int) {
     }
 }
 
+// this show how to set alpha channel for every layer if given layer is on
+var layers_alpha = [][]float64 {
+    {1.0, 1.0, 1.0}, // LAYER_DRAW is on
+    {0.5, 1.0, 0.5}, // LAYER_LIGHT in on
+    {0.0, 0.5, 1.0}, // LAYER_ENTITY in on
+}
+
 // draws all Canvas parts:
 // - Canvas border
 // - actual Canvas (or rather its part visible by viewport)
 // - x and y Scrollers
-func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
+func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile, layer int) {
 	// drawing the border around Canvas
 	drawer.EmptyBorder(screen, c.Rect, color.White)
 
-    var alpha_mode float64 
-    alpha_mode = 1.0
-
-    if c.current_layer == TransparentLayer { 
-        alpha_mode = CanvasAlphaMod         
-    }
+    draw_layer_alpha := layers_alpha[layer][LAYER_DRAW]
+    light_layer_alpha := layers_alpha[layer][LAYER_LIGHT]
+    entity_layer_alpha := layers_alpha[layer][LAYER_ENTITY]
 
 	// drawing Tiles and tiles on it
 	for x := c.viewport_x; x < c.viewportCols+c.viewport_x; x++ {
 		for y := c.viewport_y; y < c.viewportRows+c.viewport_y; y++ {
             tile_index := c.GetTileOnDrawingArea(x, y, LAYER_DRAW); 
             light_index := c.GetTileOnDrawingArea(x, y, LAYER_LIGHT);
+            entity_index := c.GetTileOnDrawingArea(x, y, LAYER_ENTITY);
 
 			if light_index != -1 {
                 tile := tiles[light_index]
@@ -64,6 +69,7 @@ func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
                     float64((x-c.viewport_x)*TileWidth+c.Rect.Min.X),
                     float64((y-c.viewport_y)*TileWidth+c.Rect.Min.Y),
                 )
+                op.ColorM.Scale(1.0, 1.0, 1.0, draw_layer_alpha)
                 screen.DrawImage(tile.Image, op)
 			}
 			if tile_index != -1 {
@@ -73,10 +79,19 @@ func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
                     float64((x-c.viewport_x)*TileWidth+c.Rect.Min.X),
                     float64((y-c.viewport_y)*TileWidth+c.Rect.Min.Y),
                 )
-                op.ColorM.Scale(1.0, 1.0, 1.0, alpha_mode)
+                op.ColorM.Scale(1.0, 1.0, 1.0, light_layer_alpha)
                 screen.DrawImage(tile.Image, op)
             }
-
+			if entity_index != -1 {
+                tile := tiles[entity_index]
+                op := &ebiten.DrawImageOptions{}
+                op.GeoM.Translate(
+                    float64((x-c.viewport_x)*TileWidth+c.Rect.Min.X),
+                    float64((y-c.viewport_y)*TileWidth+c.Rect.Min.Y),
+                )
+                op.ColorM.Scale(1.0, 1.0, 1.0, entity_layer_alpha)
+                screen.DrawImage(tile.Image, op)
+            }
 		}
 	}
 
@@ -86,13 +101,13 @@ func (c *Canvas) DrawCanvas(screen *ebiten.Image, tiles []Tile) {
 }
 
 // translates mouse position to Tile position where it will be drawn on Canvas (Canvas x and y)
-func (c *Canvas) PosToTileCoordsOnCanvas(x int, y int) (int, int) {
+func (c *Canvas) MousePosToRowAndColOnCanvas(x int, y int) (int, int) {
 	return int((x - c.Rect.Min.X) / TileWidth), int((y - c.Rect.Min.Y) / TileHeight)
 }
 
 // translates mouse position to Tile position where it will be drawn on Canvas (screen x and y)
-func (c *Canvas) PosToTileHoveredOnCanvas(x int, y int) (int, int) {
-	tileX, tileY := c.PosToTileCoordsOnCanvas(x, y)
+func (c *Canvas) MousePosToTileHoveredOnCanvas(x int, y int) (int, int) {
+	tileX, tileY := c.MousePosToRowAndColOnCanvas(x, y)
 	return tileX*TileWidth + c.Rect.Min.X, tileY*TileHeight + c.Rect.Min.Y
 }
 
@@ -220,4 +235,17 @@ func NewCanvas(
 	c.ClearDrawingAreas(n_layers)
 
 	return c
+}
+
+// checks if tile with given index is within some Canvas layer
+func (c *Canvas) FindTile(i int, layer int) (int, int) {
+    for x:=0; x<c.canvasRows; x++ {
+        for y:=0; y<c.canvasCols; y++ {
+            if z:= c.GetTileOnDrawingArea(x, y, i); z != -1 {
+                return x, y
+            }
+        }
+    }
+
+    return -1, -1
 }

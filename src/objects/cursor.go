@@ -25,7 +25,10 @@ func NewCursor(size int) Cursor {
 }
 
 // draws cursor on screen
-func (crs Cursor) DrawCursor(screen *ebiten.Image, x int, y int) {
-	rect := image.Rect(x, y, x+crs.size, y+crs.size)
+func (crs Cursor) DrawCursor(screen *ebiten.Image, rect image.Rectangle) {
 	drawer.EmptyRect(screen, rect, crs.color)
+}
+
+func (crs Cursor) GetCursorSize() int {
+    return crs.size
 }
