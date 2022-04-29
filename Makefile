@@ -16,3 +16,8 @@ server:
 clean:
 	rm -f ./html/*.js ./html/*.wasm
 	rm -f ltools
+	rm -f *.bin
+
+.PHONY: test
+test:
+	go test

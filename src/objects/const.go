@@ -2,9 +2,9 @@
 package objects
 
 const (
-    LAYER_DRAW = iota
-    LAYER_LIGHT
-    LAYER_ENTITY
+	LAYER_DRAW = iota
+	LAYER_LIGHT
+	LAYER_ENTITY
 )
 
 const (
@@ -15,9 +15,9 @@ const (
 	CanvasColsN      = 20
 	CanvasRowsN      = 15
 	CursorSize       = 32
-    CanvasAlphaMod   = 0.5
-    TransparentLayer = 1
-    ScrollerXOffset  = 2
-	PalleteColsN      = 6
-	PalleteRowsN      = 10
+	CanvasAlphaMod   = 0.5
+	TransparentLayer = 1
+	ScrollerXOffset  = 2
+	PalleteColsN     = 6
+	PalleteRowsN     = 10
 )
