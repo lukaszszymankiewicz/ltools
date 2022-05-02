@@ -20,13 +20,10 @@ func (g *Game) drawNormalTileOnCanvas(x int, y int, screen *ebiten.Image) {
 
 	// current place is empty
 	if oldTile == EMPTY {
-		g.UpdateTileUsage(drawTile, +1)
 		g.Recorder.AppendToCurrent(x, y, drawTile, oldTile, LAYER_DRAW, LAYER_DRAW)
 		g.SetTileOnCanvas(x, y, drawTile, LAYER_DRAW)
 		// current place is occupied by other tile (other than current tile to draw)
 	} else if oldTile != drawTile {
-		g.UpdateTileUsage(drawTile, +1)
-		g.UpdateTileUsage(oldTile, -1)
 		g.SetTileOnCanvas(x, y, drawTile, LAYER_DRAW)
 		g.Recorder.AppendToCurrent(x, y, drawTile, oldTile, LAYER_DRAW, LAYER_DRAW)
 	}
@@ -40,7 +37,6 @@ func (g *Game) drawLightObstacleTile(x int, y int, screen *ebiten.Image) {
 
 	if oldTile == EMPTY && lightTile == EMPTY {
 		g.StartRecording()
-		g.UpdateTileUsage(drawTile, +1)
 		g.SetTileOnCanvas(x, y, drawTile, LAYER_LIGHT)
 		g.Recorder.AppendToCurrent(x, y, drawTile, EMPTY, LAYER_LIGHT, LAYER_LIGHT)
 	}
@@ -60,17 +56,15 @@ func (g *Game) drawEntityTileOnCanvas(x int, y int, screen *ebiten.Image) {
 		if g.TileIsUnique(drawTile) == true {
 
 			// this tile is used nowhere - it can be just put into map
-			if g.TileUsage(drawTile) == 0 {
+            old_x, old_y := g.FindTile(drawTile, LAYER_ENTITY)
+            if old_x==-1 && old_y ==-1 {
 
 				g.StartRecording()
-				g.UpdateTileUsage(drawTile, +1)
 				g.SetTileOnCanvas(x, y, drawTile, LAYER_ENTITY)
 				g.Recorder.AppendToCurrent(x, y, drawTile, EMPTY, LAYER_ENTITY, LAYER_ENTITY)
 				// unique tile is used - old location needs to be found and Tile must be erased from
 				// there
 			} else {
-				old_x, old_y := g.FindTile(drawTile, LAYER_ENTITY)
-
 				g.StartRecording()
 				g.SetTileOnCanvas(x, y, drawTile, LAYER_ENTITY)
 				g.SetTileOnCanvas(old_x, old_y, EMPTY, LAYER_ENTITY)
@@ -159,6 +153,65 @@ func (g *Game) UndrawOneRecord(record Record) {
 func (g *Game) DrawCursorOnPallete(screen *ebiten.Image) {
 	cursorRect := g.MousePosToCursorRect(g.mouse_x, g.mouse_y, g.Cursor.GetCursorSize())
 	g.Cursor.DrawCursor(screen, cursorRect)
+}
+
+// looks for tiles which are on a stack but are unused (it can happen after heavy session of
+// cleaning the screen)
+func (g *Game) purgeStack() {
+    g.countTiles()
+	new_tiles := make([]lto.Tile, 0)
+	rows, cols := g.Canvas.Size()
+
+	// check is done for each tile in tilestack
+	for i := 0; i < len(g.GetAllTiles()); i++ {
+
+		// if usage of give tile is equal than zero whole procedure is perfmormed
+		if n := g.TileUsage(i); n == 0 && !g.TileIsUnique(i) {
+            // tile is deleted from stack because stack has it lenght (and content changed, other
+            // tile on canvas must be updated to such change)
+			for layer := 0; layer < g.Canvas.NumberOfLayers(); layer++ {
+				for x := 0; x < cols; x++ {
+					for y := 0; y < rows; y++ {
+						if tile_nr := g.Canvas.GetTileOnDrawingArea(x, y, layer); tile_nr > i {
+							g.Canvas.SetTileOnCanvas(x, y, tile_nr-1, layer)
+						}
+					}
+				}
+			}
+		} else {
+			new_tiles = append(new_tiles, g.TileStack.GetTileFromStack(i))
+		}
+	}
+	g.TileStack.SetAllTiles(new_tiles)
+}
+
+func (g *Game) countTiles() {
+    g.TileStack.ClearTileStackUsage()
+    rows, cols := g.Canvas.Size()
+
+    for l:=0; l<MODE_ALL; l++ {
+        for x:=0; x<cols; x++ {
+            for y:=0; y<rows; y++ {
+                if tile:=g.Canvas.GetTileOnDrawingArea(x, y, l); tile != -1 {
+                    g.TileStack.UpdateTileUsage(tile, +1)
+                }
+            }
+        }
+    }
+}
+
+// find best tile to start with (must be from DRAW_LAYER)
+func (g *Game) FindStartingTile() {
+	for i := 0; i < len(g.GetAllTiles()); i++ {
+		if g.TileStack.GetTileTileset(i) == LAYER_DRAW {
+            g.TileStack.SetCurrentTile(i)
+            return
+		}
+	}
+
+    // nothing from DRAW_LAYER is found - some dummy is then added
+    g.AddTileFromPalleteToStack(0, 0, 0, false)
+	return 
 }
 
 // changes mode of drawing

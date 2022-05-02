@@ -14,10 +14,18 @@ server:
 
 .PHONY: clean
 clean:
+	# JavaScript and HTML files are deleted
 	rm -f ./html/*.js ./html/*.wasm
+	# compiled binaries are deleted
 	rm -f ltools
-	rm -f *.bin
+	# exported levels are deleted
+	rm -f *.llv
+	# exported levels are deleted
+	rm -f testname.png
+	# exported levels are deleted
+	rm -f *.zip
 
 .PHONY: test
 test:
-	go test
+	# run tests in all directories and sub-directories
+	go test ./...

@@ -60,4 +60,6 @@ const (
 	EMPTY = -1
 	// exporting
 	TILE_PER_ROW_ON_IMAGE = 16
+	// just for clarity
+	EXPORT_BUTTON = 3
 )

@@ -41,6 +41,11 @@ func (ts *TileStack) GetCurrentTilePos() (int, int) {
 	return tile.row, tile.col
 }
 
+func (ts *TileStack) GetTilePos(i int) (int, int) {
+	tile := ts.stack[i]
+	return tile.row, tile.col
+}
+
 // gets Tile from stack by its index in stack
 func (ts *TileStack) GetTileFromStack(i int) Tile {
 	return ts.stack[i]
@@ -61,6 +66,10 @@ func (ts *TileStack) TileUsage(i int) int {
 	return ts.stack[i].n
 }
 
+func (ts *TileStack) Length() int {
+	return len(ts.stack)
+}
+
 // gets number of times Tile is drawn. Tile is selected by its index on stack
 func (ts *TileStack) GetTileNumberUsed(i int) int {
 	return ts.GetTileFromStack(i).n
@@ -73,6 +82,13 @@ func (ts *TileStack) ClearTileStack() {
 		if ts.GetTileNumberUsed(i) == 0 {
 			ts.stack = append(ts.stack[:i], ts.stack[i+1:]...)
 		}
+	}
+}
+
+// clears tilestack usages
+func (ts *TileStack) ClearTileStackUsage() {
+	for i := 0; i < len(ts.stack); i++ {
+        ts.stack[i].n = 0
 	}
 }
 
@@ -141,3 +157,17 @@ func (ts *TileStack) NumberOfTilesOnLayer(layer int) int {
 
 	return n
 }
+
+// returns indexes from TileStack of Tiles from given layer
+func (ts *TileStack) TileIndexPerLayer(layer int) []int {
+	idx := make([]int, 0)
+
+	for i := 0; i < len(ts.stack); i++ {
+		if ts.GetTileFromStack(i).tileset == layer {
+			idx = append(idx, i)
+		}
+	}
+
+	return idx
+}
+

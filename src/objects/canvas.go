@@ -259,3 +259,36 @@ func (c *Canvas) FindTile(i int, layer int) (int, int) {
 
 	return -1, -1
 }
+
+// creates slice of slices with tiles and tiles usage
+//  tile_0 -> [(3, 4), (5, 3), ..., (10, 10)
+//  tile-1 -> [(6, 6)]
+//
+// function uses n_tiles which is buffer so big that can handle all tiles (not only from single
+// layer) in it. After exporting is done, reducing (by deleteing empty rows) is done
+func (c *Canvas) ExportTiles(n_tiles int, layer int) [][]int {
+	matrix := make([][]int, n_tiles)
+
+	for j := 0; j < n_tiles; j++ {
+		matrix[j] = make([]int, 0)
+	}
+
+	for x := 0; x < c.canvasCols; x++ {
+		for y := 0; y < c.canvasRows; y++ {
+			if i := c.GetTileOnDrawingArea(x, y, layer); i != -1 {
+				matrix[i] = append(matrix[i], x)
+				matrix[i] = append(matrix[i], y)
+			}
+		}
+	}
+
+	reduced_matrix := make([][]int, 0)
+
+	for j := 0; j < n_tiles; j++ {
+		if len(matrix[j]) != 0 {
+			reduced_matrix = append(reduced_matrix, matrix[j])
+		}
+	}
+
+	return reduced_matrix
+}

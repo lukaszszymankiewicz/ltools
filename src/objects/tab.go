@@ -6,6 +6,10 @@ import (
 	_ "image/png"
 )
 
+const (
+	NO_OFFSET = 0
+)
+
 type Tab struct {
 	Rect           image.Rectangle
 	locked_image   *ebiten.Image
@@ -47,8 +51,8 @@ func (tb *Tabber) AppendTab(x int, y int, locked_path string, unlocked_path stri
 }
 
 // creates new Tab and appends it to Tabber
-func (tb *Tabber) AddNewTabToTabber(locked_path string, unlocked_path string) {
-	tb.AppendTab(tb.x, tb.y, locked_path, unlocked_path)
+func (tb *Tabber) AddNewTabToTabber(locked_path string, unlocked_path string, offset int) {
+	tb.AppendTab(tb.x+offset, tb.y, locked_path, unlocked_path)
 	width, _ := tb.tabs[0].locked_image.Size()
 	tb.x += width
 }
@@ -60,11 +64,13 @@ func (tb *Tabber) AreaRect(i int) image.Rectangle {
 
 // prepare Complete Tabber
 func NewCompleteTabber(x int, y int) Tabber {
+	// TODO: this sould be initialised on ltools.main!!
 	tb := NewTabber(x, y)
 
-	tb.AddNewTabToTabber("assets/tile_tab_locked.png", "assets/tile_tab_unlocked.png")
-	tb.AddNewTabToTabber("assets/light_tab_locked.png", "assets/light_tab_unlocked.png")
-	tb.AddNewTabToTabber("assets/entities_tab_locked.png", "assets/entities_tab_unlocked.png")
+	tb.AddNewTabToTabber("assets/tile_tab_locked.png", "assets/tile_tab_unlocked.png", NO_OFFSET)
+	tb.AddNewTabToTabber("assets/light_tab_locked.png", "assets/light_tab_unlocked.png", NO_OFFSET)
+	tb.AddNewTabToTabber("assets/entities_tab_locked.png", "assets/entities_tab_unlocked.png", NO_OFFSET)
+	tb.AddNewTabToTabber("assets/export.png", "assets/export.png", 572)
 
 	return tb
 }
