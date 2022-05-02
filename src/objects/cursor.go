@@ -30,5 +30,5 @@ func (crs Cursor) DrawCursor(screen *ebiten.Image, rect image.Rectangle) {
 }
 
 func (crs Cursor) GetCursorSize() int {
-    return crs.size
+	return crs.size
 }

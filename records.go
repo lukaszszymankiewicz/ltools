@@ -7,12 +7,12 @@ const (
 
 // struct of a single non-paused draw on canvas
 type Record struct {
-	x_coords      []int   // tiles x coords
-	y_coords      []int   // tiles y coords
-	tiles         []int   // new tiles
-	old_tiles     []int   // old tiles
-    layers        []int   // tiles layers
-    old_layers    []int   // old tiles layers
+	x_coords   []int // tiles x coords
+	y_coords   []int // tiles y coords
+	tiles      []int // new tiles
+	old_tiles  []int // old tiles
+	layers     []int // tiles layers
+	old_layers []int // old tiles layers
 }
 
 // struct which hold all Records
@@ -63,12 +63,12 @@ func (rc *Recorder) IsRecording() bool {
 
 // ads new data to current Record
 func (rc *Recorder) AppendToCurrent(
-    x int,
-    y int,
-    new_tile int,
-    old_tile int,
-    layer int,
-    old_layer int,
+	x int,
+	y int,
+	new_tile int,
+	old_tile int,
+	layer int,
+	old_layer int,
 ) {
 	if len(rc.records) == rc.pointer {
 		rc.AddNew(x, y, new_tile, old_tile, layer, old_layer)
@@ -77,7 +77,7 @@ func (rc *Recorder) AppendToCurrent(
 		rc.records[rc.pointer].y_coords = append(rc.records[rc.pointer].y_coords, y)
 		rc.records[rc.pointer].tiles = append(rc.records[rc.pointer].tiles, new_tile)
 		rc.records[rc.pointer].old_tiles = append(rc.records[rc.pointer].old_tiles, old_tile)
-        rc.records[rc.pointer].layers = append(rc.records[rc.pointer].layers, layer)
+		rc.records[rc.pointer].layers = append(rc.records[rc.pointer].layers, layer)
 		rc.records[rc.pointer].old_layers = append(rc.records[rc.pointer].old_layers, old_layer)
 	}
 }

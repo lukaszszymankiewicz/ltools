@@ -13,13 +13,13 @@ type Game struct {
 	lto.Canvas
 	lto.TileStack
 	lto.Cursor
-    lto.Tabber
+	lto.Tabber
 	Recorder
-    Controller
+	Controller
 	ClickableAreas       map[image.Rectangle]func(*ebiten.Image)
 	SingleClickableAreas map[image.Rectangle]func(*ebiten.Image)
 	HoverableAreas       map[image.Rectangle]func(*ebiten.Image)
-    mode                 int
+	mode                 int
 }
 
 // everything that needs to be set before first game loop iteration
@@ -40,11 +40,11 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (ScreenWidth, ScreenHeigh
 // game draw loop
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.UpdateControllersState()
-    g.DrawTabber(screen)
+	g.DrawTabber(screen)
 	g.DrawPallete(screen)
 	g.DrawCanvas(screen, g.GetAllTiles(), g.mode)
 	g.handleKeyboardEvents()
-    g.drawCurrentTileToDraw(screen)
+	g.drawCurrentTileToDraw(screen)
 	g.handleMouseEvents(screen)
 }
 
@@ -57,11 +57,11 @@ func NewGame() *Game {
 		PalleteY,
 		PalleteRowsN,
 		PalleteColsN,
-        [][]string{
-            {"assets/tileset_1.png"}, 
-            {"assets/no_light.png"}, 
-            {"assets/hero_entity_icon.png"}, 
-        },
+		[][]string{
+			{"assets/tileset_1.png"},
+			{"assets/no_light.png"},
+			{"assets/hero_entity_icon.png"},
+		},
 	)
 
 	g.Canvas = lto.NewCanvas(
@@ -71,26 +71,30 @@ func NewGame() *Game {
 		CanvasCols,
 		Canvas_x,
 		Canvas_y,
-        MODE_ALL,
+		MODE_ALL,
 	)
 	g.Cursor = lto.NewCursor(CursorSize)
-    g.mode   = MODE_DRAW 
-    g.Tabber = lto.NewCompleteTabber(TabberX, TabberY)
+	g.mode = MODE_DRAW
+	g.Tabber = lto.NewCompleteTabber(TabberX, TabberY)
 
+	return &g
+}
+
+// creates new game instance
+func (g *Game) PostInit() {
 	// post init (works only on already initialised structs)
-	g.AddTileFromPalleteToStack(0, 0, 0, false)
+    g.FindStartingTile()
 	g.AddTileFromPalleteToStack(0, 0, 1, false)
 	g.AddTileFromPalleteToStack(0, 0, 2, true)
-	g.SetCurrentTile(0)
 
 	// binding the functions (yeah, it looks kinda lame)
 	g.ClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))
 	g.HoverableAreas = make(map[image.Rectangle]func(*ebiten.Image))
 	g.SingleClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))
 
-    g.ClickableAreas[g.Pallete.Rect] = g.ChooseTileFromPallete
-    g.HoverableAreas[g.Pallete.Rect] = g.DrawCursorOnPallete
-    g.ClickableAreas[g.Canvas.Rect] = g.DrawTileOnCanvas
+	g.ClickableAreas[g.Pallete.Rect] = g.ChooseTileFromPallete
+	g.HoverableAreas[g.Pallete.Rect] = g.DrawCursorOnPallete
+	g.ClickableAreas[g.Canvas.Rect] = g.DrawTileOnCanvas
 	g.HoverableAreas[g.Canvas.Rect] = g.DrawHoveredTileOnCanvas
 
 	g.SingleClickableAreas[g.Pallete.Scroller_y.LowArrowRect()] = g.Pallete.MovePalleteUp
@@ -103,12 +107,14 @@ func NewGame() *Game {
 	g.SingleClickableAreas[g.Tabber.AreaRect(MODE_DRAW)] = g.changeModeToDraw
 	g.SingleClickableAreas[g.Tabber.AreaRect(MODE_LIGHT)] = g.changeModeToDrawLight
 	g.SingleClickableAreas[g.Tabber.AreaRect(MODE_ENTITIES)] = g.changeModeToDrawEntities
+	g.SingleClickableAreas[g.Tabber.AreaRect(EXPORT_BUTTON)] = g.Export
 
-	return &g
 }
 
 func main() {
 	game := NewGame()
+	game.PostInit()
+
 	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
 	ebiten.SetWindowTitle("LTOOLS - LIGHTER DEVELOPMENT TOOLS")
 
