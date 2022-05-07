@@ -109,10 +109,11 @@ func (ts *TileStack) CheckTileInStack(row int, col int, tileset int) (i int) {
 }
 
 // adds new Tile to stack
-func (ts *TileStack) AppendToStack(image *ebiten.Image, row int, col int, tileset int, unique bool) {
-	tile := NewTile(image, row, col, tileset, unique)
-	ts.stack = append(ts.stack, tile)
-}
+// func (ts *TileStack) AppendToStack(image *ebiten.Image, row int, col int, tileset int, unique bool) {
+// 	tile := NewTile(image, row, col, tileset, unique)
+//     g.LogTileStackPut(len(ts.stack), tile.tileset, row, col, tileset)
+// 	ts.stack = append(ts.stack, tile)
+// }
 
 // adds new Tile to stack
 func (ts *TileStack) AddTileToStack(tile Tile) {
@@ -171,3 +172,6 @@ func (ts *TileStack) TileIndexPerLayer(layer int) []int {
 	return idx
 }
 
+func (t *Tile) GetTileTileset() int {
+    return t.tileset
+}

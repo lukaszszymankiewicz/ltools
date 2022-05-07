@@ -24,6 +24,8 @@ clean:
 	rm -f testname.png
 	# exported levels are deleted
 	rm -f *.zip
+	# old logs file
+	rm -f ./logs/*
 
 .PHONY: test
 test:

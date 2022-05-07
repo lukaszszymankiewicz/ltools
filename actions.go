@@ -6,6 +6,20 @@ import (
 	lto "ltools/src/objects"
 )
 
+// sets current Tile to draw (brush) on Canvas. Canvas x and y are used, and Tile is
+// selected by its position on stack
+func (g *Game) SetTileOnCanvas(x int, y int, value int, layer int) {
+    g.LogCanvasPut(x, y, layer, value)
+    g.DrawOnCanvas(x, y, value, layer)
+}
+
+// adds new Tile to stack
+func (g *Game) AppendToStack(image *ebiten.Image, row int, col int, tileset int, unique bool) {
+	tile := lto.NewTile(image, row, col, tileset, unique)
+    g.LogTileStackPut(g.TileStack.Length(), tile.GetTileTileset(), row, col, tileset)
+    g.AddTileToStack(tile)
+}
+
 // draws Tile from LAYER_DRAW
 func (g *Game) drawNormalTileOnCanvas(x int, y int, screen *ebiten.Image) {
 	oldTile := g.GetTileOnDrawingArea(x, y, LAYER_DRAW)
@@ -173,7 +187,7 @@ func (g *Game) purgeStack() {
 				for x := 0; x < cols; x++ {
 					for y := 0; y < rows; y++ {
 						if tile_nr := g.Canvas.GetTileOnDrawingArea(x, y, layer); tile_nr > i {
-							g.Canvas.SetTileOnCanvas(x, y, tile_nr-1, layer)
+							g.SetTileOnCanvas(x, y, tile_nr-1, layer)
 						}
 					}
 				}
