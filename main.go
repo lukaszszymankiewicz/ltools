@@ -20,6 +20,7 @@ type Game struct {
 	SingleClickableAreas map[image.Rectangle]func(*ebiten.Image)
 	HoverableAreas       map[image.Rectangle]func(*ebiten.Image)
 	mode                 int
+    lto.Logger
 }
 
 // everything that needs to be set before first game loop iteration
@@ -76,6 +77,7 @@ func NewGame() *Game {
 	g.Cursor = lto.NewCursor(CursorSize)
 	g.mode = MODE_DRAW
 	g.Tabber = lto.NewCompleteTabber(TabberX, TabberY)
+    g.Logger = lto.NewLogger()
 
 	return &g
 }

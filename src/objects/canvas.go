@@ -129,7 +129,7 @@ func (c *Canvas) GetTileOnDrawingArea(x int, y int, n int) int {
 
 // sets current Tile to draw (brush) on Canvas. Canvas x and y are used, and Tile is
 // selected by its position on stack
-func (c *Canvas) SetTileOnCanvas(x int, y int, value int, layer int) {
+func (c *Canvas) DrawOnCanvas(x int, y int, value int, layer int) {
 	c.drawingAreas[layer][(x+c.viewport_x)*c.canvasRows+(y+c.viewport_y)] = value
 }
 
