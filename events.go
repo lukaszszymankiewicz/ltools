@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
-	_ "image/png"
 )
 
 // handles all mouse events
@@ -46,7 +45,6 @@ func (g *Game) handleMouseEvents(screen *ebiten.Image) {
 // keyboard events
 func (g *Game) handleKeyboardEvents() {
 	if inpututil.IsKeyJustPressed(ebiten.KeyZ) {
-		recordToUndone := g.UndoOneRecord()
-		g.UndrawOneRecord(recordToUndone)
+		g.UndrawOneRecord()
 	}
 }

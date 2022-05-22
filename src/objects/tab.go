@@ -11,55 +11,55 @@ const (
 )
 
 type Tab struct {
-	Rect           image.Rectangle
-	locked_image   *ebiten.Image
-	unlocked_image *ebiten.Image
+	ImageBasedElement
 }
 
+// Tabber is a collection of Tabs
 type Tabber struct {
 	tabs   []Tab
 	active int
 	x      int
 	y      int
+	width  int
 }
 
-// creates new Tab struct
-func NewTab(x int, y int, locked_path string, unlocked_path string) Tab {
+func NewTab(x int, y int, images []*ebiten.Image) Tab {
 	var t Tab
 
-	t.locked_image = loadImage(locked_path)
-	t.unlocked_image = loadImage(unlocked_path)
-
-	width, height := t.unlocked_image.Size()
-	t.Rect = image.Rect(x, y, x+width, y+height)
+	t.ImageBasedElement = NewImageBasedElement(x, y, images)
 
 	return t
 }
 
-// creates new Tabber struct
+func (tb *Tabber) Area(i int) image.Rectangle {
+	return tb.tabs[i].rect
+}
+
 func NewTabber(x int, y int) Tabber {
 	var tb Tabber
+
 	tb.x = x
 	tb.y = y
+
 	return tb
 }
 
 // appends new Tab to Tabber
-func (tb *Tabber) AppendTab(x int, y int, locked_path string, unlocked_path string) {
-	tab := NewTab(x, y, locked_path, unlocked_path)
+func (tb *Tabber) AppendTab(x int, y int, images []*ebiten.Image) {
+	tab := NewTab(x, y, images)
 	tb.tabs = append(tb.tabs, tab)
 }
 
 // creates new Tab and appends it to Tabber
-func (tb *Tabber) AddNewTabToTabber(locked_path string, unlocked_path string, offset int) {
-	tb.AppendTab(tb.x+offset, tb.y, locked_path, unlocked_path)
-	width, _ := tb.tabs[0].locked_image.Size()
-	tb.x += width
+func (tb *Tabber) AddNewTabToTabber(images []*ebiten.Image, offset int) {
+	tb.AppendTab(tb.x+tb.width+offset, tb.y, images)
+	// adding last tab width to tabber overall width
+	tb.width += tb.tabs[len(tb.tabs)-1].rect.Max.X - tb.tabs[len(tb.tabs)-1].rect.Min.X
 }
 
 // returns single Tab rectangle coords
 func (tb *Tabber) AreaRect(i int) image.Rectangle {
-	return tb.tabs[i].Rect
+	return tb.tabs[i].rect
 }
 
 // prepare Complete Tabber
@@ -67,30 +67,32 @@ func NewCompleteTabber(x int, y int) Tabber {
 	// TODO: this sould be initialised on ltools.main!!
 	tb := NewTabber(x, y)
 
-	tb.AddNewTabToTabber("assets/tile_tab_locked.png", "assets/tile_tab_unlocked.png", NO_OFFSET)
-	tb.AddNewTabToTabber("assets/light_tab_locked.png", "assets/light_tab_unlocked.png", NO_OFFSET)
-	tb.AddNewTabToTabber("assets/entities_tab_locked.png", "assets/entities_tab_unlocked.png", NO_OFFSET)
-	tb.AddNewTabToTabber("assets/export.png", "assets/export.png", 572)
+	t1 := LoadImage("assets/tile_tab_locked.png")
+	t2 := LoadImage("assets/tile_tab_unlocked.png")
+	t3 := LoadImage("assets/light_tab_locked.png")
+	t4 := LoadImage("assets/light_tab_unlocked.png")
+	t5 := LoadImage("assets/entities_tab_locked.png")
+	t6 := LoadImage("assets/entities_tab_unlocked.png")
+	t7 := LoadImage("assets/export.png")
+
+	tb.AddNewTabToTabber([]*ebiten.Image{t2, t1}, NO_OFFSET)
+	tb.AddNewTabToTabber([]*ebiten.Image{t4, t3}, NO_OFFSET)
+	tb.AddNewTabToTabber([]*ebiten.Image{t6, t5}, NO_OFFSET)
+	tb.AddNewTabToTabber([]*ebiten.Image{t7}, 572)
+
+	tb.ChangeCurrent(0)
 
 	return tb
 }
 
-// draws current Tile on screen
-func (tb *Tabber) DrawTabber(screen *ebiten.Image) {
+func (tb *Tabber) Draw(screen *ebiten.Image) {
 	for i := 0; i < len(tb.tabs); i++ {
-
-		op := &ebiten.DrawImageOptions{}
-		op.GeoM.Translate(float64(tb.tabs[i].Rect.Min.X), float64(tb.tabs[i].Rect.Min.Y))
-
-		if i == tb.active {
-			screen.DrawImage(tb.tabs[i].unlocked_image, op)
-		} else {
-			screen.DrawImage(tb.tabs[i].locked_image, op)
-		}
+		tb.tabs[i].ImageBasedElement.Draw(screen)
 	}
 }
 
-// sets current Tab of Tabber
-func (tb *Tabber) ChangeTab(tab int) {
+func (tb *Tabber) ChangeCurrent(tab int) {
+	tb.tabs[tb.active].current_image = 0
 	tb.active = tab
+	tb.tabs[tb.active].current_image = 1
 }

@@ -21,7 +21,7 @@ clean:
 	# exported levels are deleted
 	rm -f *.llv
 	# exported levels are deleted
-	rm -f testname.png
+	rm -f sample_name.png
 	# exported levels are deleted
 	rm -f *.zip
 	# old logs file
