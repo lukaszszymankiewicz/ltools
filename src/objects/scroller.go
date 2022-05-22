@@ -2,100 +2,55 @@ package objects
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"image"
-	"image/color"
 	_ "image/png"
-	"ltools/src/drawer"
 )
 
 type Scroller struct {
-	color     color.Color
-	bgcolor   color.Color
-	MaxRect   image.Rectangle
-	Rect      image.Rectangle
-	arrowLow  ScrollArrow
-	arrowHigh ScrollArrow
-}
-
-type ScrollArrow struct {
-	image *ebiten.Image
-	rect  image.Rectangle
+	background FilledRectElement
+	bar        FilledRectElement
+	arrowLow   ImageBasedElement
+	arrowHigh  ImageBasedElement
 }
 
 // creates new scroller struct
 func NewScroller(x int, y int, width int, height int) Scroller {
+
 	var s Scroller
 
 	// we are assuming that this is x-scroller if it is wider that higher
 	if width > height {
-		s.arrowLow = NewScrollArrow(x, y+height, "assets/arrow_l.png")
-		// we assuming that both arrows are the same size
-		arrow_width, arrow_height := s.arrowLow.Size()
-		s.arrowHigh = NewScrollArrow(x+width-arrow_width, y+height, "assets/arrow_r.png")
+		arrow_l := LoadImage("assets/arrow_l.png")
+		arrow_r := LoadImage("assets/arrow_r.png")
 
-		s.MaxRect = image.Rect(x+arrow_width, y+height, x+width-arrow_width, y+height+arrow_height)
+		arrow_width, _ := arrow_r.Size()
+
+		s.arrowLow = NewImageBasedElement(x, y, []*ebiten.Image{arrow_l})
+		s.arrowHigh = NewImageBasedElement(x+width-arrow_width, y, []*ebiten.Image{arrow_r})
+
+		s.background = NewFilledRectElement(x+arrow_width, y, width-2*(arrow_width), height, scrollerBGColor)
+		s.bar = NewFilledRectElement(x+arrow_width, y, width-2*(arrow_width), height, scrollerColor)
 
 	} else {
-		// we are assuming that this is y-scroller if it is higher than wider
-		s.arrowLow = NewScrollArrow(x, y, "assets/arrow_u.png")
-		// we assuming that both arrows are the same size
-		arrow_width, arrow_height := s.arrowLow.Size()
-		s.arrowHigh = NewScrollArrow(x, y+height-arrow_height, "assets/arrow_d.png")
+		arrow_u := LoadImage("assets/arrow_u.png")
+		arrow_d := LoadImage("assets/arrow_d.png")
 
-		s.MaxRect = image.Rect(x, y+arrow_height, x+arrow_width, y+height-arrow_height)
+		_, arrow_height := arrow_u.Size()
+
+		s.arrowLow = NewImageBasedElement(x, y, []*ebiten.Image{arrow_u})
+		s.arrowHigh = NewImageBasedElement(x, y+height-arrow_height, []*ebiten.Image{arrow_d})
+
+		s.background = NewFilledRectElement(x, y+arrow_height, width, height-2*arrow_height, scrollerBGColor)
+		s.bar = NewFilledRectElement(x, y+arrow_height, width, height-2*arrow_height, scrollerColor)
+
 	}
-
-	s.color = scrollerColor
-	s.bgcolor = scrollerBGColor
 
 	return s
 }
 
-// creates new arrow for scroll control
-func NewScrollArrow(x int, y int, path string) ScrollArrow {
-	var sa ScrollArrow
-
-	sa.image = loadImage(path)
-	width, height := sa.image.Size()
-	sa.rect = image.Rect(x, y, x+width, y+height)
-
-	return sa
-}
-
-// draws ScrollArrow
-func (sa *ScrollArrow) DrawScrollArrow(screen *ebiten.Image) {
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(sa.rect.Min.X), float64(sa.rect.Min.Y))
-
-	screen.DrawImage(sa.image, op)
-}
-
-// returns Scroll Arrow image size
-func (sa *ScrollArrow) Size() (int, int) {
-	arrow_width, arrow_height := sa.image.Size()
-
-	return arrow_width, arrow_height
-}
-
-// returns Scroll Arrow High Arrow Rect
-func (s *Scroller) HighArrowRect() image.Rectangle {
-	return s.arrowHigh.rect
-}
-
-// returns Scroll Arrow High Arrow Rect
-func (s *Scroller) LowArrowRect() image.Rectangle {
-	return s.arrowLow.rect
-}
-
 // draws whole scroller
 func (s *Scroller) Draw(screen *ebiten.Image) {
-	// arrows
-	s.arrowLow.DrawScrollArrow(screen)
-	s.arrowHigh.DrawScrollArrow(screen)
-
-	// background
-	drawer.FilledRect(screen, s.MaxRect, s.bgcolor)
-
-	// actual scroller
-	drawer.FilledRect(screen, s.Rect, s.color)
+	s.background.Draw(screen)
+	s.bar.Draw(screen)
+	s.arrowLow.Draw(screen)
+	s.arrowHigh.Draw(screen)
 }

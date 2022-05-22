@@ -2,33 +2,30 @@ package objects
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"image"
-	"image/color"
 	_ "image/png"
-	"ltools/src/drawer"
 )
 
-// cursor struct
 type Cursor struct {
-	size  int
-	color color.Color
+	SingleImageBasedElement
+	size int
 }
 
-// creates new cursor object
 func NewCursor(size int) Cursor {
 	var crs Cursor
 
-	crs.color = cursorColor
+	crs.SingleImageBasedElement = NewSingleImageBasedElement(nil)
+	crs.SingleImageBasedElement.FloatingEmptyRectElement.color = whiteColor
+
 	crs.size = size
 
 	return crs
 }
 
-// draws cursor on screen
-func (crs Cursor) DrawCursor(screen *ebiten.Image, rect image.Rectangle) {
-	drawer.EmptyRect(screen, rect, crs.color)
+func (crs Cursor) DrawOnPallete(screen *ebiten.Image, x int, y int) {
+	crs.FloatingEmptyRectElement.Draw(screen, x, y, x+crs.size, y+crs.size)
 }
 
-func (crs Cursor) GetCursorSize() int {
-	return crs.size
+func (crs Cursor) DrawOnCanvas(screen *ebiten.Image, image *ebiten.Image, x int, y int) {
+	crs.SingleImageBasedElement.image = image
+	crs.SingleImageBasedElement.Draw(screen, x, y, 1.0)
 }

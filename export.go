@@ -10,6 +10,7 @@ import (
 	"image/png"
 	"io"
 	"log"
+	lto "ltools/src/objects"
 	"os"
 )
 
@@ -19,9 +20,27 @@ const (
 	TILESET_FORMAT = ".png"
 	LEVEL_FORMAT   = ".llv"
 	ARCHIVE_FORMAT = ".zip"
-	// by now changing level name is not supported
-	BASENAME = "level"
+	BASENAME       = "level"
 )
+
+type TileStack struct {
+	tiles map[*lto.Tile][]int
+}
+
+func NewTileStack() TileStack {
+	var ts TileStack
+	ts.tiles = make(map[*lto.Tile][]int)
+	return ts
+}
+
+func (ts *TileStack) AddNew(tile *lto.Tile) {
+	ts.tiles[tile] = []int{}
+}
+
+func (ts *TileStack) Append(tile *lto.Tile, x int, y int) {
+	ts.tiles[tile] = append(ts.tiles[tile], x)
+	ts.tiles[tile] = append(ts.tiles[tile], y)
+}
 
 // writes value as binary to file
 func writeToFile(f *os.File, value int) {
@@ -30,29 +49,44 @@ func writeToFile(f *os.File, value int) {
 	binary.Write(f, binary.BigEndian, value_encoded)
 }
 
-// converts one layer data into sparse matrix
-func (g *Game) writeLayerToFile(f *os.File, layer int) {
-	tiles_indexes := g.TileIndexPerLayer(layer)
-	all_tiles_n := g.TileStack.Length()
+func (ts *TileStack) hasTile(tile *lto.Tile) bool {
+	_, isPresent := ts.tiles[tile]
 
-	tiles_matrix := g.Canvas.ExportTiles(all_tiles_n, layer)
-	tiles_used := g.NumberOfTilesOnLayer(layer)
-	writeToFile(f, tiles_used)
-
-	for t := 0; t < tiles_used; t++ {
-		// add index (used only for entities)
-		writeToFile(f, t)
-
-		idx := tiles_indexes[t]
-		n := g.TileUsage(idx)
-		writeToFile(f, n)
-
-        if n > 0 {
-            for i := 0; i < len(tiles_matrix[t]); i++ {
-                writeToFile(f, tiles_matrix[t][i])
-            }
-        }
+	if isPresent == true {
+		return true
+	} else {
+		return false
 	}
+}
+
+// fills the stack with tiles used in level and position where it was used
+// func (g *Game) FillStack(f *os.File, layer int, stack *TileStack) {
+func (g *Game) FillStack() TileStack {
+	stack := NewTileStack()
+
+	rows, cols := g.Canvas.Size()
+	layers := g.Canvas.Layers()
+
+	for x := 0; x < rows; x++ {
+		for y := 0; y < cols; y++ {
+			for l := 0; l < layers; l++ {
+				tile := g.Canvas.GetTileOnDrawingArea(x, y, l)
+
+				if tile != nil {
+					if stack.hasTile(tile) == true {
+						// tile is no need to be filled
+						stack.Append(tile, x, y)
+					} else {
+						// stack needs to be updated
+						stack.AddNew(tile)
+						stack.Append(tile, x, y)
+					}
+				}
+			}
+		}
+	}
+
+	return stack
 }
 
 // cropImage takes an image and crops it to the specified rectangle.
@@ -72,78 +106,118 @@ func cropImage(img image.Image, crop image.Rectangle) (image.Image, error) {
 	return simg.SubImage(crop), nil
 }
 
-// unfortunatly ebiten.Image does not supprt exporintg image to file, so raw Image.image from
-// golang build-in library is use - we got everything!
-// second thing - by now level use only ONE hardcoded asset, so it is easy to determine what
-// needs to be loaded here but it is only a temporary solution
-func (g *Game) PrepareTiles(filename string) string {
+func (g *Game) PrepareTileset(filename string, stack TileStack) string {
 	name := filename + TILESET_FORMAT
+	n_tiles := len(stack.tiles)
 
-	asset, err := os.Open("assets/tileset_1.png")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	asset_image, _, err := image.Decode(asset)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// only draw tiles are put into tileset png file
-	tiles_indexes := g.TileIndexPerLayer(LAYER_DRAW)
-	n_tiles := len(tiles_indexes)
-
-	w := TILES_PER_ROW * TileWidth
-	h := ((n_tiles / TILES_PER_ROW) + 1) * TileHeight
+	w := TILES_PER_ROW * GridSize
+	h := ((n_tiles / TILES_PER_ROW) + 1) * GridSize
 	r := image.Rectangle{image.Point{0, 0}, image.Point{int(w), int(h)}}
-
-	// this image will be exported
 	export_image := image.NewRGBA(r)
 
-	// read tiles directly from TileStack and put it into prepared image
-	for i := 0; i < n_tiles; i++ {
+	i := 0
+
+	// preparing image
+	for tile, _ := range stack.tiles {
+
+		asset, err := os.Open(tile.GetTileTileset())
+		fmt.Printf("asset name = %s\n", tile.GetTileTileset())
+
+		if err != nil {
+			fmt.Println(err)
+			fmt.Println("wasssup!")
+		}
+
+		asset_image, _, err := image.Decode(asset)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		// this is the coords of tile on export_image
-		x := (i % TILES_PER_ROW) * TileWidth
-		y := (i / TILES_PER_ROW) * TileHeight
+		x := (i % TILES_PER_ROW) * GridSize
+		y := (i / TILES_PER_ROW) * GridSize
+
+		row, col := tile.PosOnTileset()
 
 		// getting single tile from tileset image
-		row, col := g.TileStack.GetTilePos(i)
-		crop := image.Rect(row*TileWidth, col*TileHeight, row*TileWidth+TileWidth, col*TileHeight+TileHeight)
+		crop := image.Rect(row*GridSize, col*GridSize, row*GridSize+GridSize, col*GridSize+GridSize)
 		single_tile, _ := cropImage(asset_image, crop)
 
 		// putting tile on export_image
 		draw.Draw(
 			export_image,
-			image.Rect(x, y, x+TileWidth, y+TileHeight),
+			image.Rect(x, y, x+GridSize, y+GridSize),
 			single_tile,
-			image.Point{row * TileWidth, col * TileHeight},
+			image.Point{row * GridSize, col * GridSize},
 			draw.Src,
 		)
+		i++
 	}
 
 	// saveing image to a file
-	f, err := os.Create(name)
+	f, _ := os.Create(name)
 	png.Encode(f, export_image)
 	f.Close()
 
 	return name
 }
 
-// exports level as sparse matrix form
-// returns created file if succeded
-func (g *Game) exportLevel(filename string) string {
+func (ts *TileStack) TilesPerLayer(layer int) []*lto.Tile {
+	tiles := make([]*lto.Tile, 0)
+
+	for tile, _ := range ts.tiles {
+		if tile.GetLayer() == layer {
+			tiles = append(tiles, tile)
+		}
+	}
+	return tiles
+}
+
+func (ts *TileStack) TilesPerLayerSum(layer int) int {
+	n := 0
+
+	for tile, coords := range ts.tiles {
+		if tile.GetLayer() == layer {
+			n += len(coords)
+		}
+	}
+
+	return n
+}
+
+func (g *Game) writeLayerToFile(f *os.File, layer int, stack TileStack) {
+	tiles_per_layer := stack.TilesPerLayer(layer)
+	tiles_per_layer_sum := stack.TilesPerLayerSum(layer)
+
+	writeToFile(f, tiles_per_layer_sum)
+
+	for _, tile := range tiles_per_layer {
+		single_tile_usage := len(stack.tiles[tile])
+		writeToFile(f, single_tile_usage)
+
+		for _, coord := range stack.tiles[tile] {
+			writeToFile(f, coord)
+		}
+	}
+}
+
+func (g *Game) exportLevel(filename string, stack TileStack) string {
 	name := filename + LEVEL_FORMAT
-	g.purgeStack()
-
 	f, _ := os.Create(name)
-	rows, cols := g.Canvas.Size()
 
+	// first, write rows and cols number to file
+	rows, cols := g.Canvas.Size()
 	writeToFile(f, rows)
 	writeToFile(f, cols)
 
-	g.writeLayerToFile(f, LAYER_DRAW)
-	g.writeLayerToFile(f, LAYER_LIGHT)
-	g.writeLayerToFile(f, LAYER_ENTITY)
+	// then, write all layers content
+	for layer := 0; layer < LAYER_N; layer++ {
+		g.writeLayerToFile(f, layer, stack)
+	}
 
 	f.Close()
 
@@ -196,17 +270,16 @@ func CompresFiles(files []string, archive_name string) string {
 			log.Fatal(e)
 		}
 	}
-
 	return name
 }
 
-// compress files needed to export level
 func (g *Game) Export(screen *ebiten.Image) {
-	levelname := g.exportLevel(BASENAME)
-	tileset_name := g.PrepareTiles(BASENAME)
+	stack := g.FillStack()
+
+	levelname := g.exportLevel(BASENAME, stack)
+	tileset_name := g.PrepareTileset(BASENAME, stack)
 
 	CompresFiles([]string{levelname, tileset_name}, BASENAME)
 
-    g.FindStartingTile()
-    g.changeModeToDraw(screen)
+	g.changeModeToDraw(screen)
 }
