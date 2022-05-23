@@ -54,7 +54,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func NewGame() *Game {
 	var g Game
 
-	g.Tileset = lto.NewTileset([]string{"assets/tileset_1.png", "assets/no_light.png", "assets/hero_entity_icon.png"})
+	g.Tileset = lto.NewTileset(
+		[]string{
+			"assets/tilesets/basic_tileset.png",
+			"assets/tilesets/light_tileset.png",
+			"assets/tilesets/entity_tileset.png",
+		},
+	)
 
 	g.Pallete = lto.NewPallete(
 		PalleteX,

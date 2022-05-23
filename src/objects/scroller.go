@@ -19,8 +19,8 @@ func NewScroller(x int, y int, width int, height int) Scroller {
 
 	// we are assuming that this is x-scroller if it is wider that higher
 	if width > height {
-		arrow_l := LoadImage("assets/arrow_l.png")
-		arrow_r := LoadImage("assets/arrow_r.png")
+		arrow_l := LoadImage("assets/buttons/arrow_l.png")
+		arrow_r := LoadImage("assets/buttons/arrow_r.png")
 
 		arrow_width, _ := arrow_r.Size()
 
@@ -31,8 +31,8 @@ func NewScroller(x int, y int, width int, height int) Scroller {
 		s.bar = NewFilledRectElement(x+arrow_width, y, width-2*(arrow_width), height, scrollerColor)
 
 	} else {
-		arrow_u := LoadImage("assets/arrow_u.png")
-		arrow_d := LoadImage("assets/arrow_d.png")
+		arrow_u := LoadImage("assets/buttons/arrow_u.png")
+		arrow_d := LoadImage("assets/buttons/arrow_d.png")
 
 		_, arrow_height := arrow_u.Size()
 

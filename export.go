@@ -119,13 +119,10 @@ func (g *Game) PrepareTileset(filename string, stack TileStack) string {
 
 	// preparing image
 	for tile, _ := range stack.tiles {
-
 		asset, err := os.Open(tile.GetTileTileset())
-		fmt.Printf("asset name = %s\n", tile.GetTileTileset())
 
 		if err != nil {
 			fmt.Println(err)
-			fmt.Println("wasssup!")
 		}
 
 		asset_image, _, err := image.Decode(asset)
