@@ -76,10 +76,8 @@ func TestHasTile(t *testing.T) {
 }
 
 func TestFillStack(t *testing.T) {
-	// complete stack
 	var g Game
 
-	// tileset := ebiten.NewImage(3*32, 32)
 	tileset_name := "name"
 
 	g.Canvas = lto.NewCanvas(0, 0, 30*32, 20*32, 32, 30, 20, 3)
@@ -152,13 +150,11 @@ func TestFillStack(t *testing.T) {
 }
 
 func TestPrepareTiles(t *testing.T) {
-	// complete stack
 	var g Game
 
 	g.Canvas = lto.NewCanvas(0, 0, 30*32, 20*32, 32, 30, 20, 3)
 
-	// tileset := ebiten.NewImage(3*32, 32)
-	tileset_name := "assets/tileset_1.png"
+	tileset_name := "assets/tilesets/basic_tileset.png"
 
 	i1 := ebiten.NewImage(32, 32)
 	i2 := ebiten.NewImage(32, 32)
@@ -273,7 +269,7 @@ func TestExportLevel(t *testing.T) {
 	var g Game
 
 	name := "czeslaw"
-	tileset_name := "assets/tileset_1.png"
+	tileset_name := "assets/tilesets/basic_tileset.png"
 	g.Canvas = lto.NewCanvas(0, 0, 30*32, 20*32, 32, 30, 20, 3)
 
 	i1 := ebiten.NewImage(32, 32)
@@ -354,7 +350,7 @@ func TestExport(t *testing.T) {
 
 		t.Run(testname, func(t *testing.T) {
 			g := NewGame()
-			tileset_name := "assets/tileset_1.png"
+			tileset_name := "assets/tilesets/basic_tileset.png"
 
 			// this is just a shortcut for selecting tile by index and not by tile
 			tiles := make([]*lto.Tile, 0)
