@@ -108,7 +108,11 @@ func (g *Game) UndrawOneRecord() {
 
 func (g *Game) DrawCursorOnPallete(screen *ebiten.Image) {
 	x, y := g.Pallete.MousePosToTilePos(g.mouse_x, g.mouse_y)
-	g.Cursor.DrawOnPallete(screen, x, y)
+    row, col := g.Pallete.MousePosToRowAndCol(x, y)
+
+    if t:=g.Pallete.PosHasTile(row, col, g.Pallete.CurrentLayer()); t == true {
+        g.Cursor.DrawOnPallete(screen, x, y)
+    }
 }
 
 func (g *Game) DrawCursorOnCanvas(screen *ebiten.Image) {
@@ -121,6 +125,7 @@ func (g *Game) changeMode(mode int) {
 	g.mode = mode
 	g.Tabber.ChangeCurrent(mode)
 	g.Pallete.ChangeCurrent(mode)
+	g.Pallete.RestartPalletePos()
 	g.Canvas.ChangeCurrent(mode)
 }
 

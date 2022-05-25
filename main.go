@@ -16,7 +16,7 @@ type Game struct {
 	lto.Recorder
 	lto.Toolbox
 	lto.Logger
-	lto.Tileset
+	lto.Tilesets
 	Controller
 	ClickableAreas       map[image.Rectangle]func(*ebiten.Image)
 	SingleClickableAreas map[image.Rectangle]func(*ebiten.Image)
@@ -54,7 +54,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func NewGame() *Game {
 	var g Game
 
-	g.Tileset = lto.NewTileset(
+    g.mode = MODE_DRAW
+
+	g.Tilesets = lto.NewTilesets(
 		[]string{
 			"assets/tilesets/basic_tileset.png",
 			"assets/tilesets/light_tileset.png",
@@ -68,7 +70,7 @@ func NewGame() *Game {
 		PalleteColsN*GridSize,
 		PalleteRowsN*GridSize,
 		GridSize,
-		PalleteRowsN+7,
+		PalleteRowsN + 1,
 		PalleteColsN,
 		LAYER_N,
 	)
@@ -85,9 +87,7 @@ func NewGame() *Game {
 	)
 
 	g.Toolbox = lto.NewToolbox(ToolboxX, ToolboxY)
-
 	g.Cursor = lto.NewCursor(CursorSize)
-	g.mode = MODE_DRAW
 	g.Tabber = lto.NewCompleteTabber(TabberX, TabberY)
 	g.Logger = lto.NewLogger(LOGGER_PATH)
 
@@ -96,10 +96,9 @@ func NewGame() *Game {
 
 // creates new game instance
 func (g *Game) PostInit() {
-	i := 0
-	for k, v := range g.Tileset.AvailableTilesetsImage() {
-		g.Pallete.FillPallete(v, k, i)
-		i++
+
+	for i := 0; i<g.Tilesets.AvailableTilesets(); i++ {
+        g.Pallete.FillPallete(g.Tilesets.GetById(i), i)
 	}
 
 	g.ClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))

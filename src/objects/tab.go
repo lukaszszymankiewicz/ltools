@@ -67,13 +67,13 @@ func NewCompleteTabber(x int, y int) Tabber {
 	// TODO: this sould be initialised on ltools.main!!
 	tb := NewTabber(x, y)
 
-	t1 := LoadImage("assets/buttons/tile_tab_locked.png")
-	t2 := LoadImage("assets/buttons/tile_tab_unlocked.png")
-	t3 := LoadImage("assets/buttons/light_tab_locked.png")
-	t4 := LoadImage("assets/buttons/light_tab_unlocked.png")
-	t5 := LoadImage("assets/buttons/entities_tab_locked.png")
-	t6 := LoadImage("assets/buttons/entities_tab_unlocked.png")
-	t7 := LoadImage("assets/buttons/export.png")
+	t1 := LoadImage("src/objects/assets/buttons/tile_tab_locked.png")
+	t2 := LoadImage("src/objects/assets/buttons/tile_tab_unlocked.png")
+	t3 := LoadImage("src/objects/assets/buttons/light_tab_locked.png")
+	t4 := LoadImage("src/objects/assets/buttons/light_tab_unlocked.png")
+	t5 := LoadImage("src/objects/assets/buttons/entities_tab_locked.png")
+	t6 := LoadImage("src/objects/assets/buttons/entities_tab_unlocked.png")
+	t7 := LoadImage("src/objects/assets/buttons/export.png")
 
 	tb.AddNewTabToTabber([]*ebiten.Image{t2, t1}, NO_OFFSET)
 	tb.AddNewTabToTabber([]*ebiten.Image{t4, t3}, NO_OFFSET)

@@ -6,21 +6,42 @@ import (
 )
 
 type Tileset struct {
-	tilesets map[string]*ebiten.Image
+    id int
+	name string
+    img *ebiten.Image
 }
 
-func NewTileset(images []string) Tileset {
-	var tl Tileset
+type Tilesets struct {
+	tilesets []Tileset
+}
 
-	tl.tilesets = make(map[string]*ebiten.Image)
+func NewTileset(id int, name string, img *ebiten.Image) Tileset {
+	var t Tileset
 
-	for _, image := range images {
-		tl.tilesets[image] = LoadImage(image)
+	t.id = id
+	t.name = name
+	t.img = img
+
+	return t
+}
+
+func NewTilesets(images []string) Tilesets {
+	var tl Tilesets
+
+	tl.tilesets = make([]Tileset, 0)
+
+	for i, name := range images {
+        tileset := NewTileset(i, name, LoadImage(name))
+        tl.tilesets = append(tl.tilesets, tileset)
 	}
 
 	return tl
 }
 
-func (tl *Tileset) AvailableTilesetsImage() map[string]*ebiten.Image {
-	return tl.tilesets
+func (tl *Tilesets) AvailableTilesets() int  {
+	return len(tl.tilesets)
+}
+
+func (tl *Tilesets) GetById(i int) Tileset {
+	return tl.tilesets[i]
 }

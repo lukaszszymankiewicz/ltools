@@ -10,6 +10,7 @@ import (
 // Pallete struct serves as a wrapper for Tiles which can be drawn.
 type Pallete struct {
 	Grid
+    bg SingleImageBasedElement 
 }
 
 func NewPallete(
@@ -25,6 +26,7 @@ func NewPallete(
 	var p Pallete
 
 	p.Grid = NewGrid(x, y, width, height, grid_size, rows, cols, n_layers, whiteColor)
+    p.bg = NewSingleImageBasedElement(LoadImage("src/objects/assets/other/bg.png"))
 
 	return p
 }
@@ -35,7 +37,6 @@ func (p *Pallete) Draw(screen *ebiten.Image) {
 
 	for row := 0; row < p.viewportRows; row++ {
 		for col := 0; col < p.viewportCols; col++ {
-
 			tile := p.GetTileOnDrawingArea(row+p.viewport_y, col, p.current_layer)
 
 			pos_x := p.rect.Min.X + (col * p.grid_size)
@@ -44,7 +45,9 @@ func (p *Pallete) Draw(screen *ebiten.Image) {
 			if tile != nil {
 				// 1.0 stands for alpha channel value
 				tile.SingleImageBasedElement.Draw(screen, pos_x, pos_y, 1.0)
-			}
+            } else {
+                p.bg.Draw(screen, pos_x, pos_y, 1.0)
+            }
 			n++
 		}
 	}
@@ -53,8 +56,8 @@ func (p *Pallete) Draw(screen *ebiten.Image) {
 	p.scroller_y.Draw(screen)
 }
 
-func (p *Pallete) FillPallete(pal_img *ebiten.Image, pal_name string, layer int) {
-	width, height := pal_img.Size()
+func (p *Pallete) FillPallete(tileset Tileset, layer int) {
+	width, height := tileset.img.Size()
 	rows := int(width / p.grid_size)
 	cols := int(height / p.grid_size)
 
@@ -66,19 +69,18 @@ func (p *Pallete) FillPallete(pal_img *ebiten.Image, pal_name string, layer int)
 
 			// despite ebiten.Image.SubImage returning another ebiten.Image, type assertion is still
 			// needed.
-			i := pal_img.SubImage(r)
+			i := tileset.img.SubImage(r)
 			i2, err := i.(*ebiten.Image)
 
 			if err != false {
 				fmt.Errorf("something strange happen while dividing Tileset")
 			}
 
-			t := NewTile(i2, pal_name, false, x, y, layer)
+			t := NewTile(i2, tileset.name, false, x, y, layer)
 
 			p.SetTileOnDrawingArea(int(n/p.cols), int(n%p.cols), layer, &t)
 
 			n++
-
 		}
 	}
 
@@ -94,4 +96,19 @@ func (p *Pallete) MovePalleteDown(screen *ebiten.Image) {
 
 func (p *Pallete) MovePalleteUp(screen *ebiten.Image) {
 	p.MoveViewport(0, -1)
+}
+
+func (p *Pallete) RestartPalletePos() {
+    p.viewport_x = 0
+    p.viewport_y = 0
+    p.UpdateXScroller()
+	p.UpdateYScroller()
+}
+
+func (p *Pallete) PosHasTile(x int, y int, l int) bool {
+	if p.GetTileOnDrawingArea(x, y, l) == nil {
+        return false 
+    } else {
+        return true
+    }
 }
