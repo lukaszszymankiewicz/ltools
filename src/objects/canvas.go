@@ -7,6 +7,7 @@ import (
 
 type Canvas struct {
 	Grid
+    bg SingleImageBasedElement 
 }
 
 // this show how to set alpha channel for every layer if given layer is on
@@ -17,25 +18,30 @@ var layers_alpha = [][]float64{
 }
 
 func (c *Canvas) Draw(screen *ebiten.Image, layer int) {
-	// drawing the border around Canvas
+    // drawing the border around Canvas
 	c.FilledRectElement.Draw(screen)
 
 	// drawing Tiles and tiles on it
 	for x := 0; x < c.viewportCols; x++ {
 		for y := 0; y < c.viewportRows; y++ {
+            empty := true
+            pos_x := c.rect.Min.X + (x * c.grid_size)
+            pos_y := c.rect.Min.Y + (y * c.grid_size)
+
 			for l := 0; l < c.n_layers; l++ {
-
 				tile := c.GetTileOnDrawingArea(x+c.viewport_x, y+c.viewport_y, l)
-
-				pos_x := c.rect.Min.X + (x * c.grid_size)
-				pos_y := c.rect.Min.Y + (y * c.grid_size)
-
 				if tile != nil {
 					tile.SingleImageBasedElement.Draw(screen, pos_x, pos_y, layers_alpha[layer][l])
-				}
-			}
-		}
-	}
+                    empty = false
+                }
+            }
+
+            // if nothing is to be drawn - background layer is draw
+            if empty == true {
+                c.bg.Draw(screen, pos_x, pos_y, 1.0)
+            }
+        }
+    }
 
 	// drawing the scrollers
 	c.scroller_x.Draw(screen)
@@ -56,6 +62,8 @@ func NewCanvas(
 	var c Canvas
 
 	c.Grid = NewGrid(x, y, width, height, grid_size, rows, cols, n_layers, greyColor)
+
+    c.bg = NewSingleImageBasedElement(LoadImage("src/objects/assets/other/bg.png"))
 
 	c.UpdateXScroller()
 	c.UpdateYScroller()

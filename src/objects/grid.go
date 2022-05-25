@@ -14,8 +14,8 @@ type Grid struct {
 	viewportCols  int
 	viewportRows  int
 	viewport_x    int
-	viewport_y    int
 	scroller_x    Scroller
+    viewport_y    int
 	scroller_y    Scroller
 	drawingAreas  [][]*Tile
 	current_layer int
@@ -138,6 +138,10 @@ func (g *Grid) MousePosToTile(x int, y int, layer int) *Tile {
 
 func (g *Grid) ChangeCurrent(v int) {
 	g.current_layer = v
+}
+
+func (g *Grid) CurrentLayer() int {
+	return g.current_layer
 }
 
 func (g *Grid) ScrollerXLeftArrowArea() image.Rectangle {
