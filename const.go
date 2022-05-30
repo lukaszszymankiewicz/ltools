@@ -22,7 +22,7 @@ const (
 	PalleteY              = 80
 	PalleteColsN          = 6
 	PalleteRowsN          = 10
-	ToolboxX              = PalleteX + ((PalleteColsN * GridSize) / 2) - (GridSize / 2)
+	ToolboxX              = PalleteX
 	ToolboxY              = (PalleteY + (PalleteRowsN * GridSize)) + GridSize
 	Canvas_y              = PalleteY
 	Canvas_x              = (PalleteColsN * GridSize) + (GridSize * 3)
