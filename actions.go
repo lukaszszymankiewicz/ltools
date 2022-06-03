@@ -4,90 +4,32 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// draws Tile from LAYER_DRAW
-func (g *Game) drawNormalTileOnCanvas(x int, y int, screen *ebiten.Image) {
-	oldTile := g.Canvas.GetTileOnDrawingArea(x, y, LAYER_DRAW)
-	lightTile := g.Canvas.GetTileOnDrawingArea(x, y, LAYER_LIGHT)
-
-	tile_to_draw := g.Toolbox.GetFillTile()
-
-	// if light obstacle is cleaned it should be cleaned from light layer too
-	if lightTile != nil {
-		g.StartRecording()
-		g.Canvas.SetTileOnDrawingArea(x, y, LAYER_LIGHT, nil)
-		g.Recorder.AppendToCurrent(x, y, nil, lightTile, LAYER_LIGHT)
-	}
-
-	// current place is empty
-	if oldTile == nil {
-		g.Logger.LogCanvasPut(x, y, LAYER_DRAW)
-		g.StartRecording()
-		g.Recorder.AppendToCurrent(x, y, tile_to_draw, oldTile, LAYER_DRAW)
-		g.Canvas.SetTileOnDrawingArea(x, y, LAYER_DRAW, tile_to_draw)
-		// current place is occupied by other tile (other than current tile to draw)
-	} else if oldTile != tile_to_draw {
-		g.StartRecording()
-		g.Canvas.SetTileOnDrawingArea(x, y, LAYER_DRAW, tile_to_draw)
-		g.Recorder.AppendToCurrent(x, y, tile_to_draw, oldTile, LAYER_DRAW)
-	}
-}
-
-// draws tile from LAYER_LIGHT
-func (g *Game) drawLightObstacleTile(x int, y int, screen *ebiten.Image) {
-	lightTile := g.Canvas.GetTileOnDrawingArea(x, y, LAYER_LIGHT)
-	oldTile := g.Canvas.GetTileOnDrawingArea(x, y, LAYER_DRAW)
-
-	tile_to_draw := g.Toolbox.GetFillTile()
-
-	if oldTile == nil && lightTile == nil {
-		g.StartRecording()
-		g.Canvas.SetTileOnDrawingArea(x, y, LAYER_LIGHT, tile_to_draw)
-		g.Recorder.AppendToCurrent(x, y, tile_to_draw, nil, LAYER_LIGHT)
-	}
-}
-
-// draws Tile from LAYER_ENTITY
-func (g *Game) drawEntityTileOnCanvas(x int, y int, screen *ebiten.Image) {
-	bgTile := g.Canvas.GetTileOnDrawingArea(x, y, LAYER_DRAW)
-	oldTile := g.Canvas.GetTileOnDrawingArea(x, y, LAYER_ENTITY)
-	tile_to_draw := g.Toolbox.GetFillTile()
-
-	if bgTile != nil && oldTile == nil {
-
-		// if tile is unique, it can be put at only one position on Canvas. If one of this tile is
-		// already drawn, it must be erased and then put into new location chosen by user. To undraw
-		// such Tile it must be first find.
-		if tile_to_draw.IsUnique() == true {
-			if tile_to_draw.IsSet() == false {
-				g.StartRecording()
-				g.Canvas.SetTileOnDrawingArea(x, y, LAYER_ENTITY, tile_to_draw)
-				g.Recorder.AppendToCurrent(x, y, tile_to_draw, nil, LAYER_ENTITY)
-				tile_to_draw.Put(x, y)
-				// unique tile is used - old location needs to be found and Tile must be erased from
-				// there
-			} else {
-				g.StartRecording()
-				old_x, old_y := tile_to_draw.Loc()
-				g.Canvas.SetTileOnDrawingArea(x, y, LAYER_ENTITY, tile_to_draw)
-				g.Canvas.SetTileOnDrawingArea(old_x, old_y, LAYER_ENTITY, nil)
-
-				g.Recorder.AppendToCurrent(x, y, tile_to_draw, nil, LAYER_ENTITY)
-				g.Recorder.AppendToCurrent(old_x, old_y, nil, tile_to_draw, LAYER_ENTITY)
-			}
-		}
-	}
-}
-
 func (g *Game) DrawTileOnCanvas(screen *ebiten.Image) {
+    // future brush (like drawing Rectangle for example will take two pair of x and y coords as we
+    // need to set first and second corner) will need to have bigger number of inputs. But for now
+    // only 'single click' tools are availalble. To allow for future brushes two pairs of coords are
+    // passed to calculate the brush effect (coords are simply doubled).
+
 	x, y := g.Canvas.MousePosToRowAndCol(g.mouse_x, g.mouse_y)
 
-	if g.mode == MODE_LIGHT {
-		g.drawLightObstacleTile(x, y, screen)
-	} else if g.mode == MODE_DRAW {
-		g.drawNormalTileOnCanvas(x, y, screen)
-	} else if g.mode == MODE_ENTITIES {
-		g.drawEntityTileOnCanvas(x, y, screen)
-	}
+    fill := g.Toolbox.GetFillTile()
+    brush := g.Toolbox.GetActiveTool()
+    result := brush.ApplyBrush(x, y, x, y, fill)
+
+    // if main position is not allowed to have tile in it function aborts
+    if g.Canvas.TileIsAllowed(x, y, g.mode) == false {
+        return
+    }
+
+    for i:=0; i<result.Len(); i++ {
+        pos_x, pos_y := result.GetCoord(i)
+        layer := result.GetLayer(i)
+        tile_to_draw := result.GetTile(i)
+
+        if g.Canvas.TileIsAllowed(pos_x, pos_y, layer) == true {
+            g.Canvas.DrawBrush(pos_x, pos_y, layer, tile_to_draw)
+        }
+    }
 }
 
 func (g *Game) ChooseTileFromPallete(screen *ebiten.Image) {
@@ -140,3 +82,12 @@ func (g *Game) changeModeToDrawLight(screen *ebiten.Image) {
 func (g *Game) changeModeToDrawEntities(screen *ebiten.Image) {
 	g.changeMode(MODE_ENTITIES)
 }
+
+func (g *Game) changeToolToPencil(screen *ebiten.Image) {
+	g.Toolbox.Activate(PENCIL_TOOL)
+}
+
+func (g *Game) changeToolToRubber(screen *ebiten.Image) {
+	g.Toolbox.Activate(RUBBER_TOOL)
+}
+

@@ -7,7 +7,32 @@ import (
 
 type Canvas struct {
 	Grid
-    bg SingleImageBasedElement 
+    bg ImageElement 
+    SetTileByLayerCondition []func(int, int, int)bool
+    SetTileByLayerEffect [][]func(int, int, int, *Tile)
+}
+
+func (c *Canvas) IsEmpty(x int, y int, n int) bool {
+    isempty := true
+
+    for i:=0; i<c.n_layers; i++ {
+        if c.GetTileOnDrawingArea(x, y, i) != nil {
+            isempty = false
+        }
+    }
+    return isempty
+}
+
+func (c *Canvas) HasTile(x int, y int, n int) bool {
+    // TODO: This '0' needs to changed to LAYER_DRAW!!!
+    if c.GetTileOnDrawingArea(x, y, 0) != nil {
+        return true
+    }
+    return false
+}
+
+func (c *Canvas) Always(x int, y int, n int) bool {
+    return true
 }
 
 // this show how to set alpha channel for every layer if given layer is on
@@ -18,9 +43,6 @@ var layers_alpha = [][]float64{
 }
 
 func (c *Canvas) Draw(screen *ebiten.Image, layer int) {
-    // drawing the border around Canvas
-	c.FilledRectElement.Draw(screen)
-
 	// drawing Tiles and tiles on it
 	for x := 0; x < c.viewportCols; x++ {
 		for y := 0; y < c.viewportRows; y++ {
@@ -31,14 +53,20 @@ func (c *Canvas) Draw(screen *ebiten.Image, layer int) {
 			for l := 0; l < c.n_layers; l++ {
 				tile := c.GetTileOnDrawingArea(x+c.viewport_x, y+c.viewport_y, l)
 				if tile != nil {
-					tile.SingleImageBasedElement.Draw(screen, pos_x, pos_y, layers_alpha[layer][l])
+                    tile.ImageElement.rect.Min.X = pos_x
+                    tile.ImageElement.rect.Min.Y = pos_y
+                    tile.ImageElement.alpha = layers_alpha[layer][l]
+
+					tile.ImageElement.Draw(screen)
                     empty = false
                 }
             }
 
             // if nothing is to be drawn - background layer is draw
             if empty == true {
-                c.bg.Draw(screen, pos_x, pos_y, 1.0)
+                c.bg.rect.Min.X = pos_x
+                c.bg.rect.Min.Y = pos_y
+                c.bg.Draw(screen) 
             }
         }
     }
@@ -62,8 +90,22 @@ func NewCanvas(
 	var c Canvas
 
 	c.Grid = NewGrid(x, y, width, height, grid_size, rows, cols, n_layers, greyColor)
+    c.bg = NewImageElement(0, 0, LoadImage("src/objects/assets/other/bg.png"))
 
-    c.bg = NewSingleImageBasedElement(LoadImage("src/objects/assets/other/bg.png"))
+	c.SetTileByLayerCondition = make([]func(int, int, int)bool, 0)
+	c.SetTileByLayerEffect = make([][]func(int, int, int, *Tile), 0)
+
+    c.SetTileByLayerCondition = []func(int, int, int)bool {
+        c.Always, // setting tile from LAYER_DRAW has such condition
+        c.IsEmpty, // setting tile from LAYER_LIGHT has such condition
+        c.HasTile, // setting tile from LAYER_ENTITY has such condition
+    }
+
+    c.SetTileByLayerEffect = [][]func(int, int, int, *Tile) {
+        {c.SetTileOnDrawingArea, c.CleanTileOnDrawingArea, c.DoNothingOnDrawingArea}, // Layer LIGHT
+        {c.DoNothingOnDrawingArea, c.SetTileOnDrawingArea, c.DoNothingOnDrawingArea}, // Layer Draw
+        {c.DoNothingOnDrawingArea, c.DoNothingOnDrawingArea, c.SetTileOnDrawingArea}, // Layer Entity
+    }
 
 	c.UpdateXScroller()
 	c.UpdateYScroller()
@@ -96,4 +138,14 @@ func (c *Canvas) MoveCanvasRight(screen *ebiten.Image) {
 
 func (c *Canvas) MoveCanvasLeft(screen *ebiten.Image) {
 	c.MoveViewport(-1, 0)
+}
+
+func (c *Canvas) TileIsAllowed(x int, y int, l int) bool {
+    return c.SetTileByLayerCondition[l](x, y, l)
+}
+
+func (c *Canvas) DrawBrush(x int, y int, l int, tile *Tile) {
+    c.SetTileByLayerEffect[l][0](x, y, 0, tile)
+    c.SetTileByLayerEffect[l][1](x, y, 1, tile)
+    c.SetTileByLayerEffect[l][2](x, y, 2, tile)
 }

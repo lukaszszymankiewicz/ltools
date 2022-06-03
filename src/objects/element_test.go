@@ -52,9 +52,8 @@ func TestRectBasedElementWthColor(t *testing.T) {
 
 func TestNewElementImageBased(t *testing.T) {
 	image_a := ebiten.NewImage(100, 200)
-	image_b := ebiten.NewImage(20, 30)
 
-	e := NewImageBasedElement(10, 20, []*ebiten.Image{image_a, image_b})
+	e := NewImageElement(10, 20, image_a)
 
 	if e.rect.Min.X != 10 {
 		t.Errorf("ImageBasedElement created inproperly: rect.Max.X = %d, want = %d", e.rect.Min.X, 10)
@@ -73,18 +72,3 @@ func TestNewElementImageBased(t *testing.T) {
 	}
 
 }
-
-func TestNewImageBasedElement2(t *testing.T) {
-    sample_image := ebiten.NewImage(20, 20)
-	e := NewImageBasedElement2(sample_image, 100, 100, greyColor)
-
-	if e.rect.Min.X != 100 {
-		t.Errorf("RectBasedElement created inproperly: rect.Min.X = %d, want = %d", e.rect.Min.X, 100)
-	}
-
-	if e.rect.Min.Y != 100 {
-		t.Errorf("RectBasedElement created inproperly: rect.Min.Y = %d, want = %d", e.rect.Min.Y, 100)
-	}
-
-}
-

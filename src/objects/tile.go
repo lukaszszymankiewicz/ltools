@@ -5,7 +5,7 @@ import (
 )
 
 type Tile struct {
-	SingleImageBasedElement
+	ImageElement
 	n       int    // number of tile is used on Canvas
 	tileset string // tilseset from which Tile is taken
 	unique  bool   // indication if Tile is unique
@@ -27,7 +27,7 @@ func NewTile(
 ) Tile {
 	var t Tile
 
-	t.SingleImageBasedElement = NewSingleImageBasedElement(image)
+	t.ImageElement = NewImageElement(0, 0, image)
 	t.tileset = tileset
 	t.unique = unique
 	t.row = row

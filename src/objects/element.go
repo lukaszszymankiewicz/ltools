@@ -19,34 +19,24 @@ type Element struct {
 	rect image.Rectangle
 }
 
+type RectElement struct {
+	Element
+	color *color.RGBA // border
+}
+
 type FilledRectElement struct {
 	Element
-	color *color.RGBA
+	color *color.RGBA //fill color
 }
 
-type FloatingEmptyRectElement struct {
+type ImageElement struct {
 	Element
-	color *color.RGBA
-}
-
-type SingleImageBasedElement struct {
-	FloatingEmptyRectElement
 	image *ebiten.Image
-}
-
-type ImageBasedElement struct {
-	FilledRectElement
-	images        []*ebiten.Image
-	current_image int
-}
-
-type ImageBasedElement2 struct {
-	FilledRectElement
-	img        *ebiten.Image
+    alpha float64
 }
 
 type TextElement struct {
-	FilledRectElement
+	FilledRectElement 
 	content  string
     face font.Face
     text_pos_x int
@@ -54,46 +44,54 @@ type TextElement struct {
 }
 
 // DRAWS
-func DrawImageBasedElement(e ImageBasedElement, screen *ebiten.Image) {
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(e.rect.Min.X), float64(e.rect.Min.Y))
-	screen.DrawImage(e.images[e.current_image], op)
-}
-
-func (e ImageBasedElement) Draw(screen *ebiten.Image) {
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(e.rect.Min.X), float64(e.rect.Min.Y))
-	screen.DrawImage(e.images[e.current_image], op)
+func (e RectElement) Draw(screen *ebiten.Image) {
+    drawer.EmptyRect(screen, e.rect, e.color)
 }
 
 func (e FilledRectElement) Draw(screen *ebiten.Image) {
-	drawer.FilledRect(screen, e.rect, e.color)
+    drawer.FilledRect(screen, e.rect, e.color)
 }
 
-func (e FloatingEmptyRectElement) Draw(screen *ebiten.Image, x1 int, y1 int, x2 int, y2 int) {
-	rect := image.Rect(x1, y1, x2, y2)
-	drawer.EmptyBorder(screen, rect, e.color)
-}
-
-func (e ImageBasedElement2) Draw(screen *ebiten.Image) {
-    x := e.FilledRectElement.rect.Min.X
-    y := e.FilledRectElement.rect.Min.Y
+func (e ImageElement) Draw(screen *ebiten.Image) {
+    x := e.rect.Min.X
+    y := e.rect.Min.Y
 
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64(x), float64(y))
-	op.ColorM.Scale(1.0, 1.0, 1.0, 1.0)
+	op.ColorM.Scale(1.0, 1.0, 1.0, e.alpha)
 
-	screen.DrawImage(e.img, op)
-}
-
-func (e SingleImageBasedElement) Draw(screen *ebiten.Image, x int, y int, alpha float64) {
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64(x), float64(y))
-	op.ColorM.Scale(1.0, 1.0, 1.0, alpha)
 	screen.DrawImage(e.image, op)
 }
 
+func (e TextElement)Draw(screen *ebiten.Image) {
+    e.FilledRectElement.Draw(screen)
+
+    text.Draw(
+        screen,
+        e.content,
+        e.face,
+        e.text_pos_x,
+        e.text_pos_y,
+        blackColor,
+    )
+}
+
 // CONSTRUCTORS
+func NewRectElement (
+    x int,
+    y int,
+    width int,
+    height int,
+    color *color.RGBA,
+) RectElement {
+    var e RectElement
+    
+    e.rect = image.Rect(x, y, x+width, y+height)
+    e.color = color
+
+    return e
+}
+
 func NewFilledRectElement(
 	x int,
 	y int,
@@ -103,51 +101,23 @@ func NewFilledRectElement(
 ) FilledRectElement {
 	var e FilledRectElement
 
-	e.rect = image.Rect(x, y, x+width, y+height)
+    e.rect = image.Rect(x, y, x+width, y+height)
 	e.color = color
 
 	return e
 }
 
-func NewFloatingEmptyRectElement(color *color.RGBA) FloatingEmptyRectElement {
-	var e FloatingEmptyRectElement
-	e.color = color
-	return e
-}
-
-func NewImageBasedElement(
+func NewImageElement(
 	x int,
 	y int,
-	images []*ebiten.Image,
-) ImageBasedElement {
-	var e ImageBasedElement
-
-	e.images = images
-	width, height := e.images[e.current_image].Size()
-	e.FilledRectElement.rect = image.Rect(x, y, x+width, y+height)
-
-	return e
-}
-
-func NewSingleImageBasedElement(image *ebiten.Image) SingleImageBasedElement {
-	var e SingleImageBasedElement
-
-	e.image = image
-
-	return e
-}
-
-func NewImageBasedElement2(
-    image *ebiten.Image,
-    x int,
-    y int,
-    bg_color *color.RGBA,
-) ImageBasedElement2 {
-	var e ImageBasedElement2 
-
-	e.img = image
-    width, height := e.img.Size()
-    e.FilledRectElement = NewFilledRectElement(x, y, width, height, bg_color)
+	img *ebiten.Image,
+) ImageElement {
+	var e ImageElement
+    
+    e.image = img
+	width, height := e.image.Size()
+    e.rect = image.Rect(x, y, x+width, y+height)
+    e.alpha = 1.0
 
 	return e
 }
@@ -183,19 +153,23 @@ func NewTextElement(
 	return e
 }
 
-func (e TextElement)Draw(screen *ebiten.Image) {
-    e.FilledRectElement.Draw(screen)
-
-    text.Draw(
-        screen,
-        e.content,
-        e.face,
-        e.text_pos_x,
-        e.text_pos_y,
-        blackColor,
-    )
-}
-
+// UTIL
 func (e Element) Area() image.Rectangle {
 	return e.rect
 }
+
+func (e Element) Set(x int, y int) {
+    // width := e.rect.Max.X - e.rect.Min.X
+    // height := e.rect.Max.Y - e.rect.Min.Y
+    
+    e.rect.Min.X = x
+    e.rect.Min.Y = y
+    // e.rect.Max.X = x + width
+    // e.rect.Max.Y = y + height
+
+}
+
+func (e ImageElement) SetAlpha(alpha float64) {
+    e.alpha = alpha
+}
+

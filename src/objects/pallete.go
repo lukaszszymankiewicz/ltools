@@ -10,7 +10,7 @@ import (
 // Pallete struct serves as a wrapper for Tiles which can be drawn.
 type Pallete struct {
 	Grid
-    bg SingleImageBasedElement 
+    bg ImageElement
 }
 
 func NewPallete(
@@ -26,13 +26,12 @@ func NewPallete(
 	var p Pallete
 
 	p.Grid = NewGrid(x, y, width, height, grid_size, rows, cols, n_layers, whiteColor)
-    p.bg = NewSingleImageBasedElement(LoadImage("src/objects/assets/other/bg.png"))
+    p.bg = NewImageElement(0, 0, LoadImage("src/objects/assets/other/bg.png"))
 
 	return p
 }
 
 func (p *Pallete) Draw(screen *ebiten.Image) {
-	p.FilledRectElement.Draw(screen)
 	n := 0
 
 	for row := 0; row < p.viewportRows; row++ {
@@ -43,10 +42,13 @@ func (p *Pallete) Draw(screen *ebiten.Image) {
 			pos_y := p.rect.Min.Y + (row * p.grid_size)
 
 			if tile != nil {
-				// 1.0 stands for alpha channel value
-				tile.SingleImageBasedElement.Draw(screen, pos_x, pos_y, 1.0)
+                tile.ImageElement.rect.Min.X = pos_x
+                tile.ImageElement.rect.Min.Y = pos_y
+				tile.ImageElement.Draw(screen)
             } else {
-                p.bg.Draw(screen, pos_x, pos_y, 1.0)
+                p.bg.rect.Min.X = pos_x
+                p.bg.rect.Min.Y = pos_y
+                p.bg.Draw(screen)
             }
 			n++
 		}

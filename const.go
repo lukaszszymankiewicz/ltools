@@ -8,6 +8,11 @@ const (
 )
 
 const (
+	PENCIL_TOOL = iota
+	RUBBER_TOOL
+)
+
+const (
 	LAYER_DRAW = iota
 	LAYER_LIGHT
 	LAYER_ENTITY

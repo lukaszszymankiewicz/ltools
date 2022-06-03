@@ -80,6 +80,14 @@ func (g *Grid) SetTileOnDrawingArea(row int, col int, n int, val *Tile) {
 	g.drawingAreas[n][row*g.cols+col] = val
 }
 
+func (g *Grid) CleanTileOnDrawingArea(row int, col int, n int, val *Tile) {
+	g.drawingAreas[n][row*g.cols+col] = nil
+}
+
+func (g *Grid) DoNothingOnDrawingArea(row int, col int, n int, val *Tile) {
+    // Do nothing
+}
+
 func (g *Grid) UpdateXScroller() {
 	len := float64(g.scroller_x.background.rect.Max.X - g.scroller_x.background.rect.Min.X)
 

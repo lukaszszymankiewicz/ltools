@@ -389,3 +389,70 @@ func TestExport(t *testing.T) {
 		})
 	}
 }
+
+func TestDrawTileOnCanvasDraw(t *testing.T) {
+
+	normal_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 0)
+	normal_tile_2 := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 0)
+
+	// light_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 1)
+	// entity_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 2)
+    // RUBBER := 1
+
+	screen := ebiten.NewImage(640, 480)
+
+    PEN := 0
+
+
+	var tests = []struct {
+        n                  int
+		tiles_set          []*lto.Tile
+		tool_used          []int
+        expected_result    []*lto.Tile
+	} {
+        {
+            1,
+            []*lto.Tile{&normal_tile},
+            []int{PEN},
+            []*lto.Tile{&normal_tile, nil, nil},
+        },
+        {
+            2,
+            []*lto.Tile{&normal_tile, &normal_tile_2},
+            []int{PEN, PEN},
+            []*lto.Tile{&normal_tile_2, nil, nil},
+        },
+    }
+
+    // WHEN
+
+	for i, tt := range tests {
+		testname := fmt.Sprintf("%d", i)
+
+		t.Run(testname, func(t *testing.T) {
+            var g Game
+            g.Canvas = lto.NewCanvas(0, 0, 30*32, 20*32, 32, 30, 20, 3)
+            g.Toolbox = lto.NewToolbox(ToolboxX, ToolboxY)
+
+			for i:= 0; i <tt.n; i++ {
+                g.mouse_x = 10
+                g.mouse_y = 10
+                g.Toolbox.Activate(tt.tool_used[i])
+                g.Toolbox.SetFillTile(tt.tiles_set[i])
+                g.DrawTileOnCanvas(screen)
+			}
+
+            if g.Canvas.GetTileOnDrawingArea(0, 0, 0) != tt.expected_result[0] {
+                t.Errorf("setting Tile on Canvas on layer DRAW failed")
+            }
+
+            if g.Canvas.GetTileOnDrawingArea(0, 0, 1) != tt.expected_result[1] {
+                t.Errorf("setting Tile on Canvas on layer LIGHT failed")
+            }
+
+            if g.Canvas.GetTileOnDrawingArea(0, 0, 2) != tt.expected_result[2] {
+                t.Errorf("setting Tile on Canvas on layer ENTITY failed")
+            }
+        })
+    }
+}

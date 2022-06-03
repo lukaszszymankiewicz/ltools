@@ -2,6 +2,7 @@ package objects
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
+    "image"
 	"image/color"
 	_ "image/png"
 )
@@ -11,17 +12,18 @@ const (
 )
 
 type Fill struct {
-	SingleImageBasedElement       // image itselt
-	tile                    *Tile // pointer to whole Tile
+	ImageElement
+	tile      *Tile
 }
 
 type Tool struct {
+    Brush 
     left_line FilledRectElement 
     up_line FilledRectElement 
     down_line FilledRectElement 
     right_line FilledRectElement 
-    icon ImageBasedElement2 
-    state int
+    bg FilledRectElement 
+    icon ImageElement 
 }
 
 type Toolbox struct {
@@ -29,18 +31,21 @@ type Toolbox struct {
 	y int
 	Fill
     Tools []Tool
+    active int
 }
 
-func NewTool(x int, y int, img *ebiten.Image) Tool {
+func NewTool(x int, y int, img *ebiten.Image, brush Brush) Tool {
     var t Tool
+    t.Brush = brush
 
-    t.icon = NewImageBasedElement2(img, x, y, greyColor) 
-    width, height := t.icon.img.Size()
+    t.icon = NewImageElement(x, y, img) 
+    width, height := t.icon.image.Size()
 
     t.left_line = NewFilledRectElement(x, y, border_size , height, whiteColor)
     t.up_line = NewFilledRectElement(x, y, width, border_size, whiteColor)
     t.down_line = NewFilledRectElement(x, y+height-border_size, width, border_size, darkGreyColor) 
     t.right_line = NewFilledRectElement(x+width-border_size, y, border_size, height, darkGreyColor) 
+    t.bg = NewFilledRectElement(x, y, width, height, midGreyColor) 
 
     return t
 }
@@ -52,23 +57,28 @@ func NewToolbox(x int, y int) Toolbox {
 
 	tb.Tools = make([]Tool, 0)
 
-    pen := NewTool(x, y, LoadImage("src/objects/assets/buttons/pen15.png"))
-    rubber := NewTool(x+32, y, LoadImage("src/objects/assets/buttons/rubber.png"))
+    pen := NewTool(x, y, LoadImage("src/objects/assets/buttons/pen15.png"), PenBrush)
+    rubber := NewTool(x+32, y, LoadImage("src/objects/assets/buttons/rubber.png"), RubberBrush)
 
     tb.Tools = append(tb.Tools, pen)
     tb.Tools = append(tb.Tools, rubber)
 
-	tb.Fill.SingleImageBasedElement = NewSingleImageBasedElement(ebiten.NewImage(32, 32))
+	tb.Fill.ImageElement = NewImageElement(0, 0, ebiten.NewImage(32, 32))
 	dummy_image := ebiten.NewImage(32, 32)
 	dummy_image.Fill(color.RGBA{0xff, 0, 0, 0xff})
 	tb.SetFill(dummy_image)
 
+    tb.Activate(0)
 
 	return tb
 }
 
 func (tb *Toolbox) Draw(screen *ebiten.Image) {
-	tb.Fill.Draw(screen, tb.x+32*5, tb.y, 1.0)
+    if tb.active != 1 {
+        tb.Fill.ImageElement.rect.Min.X = tb.x+32*5
+        tb.Fill.ImageElement.rect.Min.Y = tb.y
+        tb.Fill.Draw(screen)
+    }
 
     for _, tool := range tb.Tools {
         tool.Draw(screen)
@@ -76,7 +86,7 @@ func (tb *Toolbox) Draw(screen *ebiten.Image) {
 }
 
 func (t *Tool)Draw(screen *ebiten.Image) {
-    t.icon.FilledRectElement.Draw(screen)
+    t.bg.Draw(screen)
     t.icon.Draw(screen)
     t.left_line.Draw(screen)
     t.up_line.Draw(screen)
@@ -85,11 +95,11 @@ func (t *Tool)Draw(screen *ebiten.Image) {
 }
 
 func (tb *Toolbox) SetFill(image *ebiten.Image) {
-	tb.Fill.SingleImageBasedElement.image = image
+	tb.Fill.ImageElement.image = image
 }
 
 func (tb *Toolbox) GetFill() *ebiten.Image {
-	return tb.Fill.SingleImageBasedElement.image
+	return tb.Fill.ImageElement.image
 }
 
 func (tb *Toolbox) GetFillTile() *Tile {
@@ -99,4 +109,34 @@ func (tb *Toolbox) GetFillTile() *Tile {
 func (tb *Toolbox) SetFillTile(tile *Tile) {
 	tb.Fill.tile = tile
 	tb.Fill.image = tile.image
+}
+
+func (tb *Toolbox) Activate(i int) {
+    tb.Tools[tb.active].SetUnactive()
+    tb.active = i
+    tb.Tools[tb.active].SetActive()
+}
+
+func (t *Tool) SetActive() {
+    t.left_line.color = blackColor
+    t.up_line.color =  blackColor
+    t.down_line.color = greyColor
+    t.right_line.color =  greyColor
+    t.bg.color = whiteColor
+}
+
+func (t *Tool) SetUnactive() {
+    t.left_line.color = whiteColor
+    t.up_line.color =  whiteColor
+    t.down_line.color = darkGreyColor
+    t.right_line.color =  darkGreyColor
+    t.bg.color = midGreyColor
+}
+
+func (tb *Toolbox) Area(i int) image.Rectangle {
+	return tb.Tools[i].icon.rect
+}
+
+func (tb *Toolbox) GetActiveTool() Tool {
+    return tb.Tools[tb.active]
 }

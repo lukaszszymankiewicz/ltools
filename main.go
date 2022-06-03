@@ -96,11 +96,12 @@ func NewGame() *Game {
 
 // creates new game instance
 func (g *Game) PostInit() {
-
+    // initial setups
 	for i := 0; i<g.Tilesets.AvailableTilesets(); i++ {
         g.Pallete.FillPallete(g.Tilesets.GetById(i), i)
 	}
-
+    
+    // function bindings
 	g.ClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))
 	g.HoverableAreas = make(map[image.Rectangle]func(*ebiten.Image))
 	g.SingleClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))
@@ -123,6 +124,8 @@ func (g *Game) PostInit() {
 	g.SingleClickableAreas[g.Tabber.Area(MODE_ENTITIES)] = g.changeModeToDrawEntities
 	g.SingleClickableAreas[g.Tabber.Area(EXPORT_BUTTON)] = g.Export
 
+	g.SingleClickableAreas[g.Toolbox.Area(PENCIL_TOOL)] = g.changeToolToPencil
+	g.SingleClickableAreas[g.Toolbox.Area(RUBBER_TOOL)] = g.changeToolToRubber
 }
 
 func main() {
