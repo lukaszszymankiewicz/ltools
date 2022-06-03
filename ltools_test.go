@@ -394,15 +394,13 @@ func TestDrawTileOnCanvasDraw(t *testing.T) {
 
 	normal_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 0)
 	normal_tile_2 := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 0)
-
-	// light_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 1)
-	// entity_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 2)
-    // RUBBER := 1
+	light_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 1)
+	entity_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 2)
 
 	screen := ebiten.NewImage(640, 480)
 
+	RUBBER := 1
     PEN := 0
-
 
 	var tests = []struct {
         n                  int
@@ -422,8 +420,91 @@ func TestDrawTileOnCanvasDraw(t *testing.T) {
             []int{PEN, PEN},
             []*lto.Tile{&normal_tile_2, nil, nil},
         },
+		{
+            3,
+            []*lto.Tile{&normal_tile, &normal_tile_2, &normal_tile},
+            []int{PEN, PEN, PEN},
+            []*lto.Tile{&normal_tile, nil, nil},
+        },
+		{
+            2,
+            []*lto.Tile{&normal_tile, &light_tile},
+            []int{PEN, PEN},
+            []*lto.Tile{&normal_tile, nil, nil},
+        },
+		{
+            2,
+            []*lto.Tile{&light_tile, &normal_tile},
+            []int{PEN, PEN},
+            []*lto.Tile{&normal_tile, nil, nil},
+        },
+		{
+            1,
+            []*lto.Tile{&light_tile},
+            []int{PEN},
+            []*lto.Tile{nil, &light_tile, nil},
+        },
+		{
+            2,
+            []*lto.Tile{&normal_tile, &normal_tile},
+            []int{PEN, RUBBER},
+            []*lto.Tile{nil, nil, nil},
+        },
+		{
+            3,
+            []*lto.Tile{&normal_tile, &normal_tile, &normal_tile_2},
+            []int{PEN, RUBBER, PEN},
+            []*lto.Tile{&normal_tile_2, nil, nil},
+        },
+		{
+            3,
+            []*lto.Tile{&light_tile, &light_tile, &light_tile},
+            []int{PEN, RUBBER, PEN},
+            []*lto.Tile{nil, &light_tile, nil},
+        },
+		{
+            3,
+            []*lto.Tile{&light_tile, &light_tile, &normal_tile},
+            []int{PEN, RUBBER, PEN},
+            []*lto.Tile{&normal_tile, nil, nil},
+        },
+		{
+            3,
+            []*lto.Tile{&normal_tile, &entity_tile},
+            []int{PEN, PEN, PEN},
+            []*lto.Tile{&normal_tile, nil, &entity_tile},
+        },
+		{
+            3,
+            []*lto.Tile{&normal_tile, &entity_tile, &normal_tile_2},
+            []int{PEN, PEN, PEN},
+            []*lto.Tile{&normal_tile_2, nil, &entity_tile},
+        },
+		{
+            3,
+            []*lto.Tile{&normal_tile, &entity_tile, &entity_tile},
+            []int{PEN, PEN, RUBBER},
+            []*lto.Tile{&normal_tile_2, nil, nil},
+        },
+		{
+            3,
+            []*lto.Tile{&normal_tile, &entity_tile, &normal_tile},
+            []int{PEN, PEN, RUBBER},
+            []*lto.Tile{nil, nil, nil},
+        },
+		{
+            3,
+            []*lto.Tile{&normal_tile, &entity_tile, &light_tile},
+            []int{PEN, PEN, RUBBER},
+            []*lto.Tile{&normal_tile, nil, &entity_tile},
+        },
+		{
+            3,
+            []*lto.Tile{&light_tile, &normal_tile, &entity_tile},
+            []int{PEN, PEN, PEN},
+            []*lto.Tile{&normal_tile, nil, &entity_tile},
+        },
     }
-
     // WHEN
 
 	for i, tt := range tests {
