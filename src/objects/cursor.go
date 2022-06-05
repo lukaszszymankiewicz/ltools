@@ -6,15 +6,17 @@ import (
 )
 
 type Cursor struct {
-	SingleImageBasedElement
+	ImageElement
+	RectElement
 	size int
 }
 
 func NewCursor(size int) Cursor {
 	var crs Cursor
 
-	crs.SingleImageBasedElement = NewSingleImageBasedElement(nil)
-	crs.SingleImageBasedElement.FloatingEmptyRectElement.color = whiteColor
+	dummy := ebiten.NewImage(32, 32)
+	crs.ImageElement = NewImageElement(0, 0, dummy)
+	crs.RectElement = NewRectElement(0, 0, size, size, whiteColor)
 
 	crs.size = size
 
@@ -22,10 +24,17 @@ func NewCursor(size int) Cursor {
 }
 
 func (crs Cursor) DrawOnPallete(screen *ebiten.Image, x int, y int) {
-	crs.FloatingEmptyRectElement.Draw(screen, x, y, x+crs.size, y+crs.size)
+	crs.RectElement.rect.Min.X = x
+	crs.RectElement.rect.Min.Y = y
+	crs.RectElement.rect.Max.X = x + crs.size
+	crs.RectElement.rect.Max.Y = y + crs.size
+
+	crs.RectElement.Draw(screen)
 }
 
 func (crs Cursor) DrawOnCanvas(screen *ebiten.Image, image *ebiten.Image, x int, y int) {
-	crs.SingleImageBasedElement.image = image
-	crs.SingleImageBasedElement.Draw(screen, x, y, 1.0)
+	crs.ImageElement.rect.Min.X = x
+	crs.ImageElement.rect.Min.Y = y
+	crs.ImageElement.image = image
+	crs.ImageElement.Draw(screen)
 }

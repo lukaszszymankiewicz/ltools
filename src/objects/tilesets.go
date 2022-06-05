@@ -6,9 +6,9 @@ import (
 )
 
 type Tileset struct {
-    id int
+	id   int
 	name string
-    img *ebiten.Image
+	img  *ebiten.Image
 }
 
 type Tilesets struct {
@@ -31,14 +31,14 @@ func NewTilesets(images []string) Tilesets {
 	tl.tilesets = make([]Tileset, 0)
 
 	for i, name := range images {
-        tileset := NewTileset(i, name, LoadImage(name))
-        tl.tilesets = append(tl.tilesets, tileset)
+		tileset := NewTileset(i, name, LoadImage(name))
+		tl.tilesets = append(tl.tilesets, tileset)
 	}
 
 	return tl
 }
 
-func (tl *Tilesets) AvailableTilesets() int  {
+func (tl *Tilesets) AvailableTilesets() int {
 	return len(tl.tilesets)
 }
 

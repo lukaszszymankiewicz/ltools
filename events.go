@@ -9,10 +9,16 @@ import (
 func (g *Game) handleMouseEvents(screen *ebiten.Image) {
 
 	// mouse cursor hovering event
+	cursorDrawn := false
 	for rect, f := range g.HoverableAreas {
 		if coordsInRect(g.mouse_x, g.mouse_y, rect) {
 			f(screen)
+			cursorDrawn = true
 		}
+	}
+
+	if cursorDrawn == false {
+		g.DrawCursorElsewhere(screen)
 	}
 
 	// mouse button single click button events

@@ -13,7 +13,6 @@ type Game struct {
 	lto.Canvas
 	lto.Cursor
 	lto.Tabber
-	lto.Recorder
 	lto.Toolbox
 	lto.Logger
 	lto.Tilesets
@@ -54,7 +53,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func NewGame() *Game {
 	var g Game
 
-    g.mode = MODE_DRAW
+	g.mode = MODE_DRAW
 
 	g.Tilesets = lto.NewTilesets(
 		[]string{
@@ -70,7 +69,7 @@ func NewGame() *Game {
 		PalleteColsN*GridSize,
 		PalleteRowsN*GridSize,
 		GridSize,
-		PalleteRowsN + 1,
+		PalleteRowsN+1,
 		PalleteColsN,
 		LAYER_N,
 	)
@@ -88,7 +87,7 @@ func NewGame() *Game {
 
 	g.Toolbox = lto.NewToolbox(ToolboxX, ToolboxY)
 	g.Cursor = lto.NewCursor(CursorSize)
-	g.Tabber = lto.NewCompleteTabber(TabberX, TabberY)
+	g.Tabber = lto.NewCompleteTabber(TabberX, TabberY, []string{"tiles", "light", "entities", "export"})
 	g.Logger = lto.NewLogger(LOGGER_PATH)
 
 	return &g
@@ -96,11 +95,12 @@ func NewGame() *Game {
 
 // creates new game instance
 func (g *Game) PostInit() {
-
-	for i := 0; i<g.Tilesets.AvailableTilesets(); i++ {
-        g.Pallete.FillPallete(g.Tilesets.GetById(i), i)
+	// initial setups
+	for i := 0; i < g.Tilesets.AvailableTilesets(); i++ {
+		g.Pallete.FillPallete(g.Tilesets.GetById(i), i)
 	}
 
+	// function bindings
 	g.ClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))
 	g.HoverableAreas = make(map[image.Rectangle]func(*ebiten.Image))
 	g.SingleClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))
@@ -118,11 +118,13 @@ func (g *Game) PostInit() {
 	g.SingleClickableAreas[g.Canvas.ScrollerYUpArrowArea()] = g.Canvas.MoveCanvasUp
 	g.SingleClickableAreas[g.Canvas.ScrollerYDownArrowArea()] = g.Canvas.MoveCanvasDown
 
-	g.SingleClickableAreas[g.Tabber.AreaRect(MODE_DRAW)] = g.changeModeToDraw
+	g.SingleClickableAreas[g.Tabber.Area(MODE_DRAW)] = g.changeModeToDraw
 	g.SingleClickableAreas[g.Tabber.Area(MODE_LIGHT)] = g.changeModeToDrawLight
-	g.SingleClickableAreas[g.Tabber.AreaRect(MODE_ENTITIES)] = g.changeModeToDrawEntities
-	g.SingleClickableAreas[g.Tabber.AreaRect(EXPORT_BUTTON)] = g.Export
+	g.SingleClickableAreas[g.Tabber.Area(MODE_ENTITIES)] = g.changeModeToDrawEntities
+	g.SingleClickableAreas[g.Tabber.Area(EXPORT_BUTTON)] = g.Export
 
+	g.SingleClickableAreas[g.Toolbox.Area(PENCIL_TOOL)] = g.changeToolToPencil
+	g.SingleClickableAreas[g.Toolbox.Area(RUBBER_TOOL)] = g.changeToolToRubber
 }
 
 func main() {

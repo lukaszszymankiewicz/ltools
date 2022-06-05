@@ -15,7 +15,7 @@ func TestFillPallete(t *testing.T) {
 	p := NewPallete(0, 0, 5*32, 5*32, 32, 10, 10, 1)
 
 	// we fill only first layer
-    tileset := Tileset{0, "dupaa", img}
+	tileset := Tileset{0, "dupaa", img}
 	p.FillPallete(tileset, FIRST_LAYER)
 
 	// in this case all pallete is filled and all row and col should have some *Tile in it
