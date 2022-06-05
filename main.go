@@ -13,7 +13,6 @@ type Game struct {
 	lto.Canvas
 	lto.Cursor
 	lto.Tabber
-	lto.Recorder
 	lto.Toolbox
 	lto.Logger
 	lto.Tilesets
@@ -54,7 +53,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 func NewGame() *Game {
 	var g Game
 
-    g.mode = MODE_DRAW
+	g.mode = MODE_DRAW
 
 	g.Tilesets = lto.NewTilesets(
 		[]string{
@@ -70,7 +69,7 @@ func NewGame() *Game {
 		PalleteColsN*GridSize,
 		PalleteRowsN*GridSize,
 		GridSize,
-		PalleteRowsN + 1,
+		PalleteRowsN+1,
 		PalleteColsN,
 		LAYER_N,
 	)
@@ -96,12 +95,12 @@ func NewGame() *Game {
 
 // creates new game instance
 func (g *Game) PostInit() {
-    // initial setups
-	for i := 0; i<g.Tilesets.AvailableTilesets(); i++ {
-        g.Pallete.FillPallete(g.Tilesets.GetById(i), i)
+	// initial setups
+	for i := 0; i < g.Tilesets.AvailableTilesets(); i++ {
+		g.Pallete.FillPallete(g.Tilesets.GetById(i), i)
 	}
-    
-    // function bindings
+
+	// function bindings
 	g.ClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))
 	g.HoverableAreas = make(map[image.Rectangle]func(*ebiten.Image))
 	g.SingleClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))

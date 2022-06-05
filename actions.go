@@ -5,31 +5,15 @@ import (
 )
 
 func (g *Game) DrawTileOnCanvas(screen *ebiten.Image) {
-    // future brush (like drawing Rectangle for example will take two pair of x and y coords as we
-    // need to set first and second corner) will need to have bigger number of inputs. But for now
-    // only 'single click' tools are availalble. To allow for future brushes two pairs of coords are
-    // passed to calculate the brush effect (coords are simply doubled).
-
 	x, y := g.Canvas.MousePosToRowAndCol(g.mouse_x, g.mouse_y)
+	fill := g.Toolbox.GetFillTile()
+	tool := g.Toolbox.GetActiveTool()
 
-    fill := g.Toolbox.GetFillTile()
-    brush := g.Toolbox.GetActiveTool()
-    result := brush.ApplyBrush(x, y, x, y, fill)
+	if g.Canvas.TileIsAllowed(x, y, g.mode) == false {
+		return
+	}
 
-    // if main position is not allowed to have tile in it function aborts
-    if g.Canvas.TileIsAllowed(x, y, g.mode) == false {
-        return
-    }
-
-    for i:=0; i<result.Len(); i++ {
-        pos_x, pos_y := result.GetCoord(i)
-        layer := result.GetLayer(i)
-        tile_to_draw := result.GetTile(i)
-
-        if g.Canvas.TileIsAllowed(pos_x, pos_y, layer) == true {
-            g.Canvas.DrawBrush(pos_x, pos_y, layer, tile_to_draw)
-        }
-    }
+	g.Canvas.PutTile(x, y, fill, tool)
 }
 
 func (g *Game) ChooseTileFromPallete(screen *ebiten.Image) {
@@ -38,29 +22,27 @@ func (g *Game) ChooseTileFromPallete(screen *ebiten.Image) {
 }
 
 func (g *Game) UndrawOneRecord() {
-	record := g.Recorder.UndoOneRecord()
-
-	// if record to undraw is empty there is nothing to undraw!
-	if record.IsEmpty() {
-		return
-	}
-
-	g.Canvas.EraseOneRecord(record)
+	g.Canvas.UndrawOneRecord()
 }
 
 func (g *Game) DrawCursorOnPallete(screen *ebiten.Image) {
 	x, y := g.Pallete.MousePosToTilePos(g.mouse_x, g.mouse_y)
-    row, col := g.Pallete.MousePosToRowAndCol(x, y)
+	row, col := g.Pallete.MousePosToRowAndCol(x, y)
 
-    if t:=g.Pallete.PosHasTile(row, col, g.Pallete.CurrentLayer()); t == true {
-        g.Cursor.DrawOnPallete(screen, x, y)
-    }
+	if t := g.Pallete.PosHasTile(row, col, g.Pallete.CurrentLayer()); t == true {
+		g.Cursor.DrawOnPallete(screen, x, y)
+	}
 }
 
 func (g *Game) DrawCursorOnCanvas(screen *ebiten.Image) {
-	x, y := g.Canvas.MousePosToTilePos(g.mouse_x, g.mouse_y)
-	image := g.Toolbox.GetFill()
-	g.Cursor.DrawOnCanvas(screen, image, x, y)
+	image := g.Toolbox.GetCursor()
+	_, height := image.Size()
+	ebiten.SetCursorMode(ebiten.CursorModeHidden)
+	g.Cursor.DrawOnCanvas(screen, image, g.mouse_x, g.mouse_y-height)
+}
+
+func (g *Game) DrawCursorElsewhere(screen *ebiten.Image) {
+	ebiten.SetCursorMode(ebiten.CursorModeVisible)
 }
 
 func (g *Game) changeMode(mode int) {
@@ -90,4 +72,3 @@ func (g *Game) changeToolToPencil(screen *ebiten.Image) {
 func (g *Game) changeToolToRubber(screen *ebiten.Image) {
 	g.Toolbox.Activate(RUBBER_TOOL)
 }
-

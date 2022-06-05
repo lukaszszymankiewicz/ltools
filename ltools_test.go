@@ -400,140 +400,140 @@ func TestDrawTileOnCanvasDraw(t *testing.T) {
 	screen := ebiten.NewImage(640, 480)
 
 	RUBBER := 1
-    PEN := 0
+	PEN := 0
 
 	var tests = []struct {
-        n                  int
-		tiles_set          []*lto.Tile
-		tool_used          []int
-        expected_result    []*lto.Tile
-	} {
-        {
-            1,
-            []*lto.Tile{&normal_tile},
-            []int{PEN},
-            []*lto.Tile{&normal_tile, nil, nil},
-        },
-        {
-            2,
-            []*lto.Tile{&normal_tile, &normal_tile_2},
-            []int{PEN, PEN},
-            []*lto.Tile{&normal_tile_2, nil, nil},
-        },
+		n               int
+		tiles_set       []*lto.Tile
+		tool_used       []int
+		expected_result []*lto.Tile
+	}{
 		{
-            3,
-            []*lto.Tile{&normal_tile, &normal_tile_2, &normal_tile},
-            []int{PEN, PEN, PEN},
-            []*lto.Tile{&normal_tile, nil, nil},
-        },
+			1,
+			[]*lto.Tile{&normal_tile},
+			[]int{PEN},
+			[]*lto.Tile{&normal_tile, nil, nil},
+		},
 		{
-            2,
-            []*lto.Tile{&normal_tile, &light_tile},
-            []int{PEN, PEN},
-            []*lto.Tile{&normal_tile, nil, nil},
-        },
+			2,
+			[]*lto.Tile{&normal_tile, &normal_tile_2},
+			[]int{PEN, PEN},
+			[]*lto.Tile{&normal_tile_2, nil, nil},
+		},
 		{
-            2,
-            []*lto.Tile{&light_tile, &normal_tile},
-            []int{PEN, PEN},
-            []*lto.Tile{&normal_tile, nil, nil},
-        },
+			3,
+			[]*lto.Tile{&normal_tile, &normal_tile_2, &normal_tile},
+			[]int{PEN, PEN, PEN},
+			[]*lto.Tile{&normal_tile, nil, nil},
+		},
 		{
-            1,
-            []*lto.Tile{&light_tile},
-            []int{PEN},
-            []*lto.Tile{nil, &light_tile, nil},
-        },
+			2,
+			[]*lto.Tile{&normal_tile, &light_tile},
+			[]int{PEN, PEN},
+			[]*lto.Tile{&normal_tile, nil, nil},
+		},
 		{
-            2,
-            []*lto.Tile{&normal_tile, &normal_tile},
-            []int{PEN, RUBBER},
-            []*lto.Tile{nil, nil, nil},
-        },
+			2,
+			[]*lto.Tile{&light_tile, &normal_tile},
+			[]int{PEN, PEN},
+			[]*lto.Tile{&normal_tile, nil, nil},
+		},
 		{
-            3,
-            []*lto.Tile{&normal_tile, &normal_tile, &normal_tile_2},
-            []int{PEN, RUBBER, PEN},
-            []*lto.Tile{&normal_tile_2, nil, nil},
-        },
+			1,
+			[]*lto.Tile{&light_tile},
+			[]int{PEN},
+			[]*lto.Tile{nil, &light_tile, nil},
+		},
 		{
-            3,
-            []*lto.Tile{&light_tile, &light_tile, &light_tile},
-            []int{PEN, RUBBER, PEN},
-            []*lto.Tile{nil, &light_tile, nil},
-        },
+			2,
+			[]*lto.Tile{&normal_tile, &normal_tile},
+			[]int{PEN, RUBBER},
+			[]*lto.Tile{nil, nil, nil},
+		},
 		{
-            3,
-            []*lto.Tile{&light_tile, &light_tile, &normal_tile},
-            []int{PEN, RUBBER, PEN},
-            []*lto.Tile{&normal_tile, nil, nil},
-        },
+			3,
+			[]*lto.Tile{&normal_tile, &normal_tile, &normal_tile_2},
+			[]int{PEN, RUBBER, PEN},
+			[]*lto.Tile{&normal_tile_2, nil, nil},
+		},
 		{
-            3,
-            []*lto.Tile{&normal_tile, &entity_tile},
-            []int{PEN, PEN, PEN},
-            []*lto.Tile{&normal_tile, nil, &entity_tile},
-        },
+			3,
+			[]*lto.Tile{&light_tile, &light_tile, &light_tile},
+			[]int{PEN, RUBBER, PEN},
+			[]*lto.Tile{nil, &light_tile, nil},
+		},
 		{
-            3,
-            []*lto.Tile{&normal_tile, &entity_tile, &normal_tile_2},
-            []int{PEN, PEN, PEN},
-            []*lto.Tile{&normal_tile_2, nil, &entity_tile},
-        },
+			3,
+			[]*lto.Tile{&light_tile, &light_tile, &normal_tile},
+			[]int{PEN, RUBBER, PEN},
+			[]*lto.Tile{&normal_tile, nil, nil},
+		},
 		{
-            3,
-            []*lto.Tile{&normal_tile, &entity_tile, &entity_tile},
-            []int{PEN, PEN, RUBBER},
-            []*lto.Tile{&normal_tile_2, nil, nil},
-        },
+			2,
+			[]*lto.Tile{&normal_tile, &entity_tile},
+			[]int{PEN, PEN, PEN},
+			[]*lto.Tile{&normal_tile, nil, &entity_tile},
+		},
 		{
-            3,
-            []*lto.Tile{&normal_tile, &entity_tile, &normal_tile},
-            []int{PEN, PEN, RUBBER},
-            []*lto.Tile{nil, nil, nil},
-        },
+			3,
+			[]*lto.Tile{&normal_tile, &entity_tile, &normal_tile_2},
+			[]int{PEN, PEN, PEN},
+			[]*lto.Tile{&normal_tile_2, nil, &entity_tile},
+		},
 		{
-            3,
-            []*lto.Tile{&normal_tile, &entity_tile, &light_tile},
-            []int{PEN, PEN, RUBBER},
-            []*lto.Tile{&normal_tile, nil, &entity_tile},
-        },
+			3,
+			[]*lto.Tile{&normal_tile, &entity_tile, &entity_tile},
+			[]int{PEN, PEN, RUBBER},
+			[]*lto.Tile{&normal_tile, nil, nil},
+		},
 		{
-            3,
-            []*lto.Tile{&light_tile, &normal_tile, &entity_tile},
-            []int{PEN, PEN, PEN},
-            []*lto.Tile{&normal_tile, nil, &entity_tile},
-        },
-    }
-    // WHEN
+			3,
+			[]*lto.Tile{&normal_tile, &entity_tile, &normal_tile},
+			[]int{PEN, PEN, RUBBER},
+			[]*lto.Tile{nil, nil, nil},
+		},
+		{
+			3,
+			[]*lto.Tile{&normal_tile, &entity_tile, &light_tile},
+			[]int{PEN, PEN, RUBBER},
+			[]*lto.Tile{&normal_tile, nil, &entity_tile},
+		},
+		{
+			3,
+			[]*lto.Tile{&light_tile, &normal_tile, &entity_tile},
+			[]int{PEN, PEN, PEN},
+			[]*lto.Tile{&normal_tile, nil, &entity_tile},
+		},
+	}
+	// WHEN
 
 	for i, tt := range tests {
 		testname := fmt.Sprintf("%d", i)
 
 		t.Run(testname, func(t *testing.T) {
-            var g Game
-            g.Canvas = lto.NewCanvas(0, 0, 30*32, 20*32, 32, 30, 20, 3)
-            g.Toolbox = lto.NewToolbox(ToolboxX, ToolboxY)
+			var g Game
+			g.Canvas = lto.NewCanvas(0, 0, 30*32, 20*32, 32, 30, 20, 3)
+			g.Toolbox = lto.NewToolbox(ToolboxX, ToolboxY)
 
-			for i:= 0; i <tt.n; i++ {
-                g.mouse_x = 10
-                g.mouse_y = 10
-                g.Toolbox.Activate(tt.tool_used[i])
-                g.Toolbox.SetFillTile(tt.tiles_set[i])
-                g.DrawTileOnCanvas(screen)
+			for i := 0; i < tt.n; i++ {
+				g.mouse_x = 10
+				g.mouse_y = 10
+				g.Toolbox.Activate(tt.tool_used[i])
+				g.Toolbox.SetFillTile(tt.tiles_set[i])
+				g.DrawTileOnCanvas(screen)
 			}
 
-            if g.Canvas.GetTileOnDrawingArea(0, 0, 0) != tt.expected_result[0] {
-                t.Errorf("setting Tile on Canvas on layer DRAW failed")
-            }
+			if g.Canvas.GetTileOnDrawingArea(0, 0, 0) != tt.expected_result[0] {
+				t.Errorf("setting Tile on Canvas on layer DRAW failed")
+			}
 
-            if g.Canvas.GetTileOnDrawingArea(0, 0, 1) != tt.expected_result[1] {
-                t.Errorf("setting Tile on Canvas on layer LIGHT failed")
-            }
+			if g.Canvas.GetTileOnDrawingArea(0, 0, 1) != tt.expected_result[1] {
+				t.Errorf("setting Tile on Canvas on layer LIGHT failed")
+			}
 
-            if g.Canvas.GetTileOnDrawingArea(0, 0, 2) != tt.expected_result[2] {
-                t.Errorf("setting Tile on Canvas on layer ENTITY failed")
-            }
-        })
-    }
+			if g.Canvas.GetTileOnDrawingArea(0, 0, 2) != tt.expected_result[2] {
+				t.Errorf("setting Tile on Canvas on layer ENTITY failed")
+			}
+		})
+	}
 }

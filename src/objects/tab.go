@@ -3,21 +3,21 @@ package objects
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
-    "image/color"
+	"image/color"
 	_ "image/png"
 )
 
 const (
 	NO_OFFSET = 0
-    TAB_WIDTH = 200
+	TAB_WIDTH = 200
 )
 
 type Tab struct {
 	TextElement
-    left_line FilledRectElement 
-    up_line FilledRectElement 
-    right_line FilledRectElement 
-    override_color *color.RGBA
+	left_line      FilledRectElement
+	up_line        FilledRectElement
+	right_line     FilledRectElement
+	override_color *color.RGBA
 }
 
 // Tabber is a collection of Tabs
@@ -32,39 +32,39 @@ type Tabber struct {
 func NewTab(x int, y int, content string, override_color *color.RGBA) Tab {
 	var t Tab
 
-    // Tab when not active has white background
+	// Tab when not active has white background
 	t.TextElement = NewTextElement(content, x, y, 100, 30, greyColor)
 
-    width := t.FilledRectElement.rect.Max.X - t.FilledRectElement.rect.Min.X
-    height := t.FilledRectElement.rect.Max.Y - t.FilledRectElement.rect.Min.Y
+	width := t.FilledRectElement.rect.Max.X - t.FilledRectElement.rect.Min.X
+	height := t.FilledRectElement.rect.Max.Y - t.FilledRectElement.rect.Min.Y
 
-    t.left_line = NewFilledRectElement(x, y, 1, height, blackColor)
-    t.up_line = NewFilledRectElement(x, y, width, 1, blackColor)
-    t.right_line = NewFilledRectElement(x+width, y, 1, height, blackColor)
+	t.left_line = NewFilledRectElement(x, y, 1, height, blackColor)
+	t.up_line = NewFilledRectElement(x, y, width, 1, blackColor)
+	t.right_line = NewFilledRectElement(x+width, y, 1, height, blackColor)
 
-    t.override_color = nil
-    t.Deactivate()
+	t.override_color = nil
+	t.Deactivate()
 
 	return t
 }
 
 func (t *Tab) Activate() {
-    if t.override_color == nil {
-        t.TextElement.FilledRectElement.color = whiteColor
-    }
+	if t.override_color == nil {
+		t.TextElement.FilledRectElement.color = whiteColor
+	}
 }
 
 func (t *Tab) Deactivate() {
-    if t.override_color == nil {
-        t.TextElement.FilledRectElement.color = darkGreyColor 
-    }
+	if t.override_color == nil {
+		t.TextElement.FilledRectElement.color = darkGreyColor
+	}
 }
 
 func (t *Tab) Draw(screen *ebiten.Image) {
-    t.TextElement.Draw(screen)
-    t.left_line.Draw(screen)
-    t.up_line.Draw(screen)
-    t.right_line.Draw(screen)
+	t.TextElement.Draw(screen)
+	t.left_line.Draw(screen)
+	t.up_line.Draw(screen)
+	t.right_line.Draw(screen)
 }
 
 func (tb *Tabber) Area(i int) image.Rectangle {
@@ -76,7 +76,7 @@ func NewTabber(x int, y int) Tabber {
 
 	tb.x = x
 	tb.y = y
-    tb.active = 0
+	tb.active = 0
 
 	return tb
 }
@@ -98,9 +98,9 @@ func (tb *Tabber) AddNewTabToTabber(content string, offset int) {
 func NewCompleteTabber(x int, y int, names []string) Tabber {
 	tb := NewTabber(x, y)
 
-    for _, name := range names {
-        tb.AddNewTabToTabber(name, NO_OFFSET)
-    }
+	for _, name := range names {
+		tb.AddNewTabToTabber(name, NO_OFFSET)
+	}
 
 	tb.ChangeCurrent(0)
 

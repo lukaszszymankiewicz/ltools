@@ -15,7 +15,7 @@ type Grid struct {
 	viewportRows  int
 	viewport_x    int
 	scroller_x    Scroller
-    viewport_y    int
+	viewport_y    int
 	scroller_y    Scroller
 	drawingAreas  [][]*Tile
 	current_layer int
@@ -76,16 +76,18 @@ func (g *Grid) GetTileOnDrawingArea(x int, y int, n int) *Tile {
 	return g.drawingAreas[n][x*g.cols+y]
 }
 
-func (g *Grid) SetTileOnDrawingArea(row int, col int, n int, val *Tile) {
+func (g *Grid) SetTileOnDrawingArea(row int, col int, n int, val *Tile) int {
 	g.drawingAreas[n][row*g.cols+col] = val
+	return 1
 }
 
-func (g *Grid) CleanTileOnDrawingArea(row int, col int, n int, val *Tile) {
+func (g *Grid) CleanTileOnDrawingArea(row int, col int, n int, val *Tile) int {
 	g.drawingAreas[n][row*g.cols+col] = nil
+	return 1
 }
 
-func (g *Grid) DoNothingOnDrawingArea(row int, col int, n int, val *Tile) {
-    // Do nothing
+func (g *Grid) DoNothingOnDrawingArea(row int, col int, n int, val *Tile) int {
+	return 0
 }
 
 func (g *Grid) UpdateXScroller() {
