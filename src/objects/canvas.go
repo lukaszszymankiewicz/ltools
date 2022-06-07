@@ -141,13 +141,15 @@ func (c *Canvas) MoveCanvasLeft(screen *ebiten.Image) {
 }
 
 func (c *Canvas) TileIsAllowed(x int, y int, l int) bool {
-	return c.SetTileByLayerCondition[l](x, y, l)
+	return c.SetTileByLayerCondition[l](x+c.viewport_x, y+c.viewport_y, l)
 }
 
 func (c *Canvas) PutTile(x int, y int, fill *Tile, tool Tool) {
+    corr_x := x+c.viewport_x
+    corr_y := y+c.viewport_y
 
 	brush := tool.Brush
-	brush_result := tool.Brush.ApplyBrush(x, y, x, y, fill)
+	brush_result := tool.Brush.ApplyBrush(corr_x, corr_y, corr_x, corr_y, fill)
 
 	for i := 0; i < brush_result.Len(); i++ {
 
@@ -161,16 +163,16 @@ func (c *Canvas) PutTile(x int, y int, fill *Tile, tool Tool) {
 
 			// if Tile is allowed to be placed here apply effect of a brush to each layer
 			for j := 0; j < c.n_layers; j++ {
-				old_tile := c.GetTileOnDrawingArea(x, y, j)
+				old_tile := c.GetTileOnDrawingArea(corr_x, corr_y, j)
 
 				drawFuncIdx := brush.byLayerEffect[layer][j]
 				Func := c.SetTileByLayerEffect[drawFuncIdx]
-				FuncResult := Func(x, y, j, tile)
+				FuncResult := Func(corr_x, corr_y, j, tile)
 
-				new_tile := c.GetTileOnDrawingArea(x, y, j)
+				new_tile := c.GetTileOnDrawingArea(corr_x, corr_y, j)
 
 				if FuncResult != 0 {
-					c.Recorder.AppendToCurrent(x, y, old_tile, new_tile, layer)
+					c.Recorder.AppendToCurrent(corr_x, corr_y, old_tile, new_tile, layer)
 				}
 			}
 		}
