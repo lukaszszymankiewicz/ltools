@@ -138,7 +138,7 @@ func (g *Grid) MousePosToTilePos(x int, y int) (int, int) {
 }
 
 func (g *Grid) MousePosToRowAndCol(x int, y int) (int, int) {
-	return int((x - g.rect.Min.X) / g.grid_size), int((y - g.rect.Min.Y) / g.grid_size)
+	return int((y - g.rect.Min.Y) / g.grid_size), int((x - g.rect.Min.X) / g.grid_size)
 }
 
 func (g *Grid) MousePosToTile(x int, y int, layer int) *Tile {
