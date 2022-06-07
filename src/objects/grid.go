@@ -99,7 +99,7 @@ func (g *Grid) UpdateXScroller() {
 		start += (float64(g.viewport_x) / float64(g.cols)) * len
 	}
 
-	end := start + ((float64(g.viewport_x)+float64(g.viewportCols))/float64(g.cols))*len
+	end := start + (float64(g.viewportCols)/float64(g.cols))*len
 
 	g.scroller_x.bar.rect.Min.X = int(start)
 	g.scroller_x.bar.rect.Max.X = int(end)
@@ -113,7 +113,7 @@ func (g *Grid) UpdateYScroller() {
 	if g.viewport_y != 0 {
 		start += (float64(g.viewport_y) / float64(g.rows)) * len
 	}
-	end := start + float64(g.viewport_y) + (float64(g.viewportRows)/float64(g.rows))*len
+	end := start + (float64(g.viewportRows)/float64(g.rows))*len
 
 	g.scroller_y.bar.rect.Min.Y = int(start)
 	g.scroller_y.bar.rect.Max.Y = int(end)
