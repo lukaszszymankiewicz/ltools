@@ -10,12 +10,12 @@ func (g *Game) DrawTileOnCanvas(screen *ebiten.Image) {
 		return
 	}
 	y, x := g.Canvas.MousePosToRowAndCol(g.mouse_x, g.mouse_y)
+	tool := g.Toolbox.GetActiveTool()
 
-	if g.Canvas.TileIsAllowed(x, y, g.mode) == false {
+	if g.Canvas.TileIsAllowed(x, y, g.mode, tool) == false {
 		return
 	}
 
-	tool := g.Toolbox.GetActiveTool()
 	g.Canvas.PutTile(x, y, fill, tool)
 }
 
