@@ -397,6 +397,13 @@ func TestDrawTileOnCanvasDraw(t *testing.T) {
 	light_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 1)
 	entity_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 2)
 
+    modes := make(map[*lto.Tile]int)
+
+    modes[&normal_tile] = 0
+    modes[&normal_tile_2] = 0
+    modes[&light_tile] = 1
+    modes[&entity_tile] = 2
+
 	screen := ebiten.NewImage(640, 480)
 
 	RUBBER := 1
@@ -504,6 +511,13 @@ func TestDrawTileOnCanvasDraw(t *testing.T) {
 			[]int{PEN, PEN, PEN},
 			[]*lto.Tile{&normal_tile, nil, &entity_tile},
 		},
+        {
+			2,
+			[]*lto.Tile{&light_tile, &light_tile},
+			[]int{PEN, RUBBER},
+			[]*lto.Tile{nil, nil, nil},
+		},
+
 	}
 	// WHEN
 
@@ -518,6 +532,7 @@ func TestDrawTileOnCanvasDraw(t *testing.T) {
 			for i := 0; i < tt.n; i++ {
 				g.mouse_x = 10
 				g.mouse_y = 10
+                g.mode = modes[tt.tiles_set[i]]
 				g.Toolbox.Activate(tt.tool_used[i])
 				g.Toolbox.SetFillTile(tt.tiles_set[i])
 				g.DrawTileOnCanvas(screen)

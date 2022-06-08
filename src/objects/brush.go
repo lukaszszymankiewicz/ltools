@@ -8,9 +8,18 @@ const (
 	BRUSH_CLEAN
 )
 
+const (
+	COND_ALWAYS = iota
+    COND_IS_EMPTY
+    COND_HAS_DRAW_TILE
+    COND_HAS_LIGHT_TILE
+    COND_HAS_ENTITY_TILE
+)
+
 type Brush struct {
-	brush_func    func(int, int, int, int, *Tile) BrushResult
-	byLayerEffect [][]int
+	brush_func       func(int, int, int, int, *Tile) BrushResult
+	byLayerEffect    [][]int
+	byLayerCondition []int
 }
 
 type BrushResult struct {
@@ -65,6 +74,7 @@ var PenBrush Brush = Brush{
 		{BRUSH_DO_NOTHING, BRUSH_DRAW, BRUSH_DO_NOTHING},
 		{BRUSH_DO_NOTHING, BRUSH_DO_NOTHING, BRUSH_DRAW},
 	},
+    []int{COND_ALWAYS, COND_IS_EMPTY, COND_HAS_DRAW_TILE},
 }
 
 var RubberBrush Brush = Brush{
@@ -74,4 +84,5 @@ var RubberBrush Brush = Brush{
 		{BRUSH_DO_NOTHING, BRUSH_CLEAN, BRUSH_DO_NOTHING},
 		{BRUSH_DO_NOTHING, BRUSH_DO_NOTHING, BRUSH_CLEAN},
 	},
+    []int{COND_HAS_DRAW_TILE, COND_HAS_LIGHT_TILE, COND_HAS_ENTITY_TILE},
 }

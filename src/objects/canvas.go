@@ -24,10 +24,22 @@ func (c *Canvas) IsEmpty(x int, y int, n int) bool {
 	return isempty
 }
 
-func (c *Canvas) HasTile(x int, y int, n int) bool {
-	// this 0 means that something is put on 0 layer
-	// this probalby be more sofistaced than it it bus damn, i want it as simple as it can get
+func (c *Canvas) HasDrawTile(x int, y int, n int) bool {
 	if c.GetTileOnDrawingArea(x, y, 0) != nil {
+		return true
+	}
+	return false
+}
+
+func (c *Canvas) HasLightTile(x int, y int, n int) bool {
+	if c.GetTileOnDrawingArea(x, y, 1) != nil {
+		return true
+	}
+	return false
+}
+
+func (c *Canvas) HasEntityTile(x int, y int, n int) bool {
+	if c.GetTileOnDrawingArea(x, y, 2) != nil {
 		return true
 	}
 	return false
@@ -98,9 +110,11 @@ func NewCanvas(
 	c.SetTileByLayerEffect = make([]func(int, int, int, *Tile) int, 0)
 
 	c.SetTileByLayerCondition = []func(int, int, int) bool{
-		c.Always,  // setting tile from LAYER_DRAW has such condition
-		c.IsEmpty, // setting tile from LAYER_LIGHT has such condition
-		c.HasTile, // setting tile from LAYER_ENTITY has such condition
+		c.Always,
+		c.IsEmpty,
+		c.HasDrawTile,
+		c.HasLightTile,
+		c.HasEntityTile,
 	}
 
 	c.SetTileByLayerEffect = []func(int, int, int, *Tile) int{
@@ -140,8 +154,10 @@ func (c *Canvas) MoveCanvasLeft(screen *ebiten.Image) {
 	c.MoveViewport(-1, 0)
 }
 
-func (c *Canvas) TileIsAllowed(x int, y int, l int) bool {
-	return c.SetTileByLayerCondition[l](x+c.viewport_x, y+c.viewport_y, l)
+func (c *Canvas) TileIsAllowed(x int, y int, l int, tool Tool) bool {
+    funcIdx := tool.Brush.byLayerCondition[l]
+    f := c.SetTileByLayerCondition[funcIdx]    
+    return f(x+c.viewport_x, y+c.viewport_y, l)
 }
 
 func (c *Canvas) PutTile(x int, y int, fill *Tile, tool Tool) {
@@ -158,7 +174,7 @@ func (c *Canvas) PutTile(x int, y int, fill *Tile, tool Tool) {
 		layer := brush_result.layers[i]
 		tile := brush_result.tiles[i]
 
-		if c.TileIsAllowed(pos_x, pos_y, layer) == true {
+		if c.TileIsAllowed(pos_x, pos_y, layer, tool) == true {
 			c.StartRecording()
 
 			// if Tile is allowed to be placed here apply effect of a brush to each layer
