@@ -23,23 +23,43 @@ const (
 	BASENAME       = "level"
 )
 
+type TileStackEntry struct {
+	tile   *lto.Tile
+	coords []int // coords of tile
+}
+
 type TileStack struct {
-	tiles map[*lto.Tile][]int
+	tiles []TileStackEntry
 }
 
 func NewTileStack() TileStack {
 	var ts TileStack
-	ts.tiles = make(map[*lto.Tile][]int)
+
+	ts.tiles = make([]TileStackEntry, 0)
+
 	return ts
 }
 
+func NewTileStackEntry(tile *lto.Tile) TileStackEntry {
+	var tse TileStackEntry
+	tse.tile = tile
+	tse.coords = make([]int, 0)
+
+	return tse
+}
+
 func (ts *TileStack) AddNew(tile *lto.Tile) {
-	ts.tiles[tile] = []int{}
+	ts.tiles = append(ts.tiles, NewTileStackEntry(tile))
 }
 
 func (ts *TileStack) Append(tile *lto.Tile, x int, y int) {
-	ts.tiles[tile] = append(ts.tiles[tile], x)
-	ts.tiles[tile] = append(ts.tiles[tile], y)
+	for i, entry := range ts.tiles {
+		if entry.tile == tile {
+			ts.tiles[i].coords = append(ts.tiles[i].coords, x)
+			ts.tiles[i].coords = append(ts.tiles[i].coords, y)
+			return
+		}
+	}
 }
 
 // writes value as binary to file
@@ -50,13 +70,13 @@ func writeToFile(f *os.File, value int) {
 }
 
 func (ts *TileStack) hasTile(tile *lto.Tile) bool {
-	_, isPresent := ts.tiles[tile]
-
-	if isPresent == true {
-		return true
-	} else {
-		return false
+	for _, entry := range ts.tiles {
+		if entry.tile == tile {
+			return true
+		}
 	}
+
+	return false
 }
 
 // fills the stack with tiles used in level and position where it was used
@@ -67,9 +87,9 @@ func (g *Game) FillStack() TileStack {
 	rows, cols := g.Canvas.Size()
 	layers := g.Canvas.Layers()
 
-	for x := 0; x < rows; x++ {
-		for y := 0; y < cols; y++ {
-			for l := 0; l < layers; l++ {
+	for l := 0; l < layers; l++ {
+		for x := 0; x < rows; x++ {
+			for y := 0; y < cols; y++ {
 				tile := g.Canvas.GetTileOnDrawingArea(x, y, l)
 
 				if tile != nil {
@@ -118,8 +138,8 @@ func (g *Game) PrepareTileset(filename string, stack TileStack) string {
 	i := 0
 
 	// preparing image
-	for tile, _ := range stack.tiles {
-		asset, err := os.Open(tile.GetTileTileset())
+	for _, entry := range stack.tiles {
+		asset, err := os.Open(entry.tile.GetTileTileset())
 
 		if err != nil {
 			fmt.Println(err)
@@ -138,7 +158,7 @@ func (g *Game) PrepareTileset(filename string, stack TileStack) string {
 		x := (i % TILES_PER_ROW) * GridSize
 		y := (i / TILES_PER_ROW) * GridSize
 
-		row, col := tile.PosOnTileset()
+		row, col := entry.tile.PosOnTileset()
 
 		// getting single tile from tileset image
 		crop := image.Rect(row*GridSize, col*GridSize, row*GridSize+GridSize, col*GridSize+GridSize)
@@ -163,12 +183,12 @@ func (g *Game) PrepareTileset(filename string, stack TileStack) string {
 	return name
 }
 
-func (ts *TileStack) TilesPerLayer(layer int) []*lto.Tile {
-	tiles := make([]*lto.Tile, 0)
+func (ts *TileStack) TilesPerLayer(layer int) []int {
+	tiles := make([]int, 0)
 
-	for tile, _ := range ts.tiles {
-		if tile.GetLayer() == layer {
-			tiles = append(tiles, tile)
+	for i, entry := range ts.tiles {
+		if entry.tile.GetLayer() == layer {
+			tiles = append(tiles, i)
 		}
 	}
 	return tiles
@@ -177,9 +197,9 @@ func (ts *TileStack) TilesPerLayer(layer int) []*lto.Tile {
 func (ts *TileStack) TilesPerLayerSum(layer int) int {
 	n := 0
 
-	for tile, coords := range ts.tiles {
-		if tile.GetLayer() == layer {
-			n += len(coords)
+	for _, entry := range ts.tiles {
+		if entry.tile.GetLayer() == layer {
+			n += len(entry.coords)
 		}
 	}
 
@@ -193,10 +213,10 @@ func (g *Game) writeLayerToFile(f *os.File, layer int, stack TileStack) {
 	writeToFile(f, tiles_per_layer_sum)
 
 	for _, tile := range tiles_per_layer {
-		single_tile_usage := len(stack.tiles[tile])
+		single_tile_usage := len(stack.tiles[tile].coords)
 		writeToFile(f, single_tile_usage)
 
-		for _, coord := range stack.tiles[tile] {
+		for _, coord := range stack.tiles[tile].coords {
 			writeToFile(f, coord)
 		}
 	}
