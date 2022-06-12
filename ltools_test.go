@@ -32,11 +32,11 @@ func TestStack(t *testing.T) {
 	if len(ts.tiles) != 2 {
 		t.Errorf("Adding tiles to stack failed")
 	}
-	if len(ts.tiles[&t1]) != 4 {
-		t.Errorf("Adding tiles to stack failed, want 2 coords, got %d", len(ts.tiles[&t1]))
+	if len(ts.tiles[0].coords) != 4 {
+		t.Errorf("Adding tiles to stack failed, want 2 coords, got %d", len(ts.tiles[0].coords))
 	}
-	if len(ts.tiles[&t2]) != 2 {
-		t.Errorf("Adding tiles to stack failed, want 4 coords, got %d", len(ts.tiles[&t2]))
+	if len(ts.tiles[1].coords) != 2 {
+		t.Errorf("Adding tiles to stack failed, want 4 coords, got %d", len(ts.tiles[0].coords))
 	}
 }
 
@@ -119,30 +119,30 @@ func TestFillStack(t *testing.T) {
 	coords_b := []int{14, 14, 15, 15, 16, 16, 17, 17}
 	coords_c := []int{5, 5, 6, 6}
 
-	if len(ts.tiles[&t1]) != len(coords_a) {
+	if len(ts.tiles[0].coords) != len(coords_a) {
 		t.Errorf("coords do not comply")
 	}
 
-	if len(ts.tiles[&t2]) != len(coords_b) {
+	if len(ts.tiles[1].coords) != len(coords_b) {
 		t.Errorf("coords do not comply")
 	}
-	if len(ts.tiles[&t3]) != len(coords_c) {
+	if len(ts.tiles[2].coords) != len(coords_c) {
 		t.Errorf("coords do not comply")
 	}
 
-	for i, coord := range ts.tiles[&t1] {
+	for i, coord := range ts.tiles[0].coords {
 		if coord != coords_a[i] {
 			t.Errorf("Bad coords in tile stack, want: %d, got: %d", coords_a[i], coord)
 		}
 	}
 
-	for i, coord := range ts.tiles[&t2] {
+	for i, coord := range ts.tiles[1].coords {
 		if coord != coords_b[i] {
 			t.Errorf("Bad coords in tile stack, want: %d, got: %d", coords_b[i], coord)
 		}
 	}
 
-	for i, coord := range ts.tiles[&t3] {
+	for i, coord := range ts.tiles[2].coords {
 		if coord != coords_c[i] {
 			t.Errorf("Bad coords in tile stack, want: %d, got: %d", coords_c[i], coord)
 		}
@@ -397,12 +397,12 @@ func TestDrawTileOnCanvasDraw(t *testing.T) {
 	light_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 1)
 	entity_tile := lto.NewTile(ebiten.NewImage(32, 32), "name", false, 0, 0, 2)
 
-    modes := make(map[*lto.Tile]int)
+	modes := make(map[*lto.Tile]int)
 
-    modes[&normal_tile] = 0
-    modes[&normal_tile_2] = 0
-    modes[&light_tile] = 1
-    modes[&entity_tile] = 2
+	modes[&normal_tile] = 0
+	modes[&normal_tile_2] = 0
+	modes[&light_tile] = 1
+	modes[&entity_tile] = 2
 
 	screen := ebiten.NewImage(640, 480)
 
@@ -511,13 +511,12 @@ func TestDrawTileOnCanvasDraw(t *testing.T) {
 			[]int{PEN, PEN, PEN},
 			[]*lto.Tile{&normal_tile, nil, &entity_tile},
 		},
-        {
+		{
 			2,
 			[]*lto.Tile{&light_tile, &light_tile},
 			[]int{PEN, RUBBER},
 			[]*lto.Tile{nil, nil, nil},
 		},
-
 	}
 	// WHEN
 
@@ -532,7 +531,7 @@ func TestDrawTileOnCanvasDraw(t *testing.T) {
 			for i := 0; i < tt.n; i++ {
 				g.mouse_x = 10
 				g.mouse_y = 10
-                g.mode = modes[tt.tiles_set[i]]
+				g.mode = modes[tt.tiles_set[i]]
 				g.Toolbox.Activate(tt.tool_used[i])
 				g.Toolbox.SetFillTile(tt.tiles_set[i])
 				g.DrawTileOnCanvas(screen)
