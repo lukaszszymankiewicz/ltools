@@ -155,9 +155,9 @@ func (c *Canvas) MoveCanvasLeft(screen *ebiten.Image) {
 }
 
 func (c *Canvas) TileIsAllowed(x int, y int, l int, tool Tool) bool {
-    funcIdx := tool.Brush.byLayerCondition[l]
-    f := c.SetTileByLayerCondition[funcIdx]    
-    return f(x, y, l)
+	funcIdx := tool.Brush.byLayerCondition[l]
+	f := c.SetTileByLayerCondition[funcIdx]
+	return f(x, y, l)
 }
 
 func (c *Canvas) PutTile(x int, y int, fill *Tile, tool Tool) {

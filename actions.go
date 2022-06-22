@@ -10,14 +10,14 @@ func (g *Game) DrawTileOnCanvas(screen *ebiten.Image) {
 		return
 	}
 	y, x := g.Canvas.MousePosToRowAndCol(g.mouse_x, g.mouse_y)
-    corr_x, corr_y := g.Canvas.CorrectPosByViewport(x, y)
+	corr_x, corr_y := g.Canvas.CorrectPosByViewport(x, y)
 
 	tool := g.Toolbox.GetActiveTool()
 
 	if g.Canvas.TileIsAllowed(corr_x, corr_y, g.mode, tool) == false {
 		return
 	}
-    
+
 	g.Canvas.PutTile(corr_x, corr_y, fill, tool)
 }
 

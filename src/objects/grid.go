@@ -138,7 +138,7 @@ func (g *Grid) MousePosToTilePos(x int, y int) (int, int) {
 }
 
 func (g *Grid) CorrectPosByViewport(x int, y int) (int, int) {
-    return x+g.viewport_x, y+g.viewport_y
+	return x + g.viewport_x, y + g.viewport_y
 }
 
 func (g *Grid) MousePosToRowAndCol(x int, y int) (int, int) {
