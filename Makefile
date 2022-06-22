@@ -22,10 +22,11 @@ clean:
 	rm -f *.llv
 	# exported levels are deleted
 	rm -f sample_name.png
-	# exported levels are deleted
-	rm -f *.zip
 	# old logs file
 	rm -f ./logs/*
+	# old levels
+	rm -f ./levels/level.llv
+	rm -f ./levels/level.png
 
 .PHONY: test
 test:

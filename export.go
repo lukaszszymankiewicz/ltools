@@ -1,17 +1,15 @@
 package main
 
 import (
-	"archive/zip"
 	"encoding/binary"
 	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image"
 	"image/draw"
 	"image/png"
-	"io"
-	"log"
 	lto "ltools/src/objects"
 	"os"
+	"path/filepath"
 )
 
 const (
@@ -19,7 +17,6 @@ const (
 	TILES_PER_ROW  = 16
 	TILESET_FORMAT = ".png"
 	LEVEL_FORMAT   = ".llv"
-	ARCHIVE_FORMAT = ".zip"
 	BASENAME       = "level"
 )
 
@@ -241,62 +238,16 @@ func (g *Game) exportLevel(filename string, stack TileStack) string {
 	return name
 }
 
-func appendFiles(filename string, zipw *zip.Writer) error {
-	file, err := os.Open(filename)
-	if err != nil {
-		return fmt.Errorf("Failed to open %s: %s", filename, err)
-	}
-	defer file.Close()
-
-	wr, err := zipw.Create(filename)
-	if err != nil {
-		msg := "Failed to create entry for %s in zip file: %s"
-		return fmt.Errorf(msg, filename, err)
-	}
-
-	if _, err := io.Copy(wr, file); err != nil {
-		return fmt.Errorf("Failed to write %s to zip: %s", filename, err)
-	}
-
-	return nil
-}
-
-func CompresFiles(files []string, archive_name string) string {
-	name := archive_name + ARCHIVE_FORMAT
-
-	flags := os.O_WRONLY | os.O_CREATE | os.O_TRUNC
-	file, err := os.OpenFile(name, flags, 0644)
-
-	if err != nil {
-		log.Fatalf("Failed to open zip for writing: %s", err)
-	}
-	defer file.Close()
-
-	zipw := zip.NewWriter(file)
-	defer zipw.Close()
-
-	for _, filename := range files {
-		if err := appendFiles(filename, zipw); err != nil {
-			log.Fatalf("Failed to add file %s to zip: %s", filename, err)
-		}
-	}
-
-	for _, filename := range files {
-		e := os.Remove(filename)
-		if e != nil {
-			log.Fatal(e)
-		}
-	}
-	return name
-}
-
 func (g *Game) Export(screen *ebiten.Image) {
 	stack := g.FillStack()
 
-	levelname := g.exportLevel(BASENAME, stack)
-	tileset_name := g.PrepareTileset(BASENAME, stack)
+	_ = os.Mkdir(g.Config.LevelDir, 0750)
 
-	CompresFiles([]string{levelname, tileset_name}, BASENAME)
+	base_path := filepath.Join(g.Config.LevelDir, BASENAME)
 
+	g.exportLevel(base_path, stack)
+	g.PrepareTileset(base_path, stack)
+
+	// went back to base mode
 	g.changeModeToDraw(screen)
 }

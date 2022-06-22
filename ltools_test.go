@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"io/fs"
-	"io/ioutil"
 	lto "ltools/src/objects"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -298,23 +298,8 @@ func TestExportLevel(t *testing.T) {
 
 	// file was not created - test should fail
 	if _, err := os.Stat(name + ".llv"); errors.Is(err, fs.ErrNotExist) {
-		t.Errorf("Exporintg level does not succeded!")
+		t.Errorf("Exporintg level does not succeded!\n")
 		fmt.Print(err.Error())
-	}
-}
-
-func TestCompresFiles(t *testing.T) {
-	archive_name := "sample"
-	file_1, _ := ioutil.TempFile(".", "file_1")
-	file_2, _ := ioutil.TempFile(".", "file_2")
-
-	defer os.Remove(file_1.Name())
-	defer os.Remove(file_2.Name())
-
-	CompresFiles([]string{file_1.Name(), file_2.Name()}, archive_name)
-
-	if _, err := os.Stat(archive_name + ".zip"); errors.Is(err, fs.ErrNotExist) {
-		t.Errorf("Compressing files does not succeded!")
 	}
 }
 
@@ -381,9 +366,17 @@ func TestExport(t *testing.T) {
 			dummy_image := ebiten.NewImage(1, 1)
 			g.Export(dummy_image)
 
-			// file was not created - test should fail
-			if _, err := os.Stat(BASENAME + ".zip"); errors.Is(err, fs.ErrNotExist) {
-				t.Errorf("Exporintg level does not succeded!")
+			base_path := filepath.Join(g.Config.LevelDir, BASENAME)
+
+			// level structure was not created - test should fail
+			if _, err := os.Stat(base_path + ".llv"); errors.Is(err, fs.ErrNotExist) {
+				t.Errorf("Exporintg level does not succeded! - level structure was not exported\n")
+				fmt.Print(err.Error())
+			}
+
+			// level structure was not created - test should fail
+			if _, err := os.Stat(base_path + ".png"); errors.Is(err, fs.ErrNotExist) {
+				t.Errorf("Exporintg level does not succeded! - tileset image was not exported\n")
 				fmt.Print(err.Error())
 			}
 		})

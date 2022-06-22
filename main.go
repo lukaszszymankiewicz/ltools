@@ -16,10 +16,14 @@ type Game struct {
 	lto.Toolbox
 	lto.Logger
 	lto.Tilesets
+
 	Controller
+    Config
+
 	ClickableAreas       map[image.Rectangle]func(*ebiten.Image)
 	SingleClickableAreas map[image.Rectangle]func(*ebiten.Image)
 	HoverableAreas       map[image.Rectangle]func(*ebiten.Image)
+
 	mode                 int
 }
 
@@ -89,6 +93,8 @@ func NewGame() *Game {
 	g.Cursor = lto.NewCursor(CursorSize)
 	g.Tabber = lto.NewCompleteTabber(TabberX, TabberY, []string{"tiles", "light", "entities", "export"})
 	g.Logger = lto.NewLogger(LOGGER_PATH)
+    
+    g.Config = ReadConfig("config.json")
 
 	return &g
 }
