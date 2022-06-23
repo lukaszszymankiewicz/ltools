@@ -33,25 +33,32 @@ func (g *Game) UndrawOneRecord() {
 }
 
 func (g *Game) DrawCursorOnPallete(screen *ebiten.Image) {
+	// hiding OS cursor
+	ebiten.SetCursorMode(ebiten.CursorModeHidden)
+
 	x, y := g.Pallete.MousePosToTilePos(g.mouse_x, g.mouse_y)
 	row, col := g.Pallete.MousePosToRowAndCol(x, y)
 
 	if t := g.Pallete.PosHasTile(row, col, g.Pallete.CurrentLayer()); t == true {
-		g.Cursor.DrawOnPallete(screen, x, y)
+		g.Cursor.DrawBorder(screen, x, y)
 	}
+
+    // drawing cursor icon
+	image := g.Toolbox.GetPipette()
+	g.Cursor.DrawIcon(screen, image, g.mouse_x, g.mouse_y)
 }
 
 func (g *Game) DrawCursorOnCanvas(screen *ebiten.Image) {
 	// hiding OS cursor
 	ebiten.SetCursorMode(ebiten.CursorModeHidden)
 
-	// drawing cursor icon
-	image := g.Toolbox.GetCursor()
-	g.Cursor.DrawIconOnCanvas(screen, image, g.mouse_x, g.mouse_y)
-
 	// drawing place where Tile will be drawn (simply by drawing rectangle)
 	x, y := g.Canvas.MousePosToTilePos(g.mouse_x, g.mouse_y)
-	g.Cursor.DrawPlaceOnCanvas(screen, x, y)
+    g.Cursor.DrawBorder(screen, x, y)
+
+	// drawing cursor icon
+	image := g.Toolbox.GetCursor()
+	g.Cursor.DrawIcon(screen, image, g.mouse_x, g.mouse_y)
 }
 
 func (g *Game) DrawCursorElsewhere(screen *ebiten.Image) {
