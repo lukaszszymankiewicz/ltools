@@ -33,7 +33,8 @@ type Toolbox struct {
 	x int
 	y int
 	Fill
-	Tools  []Tool
+	Tools  []Tool          // functional tools
+    pipette *ebiten.Image  // pipette icon - just image, non functional by now
 	active int
 }
 
@@ -74,6 +75,8 @@ func NewToolbox(x int, y int) Toolbox {
 	dummy_image := ebiten.NewImage(32, 32)
 	dummy_image.Fill(color.RGBA{0xff, 0, 0, 0xff})
 	tb.SetFill(dummy_image)
+    
+    tb.pipette = LoadImage("src/objects/assets/buttons/pippete.png")
 
 	tb.Activate(0)
 
@@ -150,4 +153,8 @@ func (tb *Toolbox) Area(i int) image.Rectangle {
 
 func (tb *Toolbox) GetActiveTool() Tool {
 	return tb.Tools[tb.active]
+}
+
+func (tb *Toolbox) GetPipette() *ebiten.Image {
+	return tb.pipette
 }
