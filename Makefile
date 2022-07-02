@@ -19,14 +19,14 @@ clean:
 	# compiled binaries are deleted
 	rm -f ltools
 	# exported levels are deleted
-	rm -f *.llv
+	rm -f editor/*.llv
 	# exported levels are deleted
-	rm -f sample_name.png
+	rm -f editor/sample_name.png
 	# old logs file
-	rm -f ./logs/*
+	rm -f ./editor/logs/*
 	# old levels
-	rm -f ./levels/level.llv
-	rm -f ./levels/level.png
+	rm -f ./editor/levels/level.llv
+	rm -f ./editor/levels/level.png
 
 .PHONY: test
 test:
