@@ -4,6 +4,10 @@ wasm:
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 	GOOS=js GOARCH=wasm go build -o ./html/main.wasm .
 
+.PHONY: run
+run:
+	go run ltools
+
 .PHONY: native
 native:
 	go build -o ./ltools .
@@ -19,7 +23,8 @@ clean:
 	# compiled binaries are deleted
 	rm -f ltools
 	# exported levels are deleted
-	rm -f *.llv
+	rm -f editor/*.llv
+	rm -f editor/*.png
 	# exported levels are deleted
 	rm -f sample_name.png
 	# old logs file
@@ -31,4 +36,4 @@ clean:
 .PHONY: test
 test:
 	# run tests in all directories and sub-directories
-	go test ./...
+	go test ./... 
