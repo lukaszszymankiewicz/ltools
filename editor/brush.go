@@ -8,15 +8,8 @@ const (
 	BRUSH_CLEAN
 )
 
-const (
-	COND_ALWAYS = iota
-	COND_IS_EMPTY
-	COND_HAS_DRAW_TILE
-	COND_HAS_LIGHT_TILE
-	COND_HAS_ENTITY_TILE
-)
-
 type Brush struct {
+	name             string
 	brush_func       func(int, int, int, int, *Tile) BrushResult
 	byLayerEffect    [][]int
 	byLayerCondition []int
@@ -48,7 +41,7 @@ func (br *BrushResult) GetTile(i int) *Tile {
 func PenBrushFunc(x1 int, y1 int, x2 int, y2 int, tile *Tile) BrushResult {
 	return BrushResult{
 		1,
-		[][]int{{x1, y1}},
+		[][]int{{0, 0}},
 		[]int{tile.layer},
 		[]*Tile{tile},
 	}
@@ -57,7 +50,7 @@ func PenBrushFunc(x1 int, y1 int, x2 int, y2 int, tile *Tile) BrushResult {
 func RubberBrushFunc(x1 int, y1 int, x2 int, y2 int, tile *Tile) BrushResult {
 	return BrushResult{
 		1,
-		[][]int{{x1, y1}},
+		[][]int{{0, 0}},
 		[]int{tile.layer},
 		[]*Tile{nil},
 	}
@@ -68,6 +61,7 @@ func (b *Brush) ApplyBrush(x1 int, y1 int, x2 int, y2 int, tile *Tile) BrushResu
 }
 
 var PenBrush Brush = Brush{
+	"pen",
 	PenBrushFunc,
 	[][]int{
 		{BRUSH_DRAW, BRUSH_CLEAN, BRUSH_DO_NOTHING},
@@ -78,9 +72,10 @@ var PenBrush Brush = Brush{
 }
 
 var RubberBrush Brush = Brush{
+	"rubber",
 	RubberBrushFunc,
 	[][]int{
-		{BRUSH_CLEAN, BRUSH_CLEAN, BRUSH_CLEAN},
+		{BRUSH_CLEAN, BRUSH_CLEAN, BRUSH_DO_NOTHING},
 		{BRUSH_DO_NOTHING, BRUSH_CLEAN, BRUSH_DO_NOTHING},
 		{BRUSH_DO_NOTHING, BRUSH_DO_NOTHING, BRUSH_CLEAN},
 	},

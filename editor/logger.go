@@ -17,7 +17,6 @@ const (
 	LOG_CONTENT_N      = 17 // from 17 char wach log has its content
 )
 
-// multiple layers) is called Tileseter
 type Logger struct {
 	filename     string
 	path         string
@@ -25,7 +24,6 @@ type Logger struct {
 	canvasLogger *log.Logger
 }
 
-// creates new Pallete struct
 func NewLogger(path string) Logger {
 	var logger Logger
 
@@ -46,6 +44,7 @@ func NewLogger(path string) Logger {
 	return logger
 }
 
+// sample function of how to use Logger
 func (lg *Logger) LogCanvasPut(x int, y int, layer int) {
 	lg.canvasLogger.Printf("Tile put on (%d, %d), on layer %d\n", x, y, layer)
 }

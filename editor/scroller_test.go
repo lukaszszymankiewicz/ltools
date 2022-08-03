@@ -1,160 +1,198 @@
 package editor
 
 import (
+	"fmt"
+	"image"
 	"testing"
 )
 
-func TestNewScrollerX(t *testing.T) {
-	// scroller arrows image cannot be read properly while initialiing test, so dummy image (10x10
-	// pixels is load) - this is taken into account while this unit test.
-
-	dummy_image_x := 10
-	dummy_image_y := 10
-
-	s := NewScroller(10, 10, 200, 32)
-
-	// background
-	if s.background.rect.Min.X != 10+dummy_image_x {
-		t.Errorf("Scroller created inproperly: background.rect.Min.X = %d, want = %d", s.background.rect.Min.X, 10+dummy_image_x)
+func RectAreEqual(base image.Rectangle, comp image.Rectangle) (bool, int, int, string) {
+	if base.Min.X != comp.Min.X {
+		return false, base.Min.X, comp.Min.X, "min X"
 	}
-	if s.background.rect.Max.X != 200 {
-		t.Errorf("Scroller created inproperly: background.rect.Max.X = %d, want = %d", s.background.rect.Max.X, 200)
+	if base.Max.X != comp.Max.X {
+		return false, base.Max.X, comp.Max.X, "max X"
+	}
+	if base.Min.Y != comp.Min.Y {
+		return false, base.Min.Y, comp.Min.Y, "min Y"
+	}
+	if base.Max.Y != comp.Max.Y {
+		return false, base.Max.Y, comp.Max.Y, "max Y"
 	}
 
-	if s.background.rect.Min.Y != 10 {
-		t.Errorf("Scroller created inproperly: background.rect.Min.Y = %d, want = %d", s.background.rect.Min.Y, 10)
-	}
-
-	if s.background.rect.Max.Y != 10+32 {
-		t.Errorf("Scroller created inproperly: background.rect.Max.Y = %d, want = %d", s.background.rect.Max.Y, 10+32)
-	}
-
-	// bar
-	if s.bar.rect.Min.X != 10+dummy_image_x {
-		t.Errorf("Scroller created inproperly: bar.rect.Min.X = %d, want = %d", s.bar.rect.Min.X, 10+dummy_image_x)
-	}
-	if s.bar.rect.Max.X != 200 {
-		t.Errorf("Scroller created inproperly: bar.rect.Max.X = %d, want = %d", s.bar.rect.Max.X, 200)
-	}
-
-	if s.bar.rect.Min.Y != 10 {
-		t.Errorf("Scroller created inproperly: bar.rect.Min.Y = %d, want = %d", s.bar.rect.Min.Y, 10)
-	}
-
-	if s.bar.rect.Max.Y != 10+32 {
-		t.Errorf("Scroller created inproperly: bar.rect.Max.Y = %d, want = %d", s.bar.rect.Max.Y, 10+32)
-	}
-
-	// Low Arrow
-	if s.arrowLow.rect.Min.X != 10 {
-		t.Errorf("Scroller created inproperly: s.arrowLow.rect.Min.X = %d, want = %d", s.arrowLow.rect.Min.X, 10)
-	}
-
-	if s.arrowLow.rect.Max.X != 10+dummy_image_x {
-		t.Errorf("Scroller created inproperly: s.arrowLow.rect.Max.X = %d, want = %d", s.arrowLow.rect.Min.X, 10+dummy_image_x)
-	}
-
-	if s.arrowLow.rect.Min.Y != 10 {
-		t.Errorf("Scroller created inproperly: s.arrowLow.rect.Min.Y = %d, want = %d", s.arrowLow.rect.Min.Y, 10)
-	}
-
-	if s.arrowLow.rect.Max.Y != 10+dummy_image_y {
-		t.Errorf("Scroller created inproperly: s.arrowLow.rect.Max.Y = %d, want = %d", s.arrowLow.rect.Min.Y, 10+dummy_image_y)
-	}
-
-	// High Arrow
-	if s.arrowHigh.rect.Min.X != 200 {
-		t.Errorf("Scroller created inproperly: s.arrowHigh.rect.Min.X = %d, want = %d", s.arrowHigh.rect.Min.X, 200)
-	}
-
-	if s.arrowHigh.rect.Max.X != 200+dummy_image_x {
-		t.Errorf("Scroller created inproperly: s.arrowHigh.rect.Max.X = %d, want = %d", s.arrowHigh.rect.Max.X, 200+dummy_image_y)
-	}
-
-	if s.arrowHigh.rect.Min.Y != 10 {
-		t.Errorf("Scroller created inproperly: s.arrowHigh.rect.Min.Y = %d, want = %d", s.arrowHigh.rect.Min.Y, 10)
-	}
-
-	if s.arrowHigh.rect.Max.Y != 10+dummy_image_y {
-		t.Errorf("Scroller created inproperly: s.arrowHigh.rect.Max.Y = %d, want = %d", s.arrowHigh.rect.Max.Y, 10+dummy_image_y)
-	}
+	return true, -1, -1, ""
 
 }
 
-func TestNewScrollerY(t *testing.T) {
-	// scroller arrows image cannot be read properly while initialiing test, so dummy image (10x10
-	// pixels is load) - this is taken into account while this unit test.
+func TestNewScroller(t *testing.T) {
 
-	dummy_image_x := 10
-	dummy_image_y := 10
+	SCROLLER_X := 10
+	SCROLLER_Y := 10
+	scroll_image_x := 16
+	scroll_image_y := 16
+	rows := 30
+	cols := 30
+	grid := 32
 
-	s := NewScroller(10, 10, 32, 200)
+	base_x := cols * grid
+	base_y := rows * grid
 
-	// background
-	if s.background.rect.Min.X != 10 {
-		t.Errorf("Scroller created inproperly: background.rect.Min.X = %d, want = %d", s.background.rect.Min.X, 10)
+	var tests = []struct {
+		scroller_position int
+		scroller_type     int
+		background_rect   image.Rectangle
+		bar_rect          image.Rectangle
+		low_arrow_rect    image.Rectangle
+		high_arrow_rect   image.Rectangle
+	}{
+		{
+			SCROLLER_POS_DOWN,
+			SCROLLER_TYPE_X,
+			image.Rect(
+				0+SCROLLER_X+scroll_image_x,
+				base_x+SCROLLER_X,
+				base_x+SCROLLER_X-scroll_image_x,
+				base_y+SCROLLER_Y+scroll_image_y,
+			),
+			image.Rect(
+				0+SCROLLER_X+scroll_image_x,
+				base_y+SCROLLER_Y,
+				base_x+SCROLLER_X-scroll_image_x,
+				base_y+SCROLLER_Y+scroll_image_y,
+			),
+			image.Rect(
+				0+SCROLLER_X,
+				base_y+SCROLLER_Y,
+				0+SCROLLER_X+scroll_image_x,
+				base_y+SCROLLER_Y+scroll_image_y,
+			),
+			image.Rect(
+				base_x+SCROLLER_X-scroll_image_x,
+				base_y+SCROLLER_Y,
+				base_x+SCROLLER_X,
+				base_y+SCROLLER_Y+scroll_image_y,
+			),
+		},
+		{
+			SCROLLER_POS_UP,
+			SCROLLER_TYPE_Y,
+			image.Rect(
+				0,
+				SCROLLER_X+scroll_image_y,
+				scroll_image_x,
+				base_y+SCROLLER_Y-scroll_image_y,
+			),
+			image.Rect(
+				0,
+				SCROLLER_X+scroll_image_y,
+				scroll_image_x,
+				base_y+SCROLLER_Y-scroll_image_y,
+			),
+			image.Rect(
+				0,
+				base_y+SCROLLER_Y-scroll_image_y,
+				0+scroll_image_x,
+				base_y+SCROLLER_Y,
+			),
+			image.Rect(
+				0,
+				SCROLLER_Y,
+				scroll_image_x,
+				scroll_image_y+SCROLLER_Y,
+			),
+		},
+		{
+			SCROLLER_POS_DOWN,
+			SCROLLER_TYPE_Y,
+			image.Rect(
+				0,
+				SCROLLER_X+scroll_image_y,
+				scroll_image_x,
+				base_y+SCROLLER_Y-scroll_image_y,
+			),
+			image.Rect(
+				0,
+				SCROLLER_X+scroll_image_y,
+				scroll_image_x,
+				base_y+SCROLLER_Y-scroll_image_y,
+			),
+			image.Rect(
+				0,
+				base_y+SCROLLER_Y-scroll_image_y,
+				0+scroll_image_x,
+				base_y+SCROLLER_Y,
+			),
+			image.Rect(
+				0,
+				SCROLLER_Y,
+				scroll_image_x,
+				scroll_image_y+SCROLLER_Y,
+			),
+		},
+		{
+			SCROLLER_POS_DOWN,
+			SCROLLER_TYPE_X,
+			image.Rect(
+				SCROLLER_X+scroll_image_x,
+				base_y+SCROLLER_X,
+				base_x+SCROLLER_Y-scroll_image_x,
+				base_y+SCROLLER_Y+scroll_image_y,
+			),
+			image.Rect(
+				SCROLLER_X+scroll_image_x,
+				base_y+SCROLLER_X,
+				base_x+SCROLLER_Y-scroll_image_x,
+				base_y+SCROLLER_Y+scroll_image_y,
+			),
+			image.Rect(
+				SCROLLER_X,
+				base_y+SCROLLER_Y,
+				SCROLLER_Y+scroll_image_y,
+				base_y+SCROLLER_Y+scroll_image_y,
+			),
+			image.Rect(
+				base_x+SCROLLER_X-scroll_image_x,
+				base_y+SCROLLER_Y,
+				base_x+SCROLLER_X,
+				base_y+SCROLLER_Y+scroll_image_y,
+			),
+		},
 	}
 
-	if s.background.rect.Max.X != 10+32 {
-		t.Errorf("Scroller created inproperly: background.rect.Max.X = %d, want = %d", s.background.rect.Max.X, 10+32)
-	}
+	for _, tt := range tests {
+		testname := fmt.Sprintf("%d", tt.scroller_position)
 
-	if s.background.rect.Min.Y != 10+dummy_image_y {
-		t.Errorf("Scroller created inproperly: background.rect.Min.Y = %d, want = %d", s.background.rect.Min.Y, 10+dummy_image_y)
-	}
+		var v Viewport
+		var s *Scroller
 
-	if s.background.rect.Max.Y != 200 {
-		t.Errorf("Scroller created inproperly: background.rect.Max.Y = %d, want = %d", s.background.rect.Max.Y, 200)
-	}
+		t.Run(testname, func(t *testing.T) {
 
-	// bar
-	if s.bar.rect.Min.X != 10 {
-		t.Errorf("Scroller created inproperly: bar.rect.Min.X = %d, want = %d", s.bar.rect.Min.X, 10)
-	}
+			v = NewViewport(30, 30, 30, 30)
+			s = NewScroller("dummy", SCROLLER_X, SCROLLER_Y, tt.scroller_position, tt.scroller_type, &v)
 
-	if s.bar.rect.Max.X != 10+32 {
-		t.Errorf("Scroller created inproperly: bar.rect.Max.X = %d, want = %d", s.bar.rect.Max.X, 10+32)
-	}
+			equal, base, comp, where := RectAreEqual(s.Background.Rect, tt.background_rect)
+			if equal == false {
+				t.Errorf("Scroller background rect is incorrect: %d != %d at %s", base, comp, where)
+				t.Errorf("%d, %d, %d, %d\n", s.Background.Rect.Min.X, s.Background.Rect.Min.Y, s.Background.Rect.Max.X, s.Background.Rect.Max.Y)
+			}
 
-	if s.bar.rect.Min.Y != 10+dummy_image_y {
-		t.Errorf("Scroller created inproperly: bar.rect.Min.Y = %d, want = %d", s.bar.rect.Min.Y, 10+dummy_image_y)
-	}
+			equal, base, comp, where = RectAreEqual(s.Bar.Rect, tt.bar_rect)
+			if equal == false {
+				t.Errorf("Scroller bar rect is incorrect: %d != %d at %s", base, comp, where)
+				t.Errorf("%d, %d, %d, %d\n", s.Bar.Rect.Min.X, s.Bar.Rect.Min.Y, s.Bar.Rect.Max.X, s.Bar.Rect.Max.Y)
+			}
 
-	if s.bar.rect.Max.Y != 200 {
-		t.Errorf("Scroller created inproperly: bar.rect.Max.Y = %d, want = %d", s.bar.rect.Max.Y, 200)
-	}
+			equal, base, comp, where = RectAreEqual(s.ArrowLow.Rect, tt.low_arrow_rect)
+			if equal == false {
+				t.Errorf("Scroller low arrow rect is incorrect: %d != %d at %s", base, comp, where)
+				t.Errorf("%d, %d, %d, %d\n", s.ArrowLow.Rect.Min.X, s.ArrowLow.Rect.Min.Y, s.ArrowLow.Rect.Max.X, s.ArrowLow.Rect.Max.Y)
+			}
 
-	// Low Arrow
-	if s.arrowLow.rect.Min.X != 10 {
-		t.Errorf("Scroller created inproperly: s.arrowLow.rect.Min.X = %d, want = %d", s.arrowLow.rect.Min.X, 10)
-	}
-
-	if s.arrowLow.rect.Max.X != 10+dummy_image_x {
-		t.Errorf("Scroller created inproperly: s.arrowLow.rect.Max.X = %d, want = %d", s.arrowLow.rect.Min.X, 10+dummy_image_x)
-	}
-
-	if s.arrowLow.rect.Min.Y != 10 {
-		t.Errorf("Scroller created inproperly: s.arrowLow.rect.Min.Y = %d, want = %d", s.arrowLow.rect.Min.Y, 10)
-	}
-
-	if s.arrowLow.rect.Max.Y != 10+dummy_image_y {
-		t.Errorf("Scroller created inproperly: s.arrowLow.rect.Max.Y = %d, want = %d", s.arrowLow.rect.Min.Y, 10+dummy_image_y)
-	}
-
-	// High Arrow
-	if s.arrowHigh.rect.Min.X != 10 {
-		t.Errorf("Scroller created inproperly: s.arrowHigh.rect.Min.X = %d, want = %d", s.arrowHigh.rect.Min.X, 10)
-	}
-
-	if s.arrowHigh.rect.Max.X != 10+dummy_image_x {
-		t.Errorf("Scroller created inproperly: s.arrowHigh.rect.Max.X = %d, want = %d", s.arrowHigh.rect.Max.X, 10+dummy_image_y)
-	}
-
-	if s.arrowHigh.rect.Min.Y != 200 {
-		t.Errorf("Scroller created inproperly: s.arrowHigh.rect.Min.Y = %d, want = %d", s.arrowHigh.rect.Min.Y, 200)
-	}
-
-	if s.arrowHigh.rect.Max.Y != 200+dummy_image_y {
-		t.Errorf("Scroller created inproperly: s.arrowHigh.rect.Max.Y = %d, want = %d", s.arrowHigh.rect.Max.Y, 200+dummy_image_y)
+			equal, base, comp, where = RectAreEqual(s.ArrowHigh.Rect, tt.high_arrow_rect)
+			if equal == false {
+				t.Errorf("Scroller high arrow rect is incorrect: %d != %d at %s", base, comp, where)
+				t.Errorf("%d, %d, %d, %d\n", s.ArrowHigh.Rect.Min.X, s.ArrowHigh.Rect.Min.Y, s.ArrowHigh.Rect.Max.X, s.ArrowHigh.Rect.Max.Y)
+			}
+		})
 	}
 }

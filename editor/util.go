@@ -1,11 +1,11 @@
 package editor
 
 import (
-    "github.com/hajimehoshi/ebiten/v2"
-    "github.com/hajimehoshi/ebiten/v2/ebitenutil"
-    "image"
-    _ "image/png"
-    "log"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"image"
+	_ "image/png"
+	"log"
 )
 
 const (
@@ -47,9 +47,12 @@ func LoadImage(path string) *ebiten.Image {
 	if err != nil {
 		// if image cannot be read, dummy image is returned instead
 		log.Fatal(err)
-		dummy_image := ebiten.NewImage(DUMMY_IMAGE_W, DUMMY_IMAGE_H)
+		img = ebiten.NewImage(DUMMY_IMAGE_W, DUMMY_IMAGE_H)
+	}
 
-		return dummy_image
+	if img == nil {
+		log.Fatal("image read from file but something went wrong")
+		img = ebiten.NewImage(DUMMY_IMAGE_W, DUMMY_IMAGE_H)
 	}
 
 	return img

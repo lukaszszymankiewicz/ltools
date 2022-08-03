@@ -1,12 +1,11 @@
 package main
 
 import (
+	"github.com/hajimehoshi/ebiten/v2"
+	"log"
 	"ltools/editor"
-    "github.com/hajimehoshi/ebiten/v2"
-    "log"
 )
 
-// runs the game
 func main() {
 	editor := editor.NewEditor()
 

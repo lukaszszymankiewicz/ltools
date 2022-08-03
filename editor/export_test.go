@@ -6,7 +6,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -16,8 +15,8 @@ func TestStack(t *testing.T) {
 	i1 := ebiten.NewImage(32, 32)
 	i2 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, tileset_name, false, 0, 0, 0)
-	t2 := NewTile(i2, tileset_name, false, 0, 1, 0)
+	t1 := NewTile(i1, tileset_name, 0, 0, 0)
+	t2 := NewTile(i2, tileset_name, 0, 1, 0)
 
 	ts := NewTileStack()
 
@@ -39,34 +38,45 @@ func TestStack(t *testing.T) {
 	}
 }
 
-
 func TestFillStack(t *testing.T) {
 	var g Game
-
+	var idx int
 	tileset_name := "name"
 
-	g.Canvas = NewCanvas(0, 0, 30*32, 20*32, 32, 30, 20, 3)
+	g.ViewportCanvas = NewViewport(30, 30, 30, 30)
+	g.LevelStructure = NewTilesCollection(3)
+	g.LevelStructure.Alloc(30 * 30)
 
 	i1 := ebiten.NewImage(32, 32)
 	i2 := ebiten.NewImage(32, 32)
 	i3 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, tileset_name, false, 0, 0, 0)
-	t2 := NewTile(i2, tileset_name, false, 0, 1, 0)
-	t3 := NewTile(i3, tileset_name, false, 0, 2, 1)
+	t1 := NewTile(i1, tileset_name, 0, 0, 0)
+	t2 := NewTile(i2, tileset_name, 0, 1, 0)
+	t3 := NewTile(i3, tileset_name, 0, 2, 1)
 
-	g.Canvas.SetTileOnDrawingArea(10, 10, 0, &t1)
-	g.Canvas.SetTileOnDrawingArea(11, 11, 0, &t1)
-	g.Canvas.SetTileOnDrawingArea(12, 12, 0, &t1)
-	g.Canvas.SetTileOnDrawingArea(13, 13, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(10, 10)
+	g.LevelStructure.Set(idx, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(11, 11)
+	g.LevelStructure.Set(idx, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(12, 12)
+	g.LevelStructure.Set(idx, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(13, 13)
+	g.LevelStructure.Set(idx, 0, &t1)
 
-	g.Canvas.SetTileOnDrawingArea(14, 14, 0, &t2)
-	g.Canvas.SetTileOnDrawingArea(15, 15, 0, &t2)
-	g.Canvas.SetTileOnDrawingArea(16, 16, 0, &t2)
-	g.Canvas.SetTileOnDrawingArea(17, 17, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(14, 14)
+	g.LevelStructure.Set(idx, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(15, 15)
+	g.LevelStructure.Set(idx, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(16, 16)
+	g.LevelStructure.Set(idx, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(17, 17)
+	g.LevelStructure.Set(idx, 0, &t2)
 
-	g.Canvas.SetTileOnDrawingArea(5, 5, 1, &t3)
-	g.Canvas.SetTileOnDrawingArea(6, 6, 1, &t3)
+	idx = g.ViewportCanvas.GetTileIdx(5, 5)
+	g.LevelStructure.Set(idx, 1, &t3)
+	idx = g.ViewportCanvas.GetTileIdx(6, 6)
+	g.LevelStructure.Set(idx, 1, &t3)
 
 	ts := g.FillStack()
 
@@ -91,6 +101,7 @@ func TestFillStack(t *testing.T) {
 	if len(ts.tiles[1].coords) != len(coords_b) {
 		t.Errorf("coords do not comply")
 	}
+
 	if len(ts.tiles[2].coords) != len(coords_c) {
 		t.Errorf("coords do not comply")
 	}
@@ -116,31 +127,46 @@ func TestFillStack(t *testing.T) {
 
 func TestPrepareTileset(t *testing.T) {
 	var g Game
+	var idx int
 
-	g.Canvas = NewCanvas(0, 0, 30*32, 20*32, 32, 30, 20, 3)
+	g.ViewportCanvas = NewViewport(30, 30, 30, 30)
+	g.LevelStructure = NewTilesCollection(3)
+	g.LevelStructure.Alloc(30 * 30)
 
-	tileset_name := "assets/basic_tileset.png"
+	LoadResources("")
 
 	i1 := ebiten.NewImage(32, 32)
 	i2 := ebiten.NewImage(32, 32)
 	i3 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, tileset_name, false, 0, 0, 0)
-	t2 := NewTile(i2, tileset_name, false, 0, 1, 0)
-	t3 := NewTile(i3, tileset_name, false, 0, 2, 1)
+	tileset_name := GetResourceFullName("basic_tileset")
 
-	g.Canvas.SetTileOnDrawingArea(10, 10, 0, &t1)
-	g.Canvas.SetTileOnDrawingArea(11, 11, 0, &t1)
-	g.Canvas.SetTileOnDrawingArea(12, 12, 0, &t1)
-	g.Canvas.SetTileOnDrawingArea(13, 13, 0, &t1)
+	t1 := NewTile(i1, tileset_name, 0, 0, 0)
+	t2 := NewTile(i2, tileset_name, 0, 1, 0)
+	t3 := NewTile(i3, tileset_name, 0, 2, 1)
 
-	g.Canvas.SetTileOnDrawingArea(14, 14, 0, &t2)
-	g.Canvas.SetTileOnDrawingArea(15, 15, 0, &t2)
-	g.Canvas.SetTileOnDrawingArea(16, 16, 0, &t2)
-	g.Canvas.SetTileOnDrawingArea(17, 17, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(10, 10)
+	g.LevelStructure.Set(idx, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(11, 11)
+	g.LevelStructure.Set(idx, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(12, 12)
+	g.LevelStructure.Set(idx, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(13, 13)
+	g.LevelStructure.Set(idx, 0, &t1)
 
-	g.Canvas.SetTileOnDrawingArea(5, 5, 1, &t3)
-	g.Canvas.SetTileOnDrawingArea(6, 6, 1, &t3)
+	idx = g.ViewportCanvas.GetTileIdx(14, 14)
+	g.LevelStructure.Set(idx, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(15, 15)
+	g.LevelStructure.Set(idx, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(16, 16)
+	g.LevelStructure.Set(idx, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(17, 17)
+	g.LevelStructure.Set(idx, 0, &t2)
+
+	idx = g.ViewportCanvas.GetTileIdx(5, 5)
+	g.LevelStructure.Set(idx, 1, &t3)
+	idx = g.ViewportCanvas.GetTileIdx(6, 6)
+	g.LevelStructure.Set(idx, 1, &t3)
 
 	stack := g.FillStack()
 	g.PrepareTileset("sample_name", stack)
@@ -151,9 +177,9 @@ func TestTilesPerLayer(t *testing.T) {
 	i2 := ebiten.NewImage(32, 32)
 	i3 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, "name", false, 0, 0, 0)
-	t2 := NewTile(i2, "name", false, 0, 0, 0)
-	t3 := NewTile(i3, "name", false, 0, 0, 1)
+	t1 := NewTile(i1, "name", 0, 0, 0)
+	t2 := NewTile(i2, "name", 0, 0, 0)
+	t3 := NewTile(i3, "name", 0, 0, 1)
 
 	ts := NewTileStack()
 
@@ -192,9 +218,9 @@ func TestTilesPerLayerSum(t *testing.T) {
 	i2 := ebiten.NewImage(32, 32)
 	i3 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, "name", false, 0, 0, 0)
-	t2 := NewTile(i2, "name", false, 0, 0, 0)
-	t3 := NewTile(i3, "name", false, 0, 0, 1)
+	t1 := NewTile(i1, "name", 0, 0, 0)
+	t2 := NewTile(i2, "name", 0, 0, 0)
+	t3 := NewTile(i3, "name", 0, 0, 1)
 
 	ts := NewTileStack()
 
@@ -232,31 +258,45 @@ func TestTilesPerLayerSum(t *testing.T) {
 
 func TestExportLevel(t *testing.T) {
 	var g Game
+	var idx int
 
 	name := "czeslaw"
 	tileset_name := "assets/basic_tileset.png"
-	g.Canvas = NewCanvas(0, 0, 30*32, 20*32, 32, 30, 20, 3)
+
+	g.ViewportCanvas = NewViewport(30, 20, 30, 20)
+	g.LevelStructure = NewTilesCollection(3)
+	g.LevelStructure.Alloc(30 * 20)
 
 	i1 := ebiten.NewImage(32, 32)
 	i2 := ebiten.NewImage(32, 32)
 	i3 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, tileset_name, false, 0, 0, 0)
-	t2 := NewTile(i2, tileset_name, false, 0, 1, 0)
-	t3 := NewTile(i3, tileset_name, false, 0, 2, 1)
+	t1 := NewTile(i1, tileset_name, 0, 0, 0)
+	t2 := NewTile(i2, tileset_name, 0, 1, 0)
+	t3 := NewTile(i3, tileset_name, 0, 2, 1)
 
-	g.Canvas.SetTileOnDrawingArea(10, 10, 0, &t1)
-	g.Canvas.SetTileOnDrawingArea(11, 11, 0, &t1)
-	g.Canvas.SetTileOnDrawingArea(12, 12, 0, &t1)
-	g.Canvas.SetTileOnDrawingArea(13, 13, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(10, 10)
+	g.LevelStructure.Set(idx, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(11, 11)
+	g.LevelStructure.Set(idx, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(12, 12)
+	g.LevelStructure.Set(idx, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(13, 13)
+	g.LevelStructure.Set(idx, 0, &t1)
+	idx = g.ViewportCanvas.GetTileIdx(14, 14)
 
-	g.Canvas.SetTileOnDrawingArea(14, 14, 0, &t2)
-	g.Canvas.SetTileOnDrawingArea(15, 15, 0, &t2)
-	g.Canvas.SetTileOnDrawingArea(16, 16, 0, &t2)
-	g.Canvas.SetTileOnDrawingArea(17, 17, 0, &t2)
+	g.LevelStructure.Set(idx, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(15, 15)
+	g.LevelStructure.Set(idx, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(16, 16)
+	g.LevelStructure.Set(idx, 0, &t2)
+	idx = g.ViewportCanvas.GetTileIdx(17, 17)
+	g.LevelStructure.Set(idx, 0, &t2)
 
-	g.Canvas.SetTileOnDrawingArea(5, 5, 1, &t3)
-	g.Canvas.SetTileOnDrawingArea(6, 6, 1, &t3)
+	idx = g.ViewportCanvas.GetTileIdx(5, 5)
+	g.LevelStructure.Set(idx, 1, &t3)
+	idx = g.ViewportCanvas.GetTileIdx(6, 6)
+	g.LevelStructure.Set(idx, 1, &t3)
 
 	stack := g.FillStack()
 	g.exportLevel(name, stack)
@@ -276,12 +316,6 @@ func TestExport(t *testing.T) {
 		tiles_set_funcs   [][]int
 	}{
 		{
-			0,
-			[][]int{{}},
-			0,
-			[][]int{{}},
-		},
-		{
 			3,
 			[][]int{{0, 0, 0}, {1, 1, 0}, {2, 2, 0}},
 			5,
@@ -299,18 +333,32 @@ func TestExport(t *testing.T) {
 		testname := fmt.Sprintf("%d", tt.tiles_set_funcs)
 
 		t.Run(testname, func(t *testing.T) {
-			g := NewEditor()
-			tileset_name := "assets/basic_tileset.png"
+			var g Game
 
-			// this is just a shortcut for selecting tile by index and not by tile
+			g.AvailableTiles = NewTilesCollection(3)
+			g.AvailableTiles.Alloc(30 * 30)
+
+			g.LevelStructure = NewTilesCollection(LAYER_N)
+			g.LevelStructure.Alloc(30 * 30)
+			g.ViewportCanvas = NewViewport(30, 30, 30, 30)
+
+			g.Mode = NewMode(MODE_ALL)
+
+			// RESOURCES
+			LoadResources("")
+
+			g.AvailableTiles.Fill("basic_tileset", LAYER_DRAW)
+			g.AvailableTiles.Fill("light_tileset", LAYER_LIGHT)
+			g.AvailableTiles.Fill("entity_tileset", LAYER_ENTITY)
+
 			tiles := make([]*Tile, 0)
 
 			for i := 0; i < tt.tiles_added; i++ {
-				img := ebiten.NewImage(32, 32) // every image is a dummy
+				// every image is a dummy
+				img := ebiten.NewImage(32, 32)
 				t := NewTile(
 					img,
-					tileset_name,
-					false,
+					GetResourceFullName("basic_tileset"),
 					tt.tiles_added_funcs[i][0],
 					tt.tiles_added_funcs[i][1],
 					tt.tiles_added_funcs[i][2],
@@ -319,32 +367,35 @@ func TestExport(t *testing.T) {
 			}
 
 			for j := 0; j < tt.tiles_set; j++ {
-				g.Canvas.SetTileOnDrawingArea(
+				var idx int
+
+				idx = g.ViewportCanvas.GetTileIdx(
 					tt.tiles_set_funcs[j][0],
 					tt.tiles_set_funcs[j][1],
+				)
+
+				g.LevelStructure.Set(
+					idx,
 					tt.tiles_set_funcs[j][2],
 					tiles[tt.tiles_set_funcs[j][3]],
 				)
 			}
 
-			// dummy image - it is required
-			dummy_image := ebiten.NewImage(1, 1)
-			g.Export(dummy_image)
-
-			base_path := filepath.Join(g.Config.LevelDir, BASENAME)
+			// ommit checks
+			TRIGGER_EXPORT_CHECKS = 0
+			g.Export()
 
 			// level structure was not created - test should fail
-			if _, err := os.Stat(base_path + ".llv"); errors.Is(err, fs.ErrNotExist) {
+			if _, err := os.Stat("level.llv"); errors.Is(err, fs.ErrNotExist) {
 				t.Errorf("Exporintg level does not succeded! - level structure was not exported\n")
 				fmt.Print(err.Error())
 			}
 
 			// level structure was not created - test should fail
-			if _, err := os.Stat(base_path + ".png"); errors.Is(err, fs.ErrNotExist) {
+			if _, err := os.Stat("level.png"); errors.Is(err, fs.ErrNotExist) {
 				t.Errorf("Exporintg level does not succeded! - tileset image was not exported\n")
 				fmt.Print(err.Error())
 			}
 		})
 	}
 }
-

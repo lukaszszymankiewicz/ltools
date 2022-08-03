@@ -8,7 +8,7 @@ import (
 )
 
 const (
-    TEST_LOGGER_DIR = "../logs/"
+	TEST_LOGGER_DIR = "../logs/"
 )
 
 func TestLogCanvasPutSingleLog(t *testing.T) {
@@ -100,7 +100,7 @@ func TestLogCanvasPutMultipleLog(t *testing.T) {
 	file.Close()
 
 	// just for sanity
-	err = os.Remove(TEST_LOGGER_DIR  + lg.filename)
+	err = os.Remove(TEST_LOGGER_DIR + lg.filename)
 	if err != nil {
 		t.Error(err)
 	}
@@ -123,6 +123,6 @@ func TestNewLogger(t *testing.T) {
 
 	if _, err := os.Stat("../logs" + log.filename); err == nil || os.IsExist(err) {
 		t.Errorf("creating logger file does not succeeded!\n")
-		t.Errorf("%s\n", "logs/" + log.filename)
+		t.Errorf("%s\n", "logs/"+log.filename)
 	}
 }

@@ -8,21 +8,34 @@ import (
 )
 
 type TilesCollection struct {
-    tiles  [][]*Tile
-    n_layers int
+	tiles    [][]*Tile
+	n_layers int
 }
 
 func NewTilesCollection(n_layers int) TilesCollection {
-	var at TilesCollection
+	var tc TilesCollection
 
-	at.tiles = make([][]*Tile, n_layers)
-    at.n_layers = n_layers
+	tc.tiles = make([][]*Tile, n_layers)
 
-	return at 
+	for layer := 0; layer < tc.n_layers; layer++ {
+		tc.tiles[layer] = make([]*Tile, 0)
+	}
+
+	tc.n_layers = n_layers
+
+	return tc
 }
 
-func (tc *TilesCollection) Fill(tileset Tileset, layer int) {
-	width, height := tileset.img.Size()
+func (tc *TilesCollection) Fill(name string, layer int) {
+	img := resources[name]
+
+	filename := GetResourceFullName(name)
+
+	if img == nil {
+		fmt.Printf("something went wrong while reading the resources\n")
+	}
+
+	width, height := img.Size()
 	rows := int(width / GridSize)
 	cols := int(height / GridSize)
 
@@ -34,16 +47,15 @@ func (tc *TilesCollection) Fill(tileset Tileset, layer int) {
 
 			// despite ebiten.Image.SubImage returning another ebiten.Image, type assertion is still
 			// needed.
-			i := tileset.img.SubImage(r)
+			i := img.SubImage(r)
 			i2, err := i.(*ebiten.Image)
-
 			if err != false {
 				fmt.Errorf("something strange happen while dividing Tileset")
 			}
 
-			t := NewTile(i2, tileset.name, false, x, y, layer)
+			t := NewTile(i2, filename, x, y, layer)
 
-            tc.tiles[layer] = append(tc.tiles[layer], &t)
+			tc.tiles[layer][y*rows+x] = &t
 
 			n++
 		}
@@ -51,23 +63,44 @@ func (tc *TilesCollection) Fill(tileset Tileset, layer int) {
 }
 
 func (tc *TilesCollection) TilesPerLayer(i int) int {
-    return len(tc.tiles[i])
+	return len(tc.tiles[i])
 }
 
 func (tc *TilesCollection) Alloc(n int) {
-    for layer := 0; layer < tc.n_layers; layer++ {
-        tc.tiles[layer] = make([]*Tile, n)
+	for layer := 0; layer < tc.n_layers; layer++ {
+		tc.tiles[layer] = make([]*Tile, n)
 
-        for i:=0; i<n; i++ {
-            tc.tiles[layer][i] = nil
-        }
-    }
+		for i := 0; i < n; i++ {
+			tc.tiles[layer][i] = nil
+		}
+	}
 }
 
-// func (tc *TilesCollection) PosHasTile(x int, y int, l int) bool {
-// 	if at.GetTileOnDrawingArea(x, y, l) == nil {
-// 		return false
-// 	} else {
-// 		return true
-// 	}
-// }
+func (tc *TilesCollection) Get(idx int, layer int) *Tile {
+	return tc.tiles[layer][idx]
+}
+
+func (tc *TilesCollection) Set(idx int, layer int, tile *Tile) {
+	tc.tiles[layer][idx] = tile
+}
+
+func (tc *TilesCollection) Empty(idx int) bool {
+	empty := true
+
+	for layer := 0; layer < tc.n_layers; layer++ {
+		if tc.Get(idx, layer) != nil {
+			empty = false
+		}
+	}
+	return empty
+}
+
+func (tc *TilesCollection) HasTile(tile *Tile) int {
+	for idx := 0; idx < len(tc.tiles[tile.layer]); idx++ {
+		if tc.Get(idx, tile.layer) != nil {
+			return idx
+		}
+	}
+
+	return -1
+}

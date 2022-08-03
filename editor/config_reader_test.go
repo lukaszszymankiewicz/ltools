@@ -4,8 +4,8 @@ import (
 	"testing"
 )
 
-const ( 
-    TEST_CONFIG_DIR = "../config.json"
+const (
+	TEST_CONFIG_DIR = "../config.json"
 )
 
 func TestReadConfig(t *testing.T) {

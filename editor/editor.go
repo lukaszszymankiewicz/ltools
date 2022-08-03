@@ -4,130 +4,96 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type Game struct {
-    AvailableTiles TilesCollection
-    LevelStructure TilesCollection
-
-    ViewportPallete Viewport
-    ViewportCanvas Viewport
-
-    mode              int
-	// Logger
-	// Tilesets
-	// Controller
-    // Config
-    // CurrentTool          int
-    Tilesets  // TODO: change it to Resources!
-
-    WindowManager
+type DrawingOptions struct {
+	CanvasAlpha   []float64
+	PalletteAlpha []float64
 }
 
-// everything that needs to be set before first game loop iteration
+type Game struct {
+	AvailableTiles TilesCollection
+	LevelStructure TilesCollection
+
+	ViewportPallete Viewport
+	ViewportCanvas  Viewport
+
+	FillTiles     TilesCollection
+	ViewportTiles Viewport
+
+	Mouse
+	Cursor
+	Toolbox
+
+	Mode
+	Config
+	Logger
+
+	WindowManager
+}
+
 func init() {
 	ebiten.SetFullscreen(true)
 }
 
-// game loop
 func (g *Game) Update() error {
-    return nil
+	return nil
 }
 
-// returning game internal resolution
 func (g *Game) Layout(outsideWidth, outsideHeight int) (ScreenWidth, ScreenHeight int) {
 	return 1388, 768
 }
 
-// game draw loop
 func (g *Game) Draw(screen *ebiten.Image) {
-	// g.UpdateControllersState()
-	// g.handleMouseEvents(screen)
-
-    // g.MainWindow.Update()
-    g.WindowManager.Update(g)
-    g.WindowManager.Draw(screen)
-
-    //g.MainWindow.Update(g)
-    //g.MainWindow.Draw(screen)
-
-	// g.Tabber.Draw(screen)
-	// g.Canvas.Draw(screen, g.mode)
+	g.Mouse.Update()
 	// g.handleKeyboardEvents()
-	// g.Toolbox.Draw(screen)
+
+	g.WindowManager.handleMouseEvents(g.Mouse.X, g.Mouse.Y)
+	g.WindowManager.Update(g)
+	g.WindowManager.Draw(screen)
+
 }
 
-// creates new game instance
 func NewEditor() *Game {
 	var g Game
 
-    // DATA
 	g.AvailableTiles = NewTilesCollection(LAYER_N)
-    g.LevelStructure = NewTilesCollection(LAYER_N)
-    g.LevelStructure.Alloc(CanvasCols*CanvasRows)
+	g.AvailableTiles.Alloc(PalleteRows * PalleteCols)
 
-    g.ViewportPallete = NewViewport(PalleteRows, PalleteCols, PalleteRows, PalleteCols)
-    g.ViewportCanvas = NewViewport(CanvasRows, CanvasCols, CanvasViewportRows, CanvasViewportCols)
+	g.LevelStructure = NewTilesCollection(LAYER_N)
+	g.LevelStructure.Alloc(CanvasCols * CanvasRows)
 
-	// g.mode = MODE_DRAW
+	g.ViewportPallete = NewViewport(PalleteRows, PalleteCols, PalleteRows, PalleteCols)
+	g.ViewportCanvas = NewViewport(CanvasRows, CanvasCols, CanvasViewportRows, CanvasViewportCols)
 
-    // WINDOW UTILS
-    ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
-	ebiten.SetWindowTitle("LTOOLS - LIGHTER DEVELOPMENT TOOLS")
+	g.FillTiles = NewTilesCollection(LAYER_N)
+	g.FillTiles.Alloc(1)
+	g.ViewportTiles = NewViewport(1, 1, 1, 1)
 
-	// RESOURCES
-	g.Tilesets = NewTilesets(
-		[]string{
-            "editor/assets/basic_tileset.png",
-            "editor/assets/light_tileset.png",
-            "editor/assets/entity_tileset.png",
-		},
-	)
-	for i := 0; i < g.Tilesets.AvailableTilesets(); i++ {
-		g.AvailableTiles.Fill(g.Tilesets.GetById(i), i)
-	}
+	g.Toolbox = NewToolbox()
+	g.Mode = NewMode(MODE_ALL)
+	g.Mouse = NewMouse()
 
-    // WINDOWS
-    g.WindowManager = NewWindowManager()
-    g.WindowManager.Add(g.NewMainWindow())
-
-	// g.Toolbox = NewToolbox(ToolboxX, ToolboxY)
-	// g.Cursor = NewCursor(CursorSize)
-	// g.Tabber = NewCompleteTabber(TabberX, TabberY, []string{"tiles", "light", "entities", "export"})
-
-    // g.Config = ReadConfig("config.json")
-
-    // g.PostInit()
+	g.PostInit()
 
 	return &g
 }
 
-// creates new game instance
-// func (g *Game) PostInit() {
-// 	g.Logger = NewLogger(LOGGER_PATH)
-// 
-// 
-// 	// function bindings
-// 	g.ClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))
-// 	g.HoverableAreas = make(map[image.Rectangle]func(*ebiten.Image))
-// 	g.SingleClickableAreas = make(map[image.Rectangle]func(*ebiten.Image))
-// 
-// 	g.HoverableAreas[g.Pallete.Area()] = g.DrawCursorOnPallete
-// 	g.HoverableAreas[g.Canvas.Area()] = g.DrawCursorOnCanvas
-// 	g.ClickableAreas[g.Pallete.Area()] = g.ChooseTileFromPallete
-// 	g.ClickableAreas[g.Canvas.Area()] = g.DrawTileOnCanvas
-// 
-// 	g.SingleClickableAreas[g.Pallete.ScrollerYUpArrowArea()] = g.Pallete.MovePalleteUp
-// 	g.SingleClickableAreas[g.Pallete.ScrollerYDownArrowArea()] = g.Pallete.MovePalleteDown
-// 
-// 	g.SingleClickableAreas[g.Canvas.ScrollerXLeftArrowArea()] = g.Canvas.MoveCanvasLeft
-// 	g.SingleClickableAreas[g.Canvas.ScrollerXRightArrowArea()] = g.Canvas.MoveCanvasRight
-// 	g.SingleClickableAreas[g.Canvas.ScrollerYUpArrowArea()] = g.Canvas.MoveCanvasUp
-// 	g.SingleClickableAreas[g.Canvas.ScrollerYDownArrowArea()] = g.Canvas.MoveCanvasDown
-// 
-// 	g.SingleClickableAreas[g.Tabber.Area(MODE_DRAW)] = g.changeModeToDraw
-// 	g.SingleClickableAreas[g.Tabber.Area(MODE_LIGHT)] = g.changeModeToDrawLight
-// 	g.SingleClickableAreas[g.Tabber.Area(MODE_ENTITIES)] = g.changeModeToDrawEntities
-// 	g.SingleClickableAreas[g.Tabber.Area(EXPORT_BUTTON)] = g.Export
-// 
-// 	g.SingleClickableAreas[g.Toolbox.Area(PENCIL_TOOL)] = g.changeToolToPencil
-// 	g.SingleClickableAreas[g.Toolbox.Area(RUBBER_TOOL)] = g.changeToolToRubber
-// }
+func (g *Game) PostInit() {
+	// WINDOW UTILS
+	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
+	ebiten.SetWindowTitle("LTOOLS - LIGHTER DEVELOPMENT TOOLS")
+
+	// LOAD RESOURCES
+	LoadResources("editor")
+
+	g.AvailableTiles.Fill("basic_tileset", LAYER_DRAW)
+	g.AvailableTiles.Fill("light_tileset", LAYER_LIGHT)
+	g.AvailableTiles.Fill("entity_tileset", LAYER_ENTITY)
+	g.AvailableTiles.Get(HERO_TILE, LAYER_ENTITY).unique_condition = UNIQUE_COND_IS_NOT_SET
+
+	// WINDOWS
+	g.WindowManager = NewWindowManager()
+	g.WindowManager.Add(g.NewMainWindow())
+
+	// RED CONFIG
+	g.Config = ReadConfig("config.json")
+}

@@ -20,23 +20,26 @@ const (
 )
 
 const (
-	ScreenWidth           = 1366
-	ScreenHeight          = 768
-	GridSize              = 32
+	ScreenWidth  = 1366
+	ScreenHeight = 768
+	GridSize     = 32
 
-	PalleteX              = 50
-	PalleteY              = 80
-	PalleteCols           = 6
-	PalleteRows           = 10
-	PalleteViewportCols   = 6
-	PalleteViewportRows   = 10
+	MenuX = 50
+	MenuY = 50
 
-	CanvasY              = PalleteY
-	CanvasX              = (PalleteCols * GridSize) + (GridSize * 3)
-	CanvasCols            = 50
-	CanvasRows            = 60
-	CanvasViewportCols    = 30
-	CanvasViewportRows    = 20
+	PalleteX            = 50
+	PalleteY            = MenuY + 50
+	PalleteCols         = 6
+	PalleteRows         = 10
+	PalleteViewportCols = 6
+	PalleteViewportRows = 10
+
+	CanvasY            = PalleteY
+	CanvasX            = (PalleteCols * GridSize) + (GridSize * 3)
+	CanvasCols         = 50
+	CanvasRows         = 60
+	CanvasViewportCols = 30
+	CanvasViewportRows = 20
 
 	ToolboxX              = PalleteX
 	ToolboxY              = (PalleteY + (PalleteRows * GridSize)) + GridSize
@@ -46,4 +49,6 @@ const (
 	TILE_PER_ROW_ON_IMAGE = 16
 	EXPORT_BUTTON         = 3
 	LOGGER_PATH           = "./logs/"
+
+	HERO_TILE = 0 // fixed hero tile index
 )
