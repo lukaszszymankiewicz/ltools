@@ -13,12 +13,14 @@ import (
 var TRIGGER_EXPORT_CHECKS int = 1
 
 const (
-	N_COORDS       = 2
-	TILES_PER_ROW  = 16
-	TILESET_FORMAT = ".png"
-	LEVEL_FORMAT   = ".llv"
-	BASENAME       = "level"
-	MOD            = 0750
+	N_COORDS                         = 2
+	TILES_PER_ROW                    = 16
+	TILESET_FORMAT                   = ".png"
+	LEVEL_FORMAT                     = ".llv"
+	BASENAME                         = "level"
+	MOD                              = 0750
+	READ_LEVEL_PREAMBULE_FIRST_PART  = 19525
+	READ_LEVEL_PREAMBULE_SECOND_PART = 22092
 )
 
 type TileStackEntry struct {
@@ -211,6 +213,8 @@ func (g *Game) writeLayerToFile(f *os.File, layer int, stack TileStack) {
 
 	for _, tile := range tiles_per_layer {
 		single_tile_usage := len(stack.tiles[tile].coords)
+		writeToFile(f, stack.tiles[tile].tile.id)
+
 		writeToFile(f, single_tile_usage)
 
 		for _, coord := range stack.tiles[tile].coords {
@@ -223,12 +227,16 @@ func (g *Game) exportLevel(filename string, stack TileStack) string {
 	name := filename + LEVEL_FORMAT
 	f, _ := os.Create(name)
 
-	// first, write rows and cols number to file
+	// write preambule
+	writeToFile(f, READ_LEVEL_PREAMBULE_FIRST_PART)
+	writeToFile(f, READ_LEVEL_PREAMBULE_SECOND_PART)
+
+	// write rows and cols number to file
 	rows, cols := g.ViewportCanvas.Size()
 	writeToFile(f, rows)
 	writeToFile(f, cols)
 
-	// then, write all layers content
+	// write all layers content
 	for layer := 0; layer < LAYER_N; layer++ {
 		g.writeLayerToFile(f, layer, stack)
 	}
