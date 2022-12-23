@@ -213,6 +213,8 @@ func (g *Game) writeLayerToFile(f *os.File, layer int, stack TileStack) {
 
 	for _, tile := range tiles_per_layer {
 		single_tile_usage := len(stack.tiles[tile].coords)
+		writeToFile(f, stack.tiles[tile].tile.id)
+
 		writeToFile(f, single_tile_usage)
 
 		for _, coord := range stack.tiles[tile].coords {

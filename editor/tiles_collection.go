@@ -53,7 +53,7 @@ func (tc *TilesCollection) Fill(name string, layer int) {
 				fmt.Errorf("something strange happen while dividing Tileset")
 			}
 
-			t := NewTile(i2, filename, x, y, layer)
+			t := NewTile(i2, filename, x, y, layer, y*rows + x)
 
 			tc.tiles[layer][y*rows+x] = &t
 

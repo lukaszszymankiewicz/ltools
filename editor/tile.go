@@ -10,6 +10,7 @@ type Tile struct {
 	layer            int    // layer of tile
 	row              int    // position of tile on tileset
 	col              int    // position of tile on tileset
+    id               int    // used mainly for entities
 	unique_condition int    // index of unique condition of tile to be set
 	set              bool
 }
@@ -20,6 +21,7 @@ func NewTile(
 	row int,
 	col int,
 	layer int,
+    id    int,
 ) Tile {
 	var t Tile
 
@@ -28,6 +30,7 @@ func NewTile(
 	t.row = row
 	t.col = col
 	t.layer = layer
+    t.id = id
 
 	return t
 }
