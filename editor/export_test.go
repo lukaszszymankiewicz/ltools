@@ -15,8 +15,8 @@ func TestStack(t *testing.T) {
 	i1 := ebiten.NewImage(32, 32)
 	i2 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, tileset_name, 0, 0, 0)
-	t2 := NewTile(i2, tileset_name, 0, 1, 0)
+	t1 := NewTile(i1, tileset_name, 0, 0, 0, 0)
+	t2 := NewTile(i2, tileset_name, 0, 1, 0, 1)
 
 	ts := NewTileStack()
 
@@ -51,9 +51,9 @@ func TestFillStack(t *testing.T) {
 	i2 := ebiten.NewImage(32, 32)
 	i3 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, tileset_name, 0, 0, 0)
-	t2 := NewTile(i2, tileset_name, 0, 1, 0)
-	t3 := NewTile(i3, tileset_name, 0, 2, 1)
+	t1 := NewTile(i1, tileset_name, 0, 0, 0, 0)
+	t2 := NewTile(i2, tileset_name, 0, 1, 0, 1)
+	t3 := NewTile(i3, tileset_name, 0, 2, 1, 2)
 
 	idx = g.ViewportCanvas.GetTileIdx(10, 10)
 	g.LevelStructure.Set(idx, 0, &t1)
@@ -141,9 +141,9 @@ func TestPrepareTileset(t *testing.T) {
 
 	tileset_name := GetResourceFullName("basic_tileset")
 
-	t1 := NewTile(i1, tileset_name, 0, 0, 0)
-	t2 := NewTile(i2, tileset_name, 0, 1, 0)
-	t3 := NewTile(i3, tileset_name, 0, 2, 1)
+	t1 := NewTile(i1, tileset_name, 0, 0, 0, 0)
+	t2 := NewTile(i2, tileset_name, 0, 1, 0, 1)
+	t3 := NewTile(i3, tileset_name, 0, 2, 1, 2)
 
 	idx = g.ViewportCanvas.GetTileIdx(10, 10)
 	g.LevelStructure.Set(idx, 0, &t1)
@@ -177,9 +177,9 @@ func TestTilesPerLayer(t *testing.T) {
 	i2 := ebiten.NewImage(32, 32)
 	i3 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, "name", 0, 0, 0)
-	t2 := NewTile(i2, "name", 0, 0, 0)
-	t3 := NewTile(i3, "name", 0, 0, 1)
+	t1 := NewTile(i1, "name", 0, 0, 0, 0)
+	t2 := NewTile(i2, "name", 0, 0, 0, 1)
+	t3 := NewTile(i3, "name", 0, 0, 1, 2)
 
 	ts := NewTileStack()
 
@@ -218,9 +218,9 @@ func TestTilesPerLayerSum(t *testing.T) {
 	i2 := ebiten.NewImage(32, 32)
 	i3 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, "name", 0, 0, 0)
-	t2 := NewTile(i2, "name", 0, 0, 0)
-	t3 := NewTile(i3, "name", 0, 0, 1)
+	t1 := NewTile(i1, "name", 0, 0, 0, 0)
+	t2 := NewTile(i2, "name", 0, 0, 0, 1)
+	t3 := NewTile(i3, "name", 0, 0, 1, 2)
 
 	ts := NewTileStack()
 
@@ -271,9 +271,9 @@ func TestExportLevel(t *testing.T) {
 	i2 := ebiten.NewImage(32, 32)
 	i3 := ebiten.NewImage(32, 32)
 
-	t1 := NewTile(i1, tileset_name, 0, 0, 0)
-	t2 := NewTile(i2, tileset_name, 0, 1, 0)
-	t3 := NewTile(i3, tileset_name, 0, 2, 1)
+	t1 := NewTile(i1, tileset_name, 0, 0, 0, 0)
+	t2 := NewTile(i2, tileset_name, 0, 1, 0, 1)
+	t3 := NewTile(i3, tileset_name, 0, 2, 1, 2)
 
 	idx = g.ViewportCanvas.GetTileIdx(10, 10)
 	g.LevelStructure.Set(idx, 0, &t1)
@@ -362,6 +362,7 @@ func TestExport(t *testing.T) {
 					tt.tiles_added_funcs[i][0],
 					tt.tiles_added_funcs[i][1],
 					tt.tiles_added_funcs[i][2],
+                    0,
 				)
 				tiles = append(tiles, &t)
 			}

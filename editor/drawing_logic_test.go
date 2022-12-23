@@ -11,8 +11,8 @@ func TestDrawingLogicPuttingEntityLayersWithPen(t *testing.T) {
 	tc.Alloc(100)
 
 	dummy_image := ebiten.NewImage(32, 32)
-	normal_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_DRAW)
-	entity_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_ENTITY)
+	normal_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_DRAW, 0)
+	entity_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_ENTITY, 0)
 
 	// make entity_tile unique on canvas
 	entity_tile.unique_condition = UNIQUE_COND_IS_NOT_SET
@@ -92,8 +92,8 @@ func TestDrawingLogicPuttingEntityLayersWithPenErasingWithRubber(t *testing.T) {
 	tc.Alloc(100)
 
 	dummy_image := ebiten.NewImage(32, 32)
-	normal_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_DRAW)
-	entity_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_ENTITY)
+	normal_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_DRAW, 0)
+	entity_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_ENTITY, 0)
 
 	// make entity_tile unique on canvas
 	entity_tile.unique_condition = UNIQUE_COND_IS_NOT_SET
@@ -155,8 +155,8 @@ func TestDrawingLogicPuttingEntityLayersWithPenErasingWithRubberMultiple(t *test
 	tc.Alloc(100)
 
 	dummy_image := ebiten.NewImage(32, 32)
-	normal_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_DRAW)
-	entity_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_ENTITY)
+	normal_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_DRAW, 0)
+	entity_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_ENTITY, 0)
 
 	// make entity_tile unique on canvas
 	entity_tile.unique_condition = UNIQUE_COND_IS_NOT_SET
@@ -201,8 +201,8 @@ func TestDrawingLogicPutLightTileOnNormalTile(t *testing.T) {
 	tc.Alloc(100)
 
 	dummy_image := ebiten.NewImage(32, 32)
-	normal_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_DRAW)
-	light_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_LIGHT)
+	normal_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_DRAW, 0)
+	light_tile := NewTile(dummy_image, "dummy_tileset", 0, 0, LAYER_LIGHT, 0)
 
 	// few normal tiles on which drawing entities will be perfomed
 	PutTile(v, tc, &normal_tile, &PenBrush, 0, 0, LAYER_DRAW)
